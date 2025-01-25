@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NickNames projectID="8cmjSSmGAqACBgWp" projectPath="C:\Users\youss\Desktop\software engineering\graduation project\ERD\Craftopia.vpp" selectedNickName="Realname"/>
