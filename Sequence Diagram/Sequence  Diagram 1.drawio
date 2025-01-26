@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/25.0.2 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="25.0.2">
   <diagram name="Page-1" id="V0pw2Zb20UL2xj4cE1I4">
-    <mxGraphModel dx="829" dy="1660" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1036" dy="1783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -30,7 +30,7 @@
         <mxCell id="ZhXPPXgodXc87nbnoY75-31" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" parent="ZhXPPXgodXc87nbnoY75-5" vertex="1">
           <mxGeometry x="45" y="290" width="10" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-8" value="Notify customer of the artist&#39;s offer()" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-25" edge="1" target="ZhXPPXgodXc87nbnoY75-2">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-8" value="Notify customer of the artist&#39;s offer()" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-25" target="ZhXPPXgodXc87nbnoY75-2" edge="1">
           <mxGeometry x="-0.1444" relative="1" as="geometry">
             <mxPoint x="100" y="260" as="targetPoint" />
             <Array as="points">
@@ -40,7 +40,7 @@
             <mxPoint x="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-9" value="View offer details()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1" source="ZhXPPXgodXc87nbnoY75-2">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-9" value="View offer details()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-2" edge="1">
           <mxGeometry x="0.0233" relative="1" as="geometry">
             <mxPoint x="100" y="280" as="sourcePoint" />
             <Array as="points">
@@ -74,7 +74,7 @@
           <mxGeometry x="40" y="490" width="100" height="300" as="geometry" />
         </mxCell>
         <mxCell id="ZhXPPXgodXc87nbnoY75-13" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" parent="ZhXPPXgodXc87nbnoY75-12" vertex="1">
-          <mxGeometry x="45" y="70" width="10" height="120" as="geometry" />
+          <mxGeometry x="45" y="70" width="10" height="140" as="geometry" />
         </mxCell>
         <mxCell id="ZhXPPXgodXc87nbnoY75-14" value="&amp;nbsp;Crafopia&#39;s Auction Managment Scenerio" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fad9d5;strokeColor=#ae4132;" parent="1" vertex="1">
           <mxGeometry x="270" y="420" width="240" height="30" as="geometry" />
@@ -83,15 +83,15 @@
           <mxGeometry x="290" y="490" width="100" height="430" as="geometry" />
         </mxCell>
         <mxCell id="ZhXPPXgodXc87nbnoY75-16" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" parent="ZhXPPXgodXc87nbnoY75-15" vertex="1">
-          <mxGeometry x="45" y="95" width="10" height="95" as="geometry" />
+          <mxGeometry x="45" y="95" width="10" height="115" as="geometry" />
         </mxCell>
         <mxCell id="ZhXPPXgodXc87nbnoY75-17" value="Customer" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" parent="1" vertex="1">
           <mxGeometry x="500" y="490" width="100" height="430" as="geometry" />
         </mxCell>
         <mxCell id="ZhXPPXgodXc87nbnoY75-18" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" parent="ZhXPPXgodXc87nbnoY75-17" vertex="1">
-          <mxGeometry x="45" y="170" width="10" height="260" as="geometry" />
+          <mxGeometry x="45" y="190" width="10" height="240" as="geometry" />
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-19" value="Request Auction()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" target="ZhXPPXgodXc87nbnoY75-34" edge="1" source="ZhXPPXgodXc87nbnoY75-13">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-19" value="Request Auction()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-13" target="ZhXPPXgodXc87nbnoY75-34" edge="1">
           <mxGeometry x="-0.0742" relative="1" as="geometry">
             <mxPoint x="100" y="580" as="sourcePoint" />
             <Array as="points">
@@ -104,31 +104,31 @@
         </mxCell>
         <mxCell id="ZhXPPXgodXc87nbnoY75-20" value="View current highest bid.()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="560" y="700" as="sourcePoint" />
+            <mxPoint x="560" y="710" as="sourcePoint" />
             <Array as="points">
-              <mxPoint x="700.5" y="700" />
-              <mxPoint x="696" y="710" />
+              <mxPoint x="700.5" y="710" />
+              <mxPoint x="696" y="720" />
             </Array>
-            <mxPoint x="800" y="700" as="targetPoint" />
+            <mxPoint x="800" y="710" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-21" value="Submit Bid ()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1" source="ZhXPPXgodXc87nbnoY75-18">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-21" value="Submit Bid ()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1">
           <mxGeometry x="-0.0973" y="3" relative="1" as="geometry">
-            <mxPoint x="560" y="720" as="sourcePoint" />
+            <mxPoint x="550" y="740" as="sourcePoint" />
             <Array as="points" />
-            <mxPoint x="799.5" y="720" as="targetPoint" />
+            <mxPoint x="794.5" y="740" as="targetPoint" />
             <mxPoint x="1" y="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-22" value="Update existing bid ()&amp;nbsp;" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" target="ZhXPPXgodXc87nbnoY75-17" edge="1" source="ZhXPPXgodXc87nbnoY75-34">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-22" value="Update existing bid ()&amp;nbsp;" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1">
           <mxGeometry x="0.0963" relative="1" as="geometry">
-            <mxPoint x="794.5" y="770" as="sourcePoint" />
+            <mxPoint x="795" y="780" as="sourcePoint" />
             <Array as="points">
               <mxPoint x="720" y="780" />
               <mxPoint x="730" y="770" />
             </Array>
-            <mxPoint x="550" y="780" as="targetPoint" />
+            <mxPoint x="549.5" y="780" as="targetPoint" />
             <mxPoint x="1" as="offset" />
           </mxGeometry>
         </mxCell>
@@ -161,7 +161,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-29" value="&amp;nbsp;Post customization requests Details" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" parent="1" edge="1" target="ZhXPPXgodXc87nbnoY75-6">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-29" value="&amp;nbsp;Post customization requests Details" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" parent="1" target="ZhXPPXgodXc87nbnoY75-6" edge="1">
           <mxGeometry x="0.0491" relative="1" as="geometry">
             <mxPoint x="360" y="180" as="targetPoint" />
             <Array as="points">
@@ -208,29 +208,28 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-36" value="Scedule Auction()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1" target="ZhXPPXgodXc87nbnoY75-34">
-          <mxGeometry x="-0.1667" relative="1" as="geometry">
-            <mxPoint x="345.00000000000006" y="650" as="sourcePoint" />
+        <mxCell id="ZhXPPXgodXc87nbnoY75-36" value="Scedule Auction()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;exitX=1.06;exitY=0.795;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" target="ZhXPPXgodXc87nbnoY75-33" edge="1" source="ZhXPPXgodXc87nbnoY75-16">
+          <mxGeometry x="-0.2222" relative="1" as="geometry">
+            <mxPoint x="360.00000000000006" y="660" as="sourcePoint" />
             <Array as="points">
-              <mxPoint x="800" y="650" />
-              <mxPoint x="665.3" y="660" />
+              <mxPoint x="340" y="670" />
             </Array>
-            <mxPoint x="790" y="650.4" as="targetPoint" />
+            <mxPoint x="810" y="660" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-38" value="Confirm bid submission ()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1" source="ZhXPPXgodXc87nbnoY75-18">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-38" value="Confirm bid submission ()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1">
           <mxGeometry x="-0.036" relative="1" as="geometry">
-            <mxPoint x="560" y="750" as="sourcePoint" />
+            <mxPoint x="555" y="760" as="sourcePoint" />
             <Array as="points">
-              <mxPoint x="720" y="750" />
-              <mxPoint x="730" y="740" />
+              <mxPoint x="720" y="760" />
+              <mxPoint x="730" y="750" />
             </Array>
-            <mxPoint x="799.5" y="750" as="targetPoint" />
+            <mxPoint x="799.5" y="760" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pKFH-TmlAlDf81iGGBa--1" value="Accept&amp;nbsp; Auction Request() / Decline&amp;nbsp; Auction Request()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="ZhXPPXgodXc87nbnoY75-16" target="ZhXPPXgodXc87nbnoY75-34">
+        <mxCell id="pKFH-TmlAlDf81iGGBa--1" value="Accept&amp;nbsp; Auction Request() / Decline&amp;nbsp; Auction Request()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-16" target="ZhXPPXgodXc87nbnoY75-34" edge="1">
           <mxGeometry x="-0.0979" relative="1" as="geometry">
             <mxPoint x="350" y="630" as="sourcePoint" />
             <Array as="points">
@@ -240,27 +239,37 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-37" value="Start Auction()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-34" edge="1" target="ZhXPPXgodXc87nbnoY75-13">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-37" value="Start Auction()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" edge="1">
           <mxGeometry x="-0.1667" relative="1" as="geometry">
-            <mxPoint x="790" y="670" as="sourcePoint" />
+            <mxPoint x="795" y="690" as="sourcePoint" />
             <Array as="points">
-              <mxPoint x="665.3" y="670" />
-              <mxPoint x="580" y="670" />
+              <mxPoint x="665.3" y="690" />
+              <mxPoint x="580" y="690" />
             </Array>
-            <mxPoint x="100" y="670" as="targetPoint" />
+            <mxPoint x="95" y="690" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pKFH-TmlAlDf81iGGBa--2" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" vertex="1" parent="1">
+        <mxCell id="pKFH-TmlAlDf81iGGBa--2" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#fad9d5;strokeColor=#ae4132;" parent="1" vertex="1">
           <mxGeometry x="85" y="790" width="10" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="ZhXPPXgodXc87nbnoY75-39" value="Notify Winner()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" target="ZhXPPXgodXc87nbnoY75-18" edge="1" source="ZhXPPXgodXc87nbnoY75-34">
+        <mxCell id="ZhXPPXgodXc87nbnoY75-39" value="Notify Winner()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="ZhXPPXgodXc87nbnoY75-34" target="ZhXPPXgodXc87nbnoY75-18" edge="1">
           <mxGeometry x="-0.0204" y="20" relative="1" as="geometry">
             <mxPoint x="790" y="890" as="sourcePoint" />
             <Array as="points">
               <mxPoint x="690" y="890" />
             </Array>
             <mxPoint x="570" y="890" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="egG_PiqYWwDfb7_vNk13-1" value="Auction Request Approval" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1" target="ZhXPPXgodXc87nbnoY75-13">
+          <mxGeometry x="0.554" relative="1" as="geometry">
+            <mxPoint x="345" y="650" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="450" y="650" />
+            </Array>
+            <mxPoint x="790" y="650" as="sourcePoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
