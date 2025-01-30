@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2025-01-29T22:25:02.315Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="tMvcXYuiJFxdWL99zqsu" version="24.4.6" type="device">
+<mxfile host="Electron" modified="2025-01-30T01:12:43.898Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="SaNBNHwjPQ6xuH22kewr" version="24.4.6" type="device">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
     <mxGraphModel dx="1290" dy="1790" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -13,7 +13,7 @@
         <mxCell id="cyFxnOvqambi-OT4J-ao-18" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="30" y="-20" width="430" height="850" as="geometry" />
         </mxCell>
-        <mxCell id="qGLso6KJhYCU982X84lw-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="WIyWlLk6GJQsqaUBKTNV-3" target="qGLso6KJhYCU982X84lw-1">
+        <mxCell id="qGLso6KJhYCU982X84lw-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="WIyWlLk6GJQsqaUBKTNV-3" target="qGLso6KJhYCU982X84lw-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-3" value="Add product to cart" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
@@ -33,8 +33,11 @@
             <mxPoint x="230" y="120" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="q_2GUthSrgR8gC2-ZRcx-0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="rnMzFVEXDFbTbHylvlPK-8" target="fP-XIy6_HEBDuXpYDqIU-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="rnMzFVEXDFbTbHylvlPK-8" value="&lt;span style=&quot;font-size: 11px; text-wrap: nowrap; background-color: rgb(255, 255, 255);&quot;&gt;Place order&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
-          <mxGeometry x="180" y="270" width="120" height="40" as="geometry" />
+          <mxGeometry x="180" y="330" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="rnMzFVEXDFbTbHylvlPK-18" value="Receive order confirmation" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="170" y="620" width="160" height="40" as="geometry" />
@@ -68,21 +71,6 @@
         </mxCell>
         <mxCell id="fP-XIy6_HEBDuXpYDqIU-12" value="&lt;div&gt;Escrow&amp;nbsp;&lt;/div&gt;&lt;div&gt;Payment&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="1050" y="-20" width="60" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="fP-XIy6_HEBDuXpYDqIU-14" value="Choose payment method" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
-          <mxGeometry x="170" y="350" width="120" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="fP-XIy6_HEBDuXpYDqIU-15" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.573;entryY=-0.035;entryDx=0;entryDy=0;entryPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="rnMzFVEXDFbTbHylvlPK-8" target="fP-XIy6_HEBDuXpYDqIU-14" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="240" y="270" as="sourcePoint" />
-            <mxPoint x="190" y="320" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="fP-XIy6_HEBDuXpYDqIU-16" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="fP-XIy6_HEBDuXpYDqIU-14" target="fP-XIy6_HEBDuXpYDqIU-5" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="160" y="430" as="sourcePoint" />
-            <mxPoint x="210" y="380" as="targetPoint" />
-          </mxGeometry>
         </mxCell>
         <mxCell id="fP-XIy6_HEBDuXpYDqIU-17" value="" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.833;entryY=0.363;entryDx=0;entryDy=0;entryPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="fP-XIy6_HEBDuXpYDqIU-11" target="fP-XIy6_HEBDuXpYDqIU-10" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -120,11 +108,11 @@
             <mxPoint x="480" y="620" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="qGLso6KJhYCU982X84lw-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="qGLso6KJhYCU982X84lw-1" target="rnMzFVEXDFbTbHylvlPK-8">
+        <mxCell id="qGLso6KJhYCU982X84lw-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="qGLso6KJhYCU982X84lw-1" target="rnMzFVEXDFbTbHylvlPK-8" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="qGLso6KJhYCU982X84lw-1" value="Checkout" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="180" y="190" width="120" height="40" as="geometry" />
+        <mxCell id="qGLso6KJhYCU982X84lw-1" value="Checkout" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="180" y="220" width="120" height="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
