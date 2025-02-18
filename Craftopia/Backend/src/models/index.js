@@ -1,0 +1,114 @@
+const sequelize = require('../config/db');
+
+// Import models
+const User = require('./user');
+const Artist = require('./artist');
+const Customer = require('./customer');
+const Admin = require('./admin');
+const Product = require('./product');
+const Order = require('./order');
+const Product_Order = require('./Product_Order');
+const Category = require('./category');
+const Report = require('./Report');
+const ReportHandling = require('./reportHandling');
+const CustomizableOption = require('./customizableOption');
+const OptionValue = require('./optionValue');
+const Review = require('./Review');
+const Wishlist = require('./wishlist');
+const CustomizationRequest = require('./customizationRequest');
+const CustomizationResponse = require('./customizationResponse');
+
+// User-Related Associations
+User.hasOne(Admin, { foreignKey: 'userId' });
+Admin.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasOne(Artist, { foreignKey: 'userId' });
+Artist.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasOne(Customer, { foreignKey: 'userId' });
+Customer.belongsTo(User, { foreignKey: 'userId' });
+
+// Artist & Product Relationship
+Artist.hasMany(Product, { foreignKey: 'artistId' });
+Product.belongsTo(Artist, { foreignKey: 'artistId' });
+
+// Category & Product Relationship
+Category.hasMany(Product, { foreignKey: 'categoryId' });
+Product.belongsTo(Category, { foreignKey: 'categoryId' });
+
+// Order & Customer Relationship
+Customer.hasMany(Order, { foreignKey: 'customerId' });
+Order.belongsTo(Customer, { foreignKey: 'customerId' });
+
+// Many-to-Many Order & Product Relationship (Through Product_Order)
+Order.belongsToMany(Product, { through: Product_Order, foreignKey: 'orderId' });
+Product.belongsToMany(Order, { through: Product_Order, foreignKey: 'productId' });
+
+
+// report & customer Relationship
+Report.belongsTo(Customer, { foreignKey: 'ReporterID' });
+Customer.hasMany(Report, { foreignKey: 'ReporterID' });
+
+// report & artist Relationship
+Report.belongsTo(Artist, { foreignKey: 'ReportedID' });
+Artist.hasMany(Report, { foreignKey: 'ReportedID' });
+
+
+// Many-to-Many report & admin Relationship (Through ReportHandling)
+Report.belongsToMany(Admin, { through: ReportHandling, foreignKey: 'reportId' });
+Admin.belongsToMany(Report, { through: ReportHandling, foreignKey: 'adminId' });
+
+
+// Product & CustomizableOption Relationship
+Product.hasMany(CustomizableOption, { foreignKey: 'productId' });
+CustomizableOption.belongsTo(Product, { foreignKey: 'productId' });
+
+// CustomizableOption & OptionValue Relationship
+CustomizableOption.hasMany(OptionValue, { foreignKey: 'optionId' });
+OptionValue.belongsTo(CustomizableOption, { foreignKey: 'optionId' });
+
+// Product & Review Relationship
+Product.hasMany(Review, { foreignKey: 'productId' });
+Review.belongsTo(Product, { foreignKey: 'productId' });
+
+// Customer & Review Relationship
+Customer.hasMany(Review, { foreignKey: 'customerId' });
+Review.belongsTo(Customer, { foreignKey: 'customerId' });
+
+// Customer & Wishlist Relationship
+Customer.hasMany(Wishlist, { foreignKey: 'customerId' });
+Wishlist.belongsTo(Customer, { foreignKey: 'customerId' });
+
+// Product & Wishlist Relationship
+Product.hasMany(Wishlist, { foreignKey: 'productId' });
+Wishlist.belongsTo(Product, { foreignKey: 'productId' });
+
+// Customer & CustomizationRequest Relationship
+Customer.hasMany(CustomizationRequest, { foreignKey: 'customerId' });
+CustomizationRequest.belongsTo(Customer, { foreignKey: 'customerId' });
+
+//artist & CustomizationResponse Relationship
+Artist.hasOne(CustomizationResponse, { foreignKey: 'artistId' });
+CustomizationResponse.belongsTo(Artist, { foreignKey: 'artistId' });
+
+
+// Export all models and sequelize instance
+module.exports = {
+  sequelize,
+  User,
+  Artist,
+  Customer,
+  Admin,
+  Product,
+  Category,
+  Order,
+  Product_Order,
+  Report,
+  ReportHandling,
+  CustomizableOption,
+  OptionValue,
+  Review,
+  Wishlist,
+  CustomizationRequest,
+  CustomizationResponse
+};

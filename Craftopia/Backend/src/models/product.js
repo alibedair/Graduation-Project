@@ -1,0 +1,50 @@
+const {DataTypes} = require('sequelize');
+const sequelize = require('../config/db');
+const Artist = require('./artist');
+const category = require('./category');
+
+
+const Product = sequelize.define('product', {
+    productId: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    price: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    description: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    artistId: {
+        type: DataTypes.INTEGER,
+        references:{
+            model: Artist,
+            key: 'artistId'
+        }
+    },
+    categoryId: {
+        type: DataTypes.INTEGER,
+        references:{
+            model: category,
+            key: 'categoryId'
+        }
+    }
+});
+
+
+module.exports = Product;
