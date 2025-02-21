@@ -17,6 +17,8 @@ const Review = require('./Review');
 const Wishlist = require('./wishlist');
 const CustomizationRequest = require('./customizationRequest');
 const CustomizationResponse = require('./customizationResponse');
+const ArtistFollow = require('./artistFollow');
+const payment = require('./payment');
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -92,6 +94,22 @@ Artist.hasOne(CustomizationResponse, { foreignKey: 'artistId' });
 CustomizationResponse.belongsTo(Artist, { foreignKey: 'artistId' });
 
 
+// CustomizationRequest & CustomizationResponse Relationship
+CustomizationRequest.hasMany(CustomizationResponse, { foreignKey: 'requestId' });
+CustomizationResponse.belongsTo(CustomizationRequest, { foreignKey: 'requestId' });
+
+// Many-to-Many Artist & Customer Relationship (Through ArtistFollow)
+Artist.belongsToMany(Customer, { through: ArtistFollow, foreignKey: 'artistId' });
+Customer.belongsToMany(Artist, { through: ArtistFollow, foreignKey: 'customerId' });
+
+// payment & order Relationship
+Order.hasOne(payment, { foreignKey: 'orderId' });
+payment.belongsTo(Order, { foreignKey: 'orderId' });
+
+//customer & payment Relationship
+Customer.hasMany(payment, { foreignKey: 'customerId' });
+payment.belongsTo(Customer, { foreignKey: 'customerId' });
+
 // Export all models and sequelize instance
 module.exports = {
   sequelize,
@@ -110,5 +128,7 @@ module.exports = {
   Review,
   Wishlist,
   CustomizationRequest,
-  CustomizationResponse
+  CustomizationResponse,
+  ArtistFollow,
+  payment
 };
