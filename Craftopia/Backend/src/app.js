@@ -15,6 +15,9 @@ app.use('/auth', authRoute);
 const customerRoute = require('./routes/customerRoute');
 app.use('/customer', customerRoute);
 
+const artistRoute = require('./routes/artistRoute');
+app.use('/artist', artistRoute);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
