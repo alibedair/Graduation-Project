@@ -1,24 +1,39 @@
 const customer = require('../models/customer');
+const User = require('../models/user');
 
 exports.updateProfile = async (req, res) => {
     try{
         const userId = req.user.id;
+        role= await User.findOne({where: {userId}});
+        if(role.role !== 'customer'){
+            return res.status(403).json({message: "Forbidden"});
+        }
         const {name,username, phone, address} = req.body;
         if(!name || !phone || !address || !username){
             return res.status(400).json({message: "Please fill all fields"});
         }
-        const existingCustomer = await customer.findOne({where: {username}});
-        if(existingCustomer){
+        const existingCustomer = await customer.findOne({ where: { userId } });
+        if (existingCustomer) {
+            if (existingCustomer.username !== username) {
+                const usernameExists = await customer.findOne({ where: { username } });
+                if (usernameExists) {
+                    return res.status(400).json({ message: "Username already exists" });
+                }
+            }
             existingCustomer.name = name;
             existingCustomer.phone = phone;
             existingCustomer.address = address;
             existingCustomer.username = username;
             await existingCustomer.save();
             return res.status(200).json({existingCustomer});
+        }else {
+            const usernameExists = await customer.findOne({ where: { username } });
+            if (usernameExists) {
+                return res.status(400).json({ message: "Username already exists" });
+            }
+            const customerProfile = await customer.create({ name, phone, address, username, userId });
+            return res.status(201).json({ customerProfile });
         }
-        
-        const customerProfile = await customer.create({name, phone, address, username, userId});
-        return res.status(201).json({customerProfile});
 
     }catch(error){
         console.error("Error creating customer profile:", error);
