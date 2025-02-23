@@ -5,7 +5,10 @@ exports.updateArtist = async (req, res) => {
     try {
 
         const userId = req.user.id;
-
+        role = await User.findOne({where: {userId}});
+        if(role.role !== 'artist'){
+            return res.status(403).json({message: "Forbidden"});
+        }
         const {name, username, phone, biography} = req.body;
         if(!name || !username || !phone || !biography) {
             return res.status(400).json({message: 'Please provide all required fields'});
