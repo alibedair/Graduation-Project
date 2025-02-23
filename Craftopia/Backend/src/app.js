@@ -18,6 +18,12 @@ app.use('/customer', customerRoute);
 const artistRoute = require('./routes/artistRoute');
 app.use('/artist', artistRoute);
 
+const productRoute = require('./routes/productRoute');
+app.use('/product', productRoute);
+
+const categoryRoute = require('./routes/categoryRoute');
+app.use('/category', categoryRoute);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
