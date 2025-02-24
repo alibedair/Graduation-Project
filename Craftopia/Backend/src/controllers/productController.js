@@ -48,3 +48,73 @@ exports.createProduct = async (req, res) => {
         res.status(500).json({message: error.message});
     }
 }
+
+exports.getProducts = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const artist = await Artist.findOne({where:{userId}});
+        if(artist) {
+            const products = await Product.findAll({
+                where: {artistId: artist.artistId},
+                include: [
+                    {
+                        model: Category,
+                        attributes: ['name']
+                    },
+                    {
+                        model: Artist,
+                        attributes: ['name']
+                    }
+                ]
+            });
+            return res.status(200).json({products});
+        }
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
+
+exports.updateProduct = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const artist = await Artist.findOne({where:{userId}});
+        if(!artist) {
+            return res.status(400).json({message: 'You are not authorized to update a product'});
+        }
+        const productId = req.params.productId;
+        const product = await Product.findOne({where:{productId}});
+        if(!product) {
+            return res.status(404).json({message: 'Product not found'});
+        }
+        if(product.artistId !== artist.artistId) {
+            return res.status(403).json({message: 'Forbidden'});
+        }
+        const {name, description, price,  quantity} = req.body;
+
+
+        product.name = name || product.name;
+        product.description = description || product.description;
+        product.price = price || product.price;
+        product.quantity = quantity || product.quantity;
+        await product.save();
+
+
+        let image = undefined;
+        if (req.files && req.files.image && req.files.image.length > 0) {
+          const imageFile = req.files.image[0];
+          const result = await uploadBuffer(imageFile.buffer, {
+            folder: 'products/images',
+            resource_type: 'image'
+          });
+          image = result.secure_url;
+        }
+        if (image) {
+          product.image = image;
+          await product.save();
+        }
+
+        res.status(200).json({product});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}

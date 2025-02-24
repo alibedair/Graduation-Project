@@ -9,4 +9,8 @@ router.post('/create', authMiddleware,
     ]),  
     productController.createProduct);
 
+router.get('/get', authMiddleware, productController.getProducts);
+
+router.post('/update/:productId', authMiddleware, productController.updateProduct);
+
 module.exports = router;

@@ -1,5 +1,6 @@
 const Artist = require('../models/artist');
 const uploadBuffer = require('../utils/cloudinaryUpload');
+const User = require('../models/user');
 
 exports.updateArtist = async (req, res) => {
     try {
@@ -82,7 +83,7 @@ exports.updateArtist = async (req, res) => {
 exports.getArtist = async (req, res) => {
     try {
         const userId = req.user.id;
-        const artist = await Artist.findOne({userId});
+        const artist = await Artist.findOne({where: {userId}});
         if(!artist){
             return res.status(404).json({message: 'Artist profile not found'});
         }
