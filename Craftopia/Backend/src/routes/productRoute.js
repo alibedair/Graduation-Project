@@ -4,9 +4,7 @@ const upload = require('../middlewares/upload');
 const productController = require('../controllers/productController');
 
 router.post('/create', authMiddleware,
-    upload.fields([
-        { name: 'image', maxCount: 1 }
-    ]),  
+    upload.array('image', 5),  
     productController.createProduct);
 
 router.get('/get', authMiddleware, productController.getProducts);

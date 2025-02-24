@@ -1,82 +1,83 @@
 const Artist = require('../models/artist');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const User = require('../models/user');
+const { Op } = require('sequelize');
 
 exports.updateArtist = async (req, res) => {
     try {
 
         const userId = req.user.id;
-        role = await User.findOne({where: {userId}});
-        if(role.role !== 'artist'){
+        const user = await User.findOne({where: {userId}});
+        if(!user ||user.role !== 'artist'){
             return res.status(403).json({message: "Forbidden"});
         }
         const {name, username, phone, biography} = req.body;
         if(!name || !username || !phone || !biography) {
             return res.status(400).json({message: 'Please provide all required fields'});
         }
+        const existingArtist = await Artist.findOne({
+            where: {
+                username,
+                userId: {[Op.ne]: userId}
+            }
+        });
 
-        let profilePicture=null;
-        let profileVideo=null;
+        if(existingArtist){
+            return res.status(400).json({message: 'Username already exists'});
+        }
 
-        if(req.files) {
-            if(req.files.profilePicture){
+        let profilePicture='';
+        let profileVideo='';
+        
+        if(req.files){
+            if(req.files.profilePicture && req.files.profilePicture[0]){
                 const pictureFile = req.files.profilePicture[0];
                 const result = await uploadBuffer(pictureFile.buffer, {
-                    folder: 'artist_profile/pictures',
+                    folder: `artists/${userId}/profilePicture`,
                     resource_type: 'image'
                 });
                 profilePicture = result.secure_url;
             }
-
-            if(req.files.profileVideo){
+            if(req.files.profileVideo && req.files.profileVideo[0]){
                 const videoFile = req.files.profileVideo[0];
                 const result = await uploadBuffer(videoFile.buffer, {
-                    folder: 'artist_profile/videos',
+                    folder: `artists/${userId}/profileVideo`,
                     resource_type: 'video'
                 });
                 profileVideo = result.secure_url;
             }
         }
 
-        let artist = await Artist.findOne({where:{userId}});
-
-        const profileData = {
-            userId,
-            name,
-            username,
-            phone,
-            biography,
-            profilePicture,
-            profileVideo
-        }
-        if(profilePicture) profileData.profilePicture = profilePicture;
-        if(profileVideo) profileData.profileVideo = profileVideo;
-
-
+        let artist = await Artist.findOne({where: {userId}});
         if(artist){
-            if(artist.username !== username){
-                const usernameExists = await Artist.findOne({where:{username}});
-                if(usernameExists){
-                    return res.status(400).json({message: 'Username already exists'});
-                }
-            }
             artist.name = name;
             artist.username = username;
             artist.phone = phone;
             artist.biography = biography;
-            artist.profilePicture = profilePicture;
-            artist.profileVideo = profileVideo;
-            await artist.save();
+            if(profilePicture){
+                artist.profilePicture = profilePicture;
+            }
+            if(profileVideo){
+                artist.profileVideo = profileVideo;
+            }
+            artist = await artist.save();
             return res.status(200).json({artist});
         }else{
-            artist = await Artist.create(profileData);
+            artist = await Artist.create({
+                name,
+                username,
+                phone,
+                biography,
+                profilePicture,
+                profileVideo,
+                userId
+            });
             return res.status(201).json({artist});
         }
-    } catch (error) {
-        res.status(400).json({
-            status: 'fail',
-            message: error.message
-        });
+
+
+    }catch (error) {
+        res.status(500).json({message: error.message});
     }
 }
 

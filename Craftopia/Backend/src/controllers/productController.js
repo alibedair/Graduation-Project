@@ -15,17 +15,24 @@ exports.createProduct = async (req, res) => {
             return res.status(400).json({message: 'Please provide all required fields'});
         }
 
-        let image=null;
+        const files = req.files;
 
-        if(req.files) {
-            if(req.files.image){
-                const imageFile = req.files.image[0];
-                const result = await uploadBuffer(imageFile.buffer, {
-                    folder: 'products/images',
-                    resource_type: 'image'
-                });
-                image = result.secure_url;
-            }
+        if(!files || files.length < 1){
+            return res.status(400).json({message: 'Please provide at least one image'});
+        }
+
+        if(files > 5){
+            return res.status(400).json({message: 'You can only upload a maximum of 5 images'});
+        }
+
+        let image = [];
+
+        for(const file of files) {
+            const result = await uploadBuffer(file.buffer, {
+                folder: `artists/${artist.artistId}/products`,
+                resource_type: 'image'
+            });
+            image.push(result.secure_url);
         }
 
         const category = await Category.findOne({where:{name:categoryName}});
