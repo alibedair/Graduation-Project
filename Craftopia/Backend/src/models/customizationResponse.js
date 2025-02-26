@@ -38,6 +38,10 @@ const customizationResponse = sequelize.define('customizationresponse', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
 });
 
 module.exports = customizationResponse;

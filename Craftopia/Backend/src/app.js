@@ -24,6 +24,12 @@ app.use('/product', productRoute);
 const categoryRoute = require('./routes/categoryRoute');
 app.use('/category', categoryRoute);
 
+const customizationRequestRoute = require('./routes/customizationRequestRoute');
+app.use('/customizationRequest', customizationRequestRoute);
+
+const customizationResponseRoute = require('./routes/customizationResponseRoute');
+app.use('/customizationResponse', customizationResponseRoute);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
