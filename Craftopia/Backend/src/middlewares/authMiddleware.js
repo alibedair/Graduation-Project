@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 module.exports = (req, res, next) => {
-    // Check if authorization header exists
+    
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: 'No token provided.' });
@@ -10,10 +10,10 @@ module.exports = (req, res, next) => {
     
     const token = authHeader.split(' ')[1];
     try {
-        // Verify token with specific algorithm for security
+        
         const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
         
-        // Check if token is expired
+
         const currentTime = Math.floor(Date.now() / 1000);
         if (decoded.exp && decoded.exp < currentTime) {
             return res.status(401).json({ message: 'Token expired' });

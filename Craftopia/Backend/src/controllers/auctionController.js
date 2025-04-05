@@ -5,7 +5,6 @@ exports.createAuction = async (req, res) => {
     try {
         const { productId, startingPrice, endDate } = req.body;
         
-        // Validate input
         if (!productId || !startingPrice || !endDate) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
@@ -13,10 +12,10 @@ exports.createAuction = async (req, res) => {
 
         const auctionsRef = firebase_db.ref().child('auctions');
         
-        // Push a new auction to Firebase
+
         const newAuctionRef = auctionsRef.push();
         
-        // Set auction data
+        
         await newAuctionRef.set({
             productId,
             startingPrice,
@@ -56,19 +55,19 @@ exports.getAuctions = async (req, res) => {
     try {
       const { auctionId, userId, bidAmount } = req.body;
   
-      // Retrieve the auction data from Firebase
+      
       const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
       const auctionSnapshot = await auctionRef.once("value");
       const auctionData = auctionSnapshot.val();
   
-      // If auction doesn't exist, return 404
+      
       if (!auctionData) {
         return res.status(404).json({ message: "Auction not found." });
       }
   
       const { startingPrice, bids } = auctionData;
   
-      // Determine the current highest bid (if any)
+      
       let highestBid = 0;
       if (bids) {
         Object.values(bids).forEach(bid => {
@@ -76,14 +75,14 @@ exports.getAuctions = async (req, res) => {
         });
       }
   
-      // Condition 1: New bid must be greater than the current highest bid
+      
       if (bidAmount <= highestBid) {
         return res.status(400).json({
           message: `Bid must be greater than the current highest bid of ${highestBid}.`
         });
       }
   
-      // Condition 2: New bid must be at least 30% higher than the starting price
+      
       const minRequiredBid = startingPrice * 1.3;
       if (bidAmount < minRequiredBid) {
         return res.status(400).json({
@@ -91,7 +90,7 @@ exports.getAuctions = async (req, res) => {
         });
       }
   
-      // If both conditions are met, place the bid by pushing it under the 'bids' node
+      
       const bidsRef = auctionRef.child("bids");
       const newBidRef = bidsRef.push();
       await newBidRef.set({

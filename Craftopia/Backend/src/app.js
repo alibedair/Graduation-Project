@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const app = express();
 
-// Use Helmet for security headers
 app.use(helmet());
 
 // Rate limiting - adjust for better performance
@@ -17,24 +16,22 @@ const apiLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-// Apply rate limiting to all routes
 app.use(apiLimiter);
 
-// More strict rate limiting for authentication routes
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // Increased from 10 to 20 for better UX
+  max: 20, 
   message: 'Too many login attempts, please try again later'
 });
 
-// CORS configuration for better performance
+
 app.use(cors({
-  origin: '*', // For development - restrict in production
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Increase JSON payload limit for handling larger requests
+
 app.use(express.json({ limit: '2mb' }));
 
 // Routes
@@ -67,14 +64,6 @@ const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
 app.use(notFound);
 app.use(errorHandler);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'UP',
-    timestamp: new Date(),
-    uptime: process.uptime()
-  });
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

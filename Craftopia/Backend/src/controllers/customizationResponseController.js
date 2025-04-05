@@ -23,12 +23,10 @@ exports.respondToCustomizationRequest = async (req, res) => {
             return res.status(400).send({message: 'Please provide all required fields'});
         }
 
-        // Validate price is a number
         if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
             return res.status(400).send({message: 'Price must be a positive number'});
         }
 
-        // Validate date format
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(estimationCompletionDate)) {
             return res.status(400).send({message: 'Invalid date format. Use YYYY-MM-DD'});
