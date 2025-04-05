@@ -3,15 +3,12 @@ const errorHandler = (err, req, res, next) => {
     
     const statusCode = err.statusCode || 500;
     
-    // In production, don't expose error details
-    const message = process.env.NODE_ENV === 'production' && statusCode === 500
-        ? 'Internal Server Error'
-        : err.message || 'Something went wrong';
+    const message = err.message || 'Something went wrong';
     
     res.status(statusCode).json({
         success: false,
         error: message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+        stack: err.stack
     });
 };
 
