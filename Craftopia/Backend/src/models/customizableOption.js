@@ -1,7 +1,6 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
 const Product = require('./product');
-const { mountpath } = require('../app');
 
 const CustomizableOption = sequelize.define('customizableoption', {
     optionId : {
@@ -13,7 +12,7 @@ const CustomizableOption = sequelize.define('customizableoption', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    proudctId : {
+    productId : {
         type: DataTypes.INTEGER,
         references: {
             model: Product,

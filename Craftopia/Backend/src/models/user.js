@@ -10,7 +10,13 @@ const User = sequelize.define('user', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+        unique: true,
+        indexes: [
+            {
+                unique: true,
+                fields: ['email']
+            }
+        ]
     },
     password: {
         type: DataTypes.STRING,
@@ -19,8 +25,23 @@ const User = sequelize.define('user', {
     role: {
         type: DataTypes.ENUM,
         values: ['admin', 'customer','artist'],
-        allowNull: false
+        allowNull: false,
+        indexes: [
+            {
+                fields: ['role']
+            }
+        ]
     }
+}, {
+    timestamps: true,
+    indexes: [
+        {
+            fields: ['email']
+        },
+        {
+            fields: ['role']
+        }
+    ]
 });
 
 module.exports = User;

@@ -6,6 +6,7 @@ admin.initializeApp({
   databaseURL: "https://craftopia-b79f8-default-rtdb.europe-west1.firebasedatabase.app/", 
 });
 
+// Updated to use the correct Firebase Realtime Database reference method
 const firebase_db = admin.database();
 const firebase_auth = admin.auth();
 

@@ -2,33 +2,38 @@ const firebase_db = require("../config/firebase");
 const product = require("../models/product");
 
 exports.createAuction = async (req, res) => {
-  try {
-    const { productId, startingPrice, startTime, endTime } = req.body;
+    try {
+        const { productId, startingPrice, endDate } = req.body;
+        
+        // Validate input
+        if (!productId || !startingPrice || !endDate) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+        
 
-    // Check if the product exists
-    const productItem = await product.findByPk(productId);
-    if (!productItem) {
-      return res.status(404).json({ message: "Product not found." });
+        const auctionsRef = firebase_db.ref().child('auctions');
+        
+        // Push a new auction to Firebase
+        const newAuctionRef = auctionsRef.push();
+        
+        // Set auction data
+        await newAuctionRef.set({
+            productId,
+            startingPrice,
+            currentPrice: startingPrice,
+            endDate,
+            status: 'active',
+            createdAt: new Date().toISOString()
+        });
+        
+        return res.status(201).json({
+            message: 'Auction created successfully',
+            auctionId: newAuctionRef.key
+        });
+    } catch (error) {
+        console.error('Error creating auction:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
-    
-    //create a new auction
-    const newAuctionRef = firebase_db.ref("auctions").push();
-    const auctionId = newAuctionRef.key; // Firebase auto-generates an ID
-
-    await newAuctionRef.set({
-      productId,
-      startingPrice,
-      startTime,
-      endTime,
-      status: "pending", 
-      bids: [], // Empty array for storing bids
-    });
-
-    return res.status(201).json({ message: "Auction created successfully!", auctionId });
-  } catch (error) {
-    console.error("Error creating auction:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 exports.getAuctions = async (req, res) => {

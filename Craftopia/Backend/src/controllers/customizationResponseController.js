@@ -14,19 +14,39 @@ exports.respondToCustomizationRequest = async (req, res) => {
         }
 
         const requestId = req.params.requestId;
+        if (!requestId || isNaN(parseInt(requestId))) {
+            return res.status(400).send({message: 'Invalid request ID'});
+        }
+
         const {price, note, estimationCompletionDate} = req.body;
         if(!price || !note || !estimationCompletionDate){
             return res.status(400).send({message: 'Please provide all required fields'});
         }
 
+        // Validate price is a number
+        if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+            return res.status(400).send({message: 'Price must be a positive number'});
+        }
+
+        // Validate date format
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(estimationCompletionDate)) {
+            return res.status(400).send({message: 'Invalid date format. Use YYYY-MM-DD'});
+        }
+
         const file = req.file;
         let image = null;
         if(file){
-            const result = await uploadBuffer(file.buffer, {
-                folder: `artists/${artist.artistId}/customizationResponses`,
-                resource_type: 'image'
-            });
-            image = result.secure_url;
+            try {
+                const result = await uploadBuffer(file.buffer, {
+                    folder: `artists/${artist.artistId}/customizationResponses`,
+                    resource_type: 'image'
+                });
+                image = result.secure_url;
+            } catch (uploadError) {
+                console.error('Image upload error:', uploadError);
+                return res.status(500).send({message: 'Error uploading image'});
+            }
         }
 
         const request = await CustomizationRequest.findOne({where:{requestId}});
@@ -36,22 +56,32 @@ exports.respondToCustomizationRequest = async (req, res) => {
         if(request.status !== 'OPEN'){
             return res.status(400).send({message: 'Request is already closed'});
         }
-        const newResponse = new CustomizationResponse({
+        
+        const newResponse = await CustomizationResponse.create({
             price,
-            notes:note,
-            estimationCompletionTime :estimationCompletionDate,
+            notes: note,
+            estimationCompletionTime: estimationCompletionDate,
             artistId: artist.artistId,
-            requestId: request.requestId
+            requestId: request.requestId,
+            image: image
         });
 
-        await newResponse.save();
         return res.status(201).json({
             message: 'Response created successfully',
-            response: newResponse
+            response: {
+                responseId: newResponse.responseId,
+                price: newResponse.price,
+                notes: newResponse.notes,
+                estimationCompletionTime: newResponse.estimationCompletionTime,
+                artistId: newResponse.artistId,
+                requestId: newResponse.requestId,
+                image: newResponse.image
+            }
         });
 
     }catch(error){
-        res.status(500).send({message: error.message});
+        console.error('Error in respondToCustomizationRequest:', error);
+        res.status(500).send({message: 'Internal server error'});
     }
 };
 
