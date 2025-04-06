@@ -59,12 +59,6 @@ app.use('/customizationRequest', customizationRequestRoute);
 const customizationResponseRoute = require('./routes/customizationResponseRoute');
 app.use('/customizationResponse', customizationResponseRoute);
 
-// Add 404 and error handling middleware at the end
-const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
-app.use(notFound);
-app.use(errorHandler);
-
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

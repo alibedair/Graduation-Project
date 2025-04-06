@@ -9,28 +9,35 @@ exports.createCustomizationRequest = async (req, res) => {
         const userId = req.user.id;
         const customer = await Customer.findOne({where:{userId}});
         if(!customer){
-            return res.status(403).send({message: 'You are not authorized to create a customization request'});
+            return res.status(403).json({message: 'You are not authorized to create a customization request'});
         }
 
         const {description, budget, title} = req.body;
         if(!description || !budget || !title){
-            return res.status(400).send({message: 'Please provide all required fields'});
+            return res.status(400).json({
+                message: 'Please provide all required fields',
+                required: ['description', 'budget', 'title']
+            });
         }
 
         let image = null;
 
         const file = req.file;
         if(file){
-            const result = await uploadBuffer(file.buffer, {
-                folder: `customers/${customer.customerId}/customizationRequests`,
-                resource_type: 'image'
-            });
-            image= result.secure_url;
+            try {
+                const result = await uploadBuffer(file.buffer, {
+                    folder: `customers/${customer.customerId}/customizationRequests`,
+                    resource_type: 'image'
+                });
+                image = result.secure_url;
+            } catch (uploadError) {
+                console.error('Image upload error:', uploadError);
+                console.warn('Continuing without image due to upload error');
+            }
         }
 
-        
-        const newRequest = new CustomizationRequest({
-            requestDescription : description,
+        const newRequest = await CustomizationRequest.create({
+            requestDescription: description,
             budget,
             title,
             image,
@@ -38,17 +45,15 @@ exports.createCustomizationRequest = async (req, res) => {
             status: 'OPEN',
         });
 
-        await newRequest.save();
-
         return res.status(201).json({
             message: 'Customization request created successfully',
             request: newRequest
-        })
+        });
 
-    }catch(error){
-        res.status(500).send({message: error.message});
+    } catch(error){
+        console.error('Error creating customization request:', error);
+        res.status(500).json({message: 'Internal server error'});
     }
-
 };
 
 exports.getOpenCustomizationRequests = async (req, res) => {

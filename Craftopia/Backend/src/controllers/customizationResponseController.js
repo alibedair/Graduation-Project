@@ -3,37 +3,36 @@ const Artist = require('../models/artist');
 const Customer = require('../models/customer');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const CustomizationResponse = require('../models/customizationResponse');
+const { validationResult } = require('express-validator');
 
 exports.respondToCustomizationRequest = async (req, res) => {
     try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
         const userId = req.user.id;
         const artist = await Artist.findOne({where:{userId}});
         if(!artist){
-            return res.status(403).send({message: 'You are not authorized to respond to customization requests'});
+            return res.status(403).json({message: 'You are not authorized to respond to customization requests'});
         }
 
         const requestId = req.params.requestId;
-        if (!requestId || isNaN(parseInt(requestId))) {
-            return res.status(400).send({message: 'Invalid request ID'});
+        
+        const request = await CustomizationRequest.findOne({where:{requestId}});
+        if(!request){
+            return res.status(404).json({message: 'Request not found'});
         }
-
+        
+        if(request.status !== 'OPEN'){
+            return res.status(400).json({message: 'Request is already closed'});
+        }
+        
         const {price, note, estimationCompletionDate} = req.body;
-        if(!price || !note || !estimationCompletionDate){
-            return res.status(400).send({message: 'Please provide all required fields'});
-        }
 
-        if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
-            return res.status(400).send({message: 'Price must be a positive number'});
-        }
-
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(estimationCompletionDate)) {
-            return res.status(400).send({message: 'Invalid date format. Use YYYY-MM-DD'});
-        }
-
-        const file = req.file;
         let image = null;
+        const file = req.file;
         if(file){
             try {
                 const result = await uploadBuffer(file.buffer, {
@@ -43,16 +42,8 @@ exports.respondToCustomizationRequest = async (req, res) => {
                 image = result.secure_url;
             } catch (uploadError) {
                 console.error('Image upload error:', uploadError);
-                return res.status(500).send({message: 'Error uploading image'});
+                return res.status(500).json({message: 'Error uploading image'});
             }
-        }
-
-        const request = await CustomizationRequest.findOne({where:{requestId}});
-        if(!request){
-            return res.status(404).send({message: 'Request not found'});
-        }
-        if(request.status !== 'OPEN'){
-            return res.status(400).send({message: 'Request is already closed'});
         }
         
         const newResponse = await CustomizationResponse.create({
@@ -77,9 +68,9 @@ exports.respondToCustomizationRequest = async (req, res) => {
             }
         });
 
-    }catch(error){
+    } catch(error){
         console.error('Error in respondToCustomizationRequest:', error);
-        res.status(500).send({message: 'Internal server error'});
+        res.status(500).json({message: 'Internal server error'});
     }
 };
 

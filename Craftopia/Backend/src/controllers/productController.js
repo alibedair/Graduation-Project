@@ -8,11 +8,15 @@ exports.createProduct = async (req, res) => {
         const userId = req.user.id;
         const artist = await Artist.findOne({where:{userId}});
         if(!artist) {
-            return res.status(400).json({message: 'You are not authorized to create a product'});
+            return res.status(403).json({message: 'You are not authorized to create a product'});
         }
-        const {name, description, price, categoryName ,quantity} = req.body;
+        
+        const {name, description, price, categoryName, quantity} = req.body;
         if(!name || !description || !price || !categoryName || !quantity) {
-            return res.status(400).json({message: 'Please provide all required fields'});
+            return res.status(400).json({
+                message: 'Please provide all required fields',
+                required: ['name', 'description', 'price', 'categoryName', 'quantity']
+            });
         }
 
         const files = req.files;
@@ -21,19 +25,19 @@ exports.createProduct = async (req, res) => {
             return res.status(400).json({message: 'Please provide at least one image'});
         }
 
-        if(files > 5){
+        if(files.length > 5){
             return res.status(400).json({message: 'You can only upload a maximum of 5 images'});
         }
 
-        let image = [];
-
-        for(const file of files) {
-            const result = await uploadBuffer(file.buffer, {
+        const uploadPromises = files.map(file => 
+            uploadBuffer(file.buffer, {
                 folder: `artists/${artist.artistId}/products`,
                 resource_type: 'image'
-            });
-            image.push(result.secure_url);
-        }
+            })
+        );
+        
+        const uploadResults = await Promise.all(uploadPromises);
+        const images = uploadResults.map(result => result.secure_url);
 
         const category = await Category.findOne({where:{name:categoryName}});
         if(!category) {
@@ -44,15 +48,16 @@ exports.createProduct = async (req, res) => {
             name,
             description,
             price,
-            image,
-            categoryId : category.categoryId,
+            image: images,
+            categoryId: category.categoryId,
             artistId: artist.artistId,
             quantity
         });
 
         res.status(201).json({product});
     } catch (error) {
-        res.status(500).json({message: error.message});
+        console.error('Error creating product:', error);
+        res.status(500).json({message: 'Internal server error'});
     }
 }
 
