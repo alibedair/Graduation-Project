@@ -1,0 +1,196 @@
+const Customer = require('../models/customer');
+const { validationResult } = require('express-validator');
+
+const { firebase_db } = require('../config/firebase');
+
+exports.placeBid = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const userId = req.user.id;
+        const customer = await Customer.findOne({where: {userId}});
+        if (!customer) {
+            return res.status(403).json({message: 'Only customers can place bids'});
+        }
+
+        const { auctionId, bidAmount } = req.body;
+        
+        const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
+        const auction = auctionSnapshot.val();
+        
+        if (!auction) {
+            return res.status(404).json({ message: 'Auction not found' });
+        }
+        
+        if (auction.status !== 'active') {
+            return res.status(400).json({ message: 'This auction is not active' });
+        }
+        
+        const endTime = new Date(auction.endDate);
+        const now = new Date();
+        if (now > endTime) {
+            await firebase_db.ref(`auctions/${auctionId}`).update({ status: 'ended' });
+            return res.status(400).json({ message: 'This auction has ended' });
+        }
+        
+        const minBidIncrement = (auction.currentPrice * auction.incrementPercentage) / 100;
+        const minimumBid = auction.currentPrice + minBidIncrement;
+        
+        if (parseFloat(bidAmount) < minimumBid) {
+            return res.status(400).json({ 
+                message: `Bid must be at least ${minimumBid.toFixed(2)}`,
+                minimumBid: minimumBid.toFixed(2)
+            });
+        }
+        
+        const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
+        
+        auctionRef.transaction((currentAuction) => {
+            if (!currentAuction) {
+                return null; 
+            }
+            
+            if (currentAuction.status !== 'active') {
+                return;
+            }
+            
+            if (parseFloat(bidAmount) <= currentAuction.currentPrice) {
+                return; 
+            }
+            
+            if (!currentAuction.bids) {
+                currentAuction.bids = {};
+            }
+            
+            const bidId = `${Date.now()}_${userId}`;
+            currentAuction.bids[bidId] = {
+                userId,
+                customerId: customer.customerId,
+                customerName: customer.name || 'Anonymous',
+                bidAmount: parseFloat(bidAmount),
+                timestamp: now.toISOString()
+            };
+
+            currentAuction.currentPrice = parseFloat(bidAmount);
+            currentAuction.lastBidTime = now.toISOString();
+            currentAuction.bidCount = (currentAuction.bidCount || 0) + 1;
+            currentAuction.lastBidder = userId;
+            
+            const timeLeftMinutes = (endTime - now) / (1000 * 60);
+            if (timeLeftMinutes < 5) {
+                const newEndTime = new Date(now.getTime() + 5 * 60 * 1000); 
+                currentAuction.endDate = newEndTime.toISOString();
+            }
+            
+            return currentAuction;
+        }, (error, committed, snapshot) => {
+            if (error) {
+                console.error('Error placing bid:', error);
+                return res.status(500).json({ message: 'Error placing bid: ' + error.message });
+            }
+            
+            if (!committed) {
+                return res.status(400).json({ message: 'Bid could not be placed. Please try again.' });
+            }
+            
+            const updatedAuction = snapshot.val();
+            return res.status(200).json({ 
+                message: 'Bid placed successfully',
+                currentPrice: updatedAuction.currentPrice,
+                bidCount: updatedAuction.bidCount
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error placing bid:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getBidsByAuction = async (req, res) => {
+    try {
+        const { auctionId } = req.params;
+        
+        const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
+        const auction = auctionSnapshot.val();
+        
+        if (!auction) {
+            return res.status(404).json({message: 'Auction not found'});
+        }
+
+        let bids = [];
+        if (auction.bids) {
+            bids = Object.entries(auction.bids).map(([id, bid]) => ({
+                id,
+                ...bid
+            }));
+            
+            bids.sort((a, b) => {
+                if (b.bidAmount !== a.bidAmount) {
+                    return b.bidAmount - a.bidAmount;
+                }
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+        }
+        
+        return res.status(200).json({
+            auctionId,
+            currentPrice: auction.currentPrice,
+            bidCount: auction.bidCount || 0,
+            bids
+        });
+        
+    } catch (error) {
+        console.error('Error getting bids:', error);
+        return res.status(500).json({message: 'Internal server error'});
+    }
+};
+
+exports.getMyBids = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const customer = await Customer.findOne({where: {userId}});
+        if (!customer) {
+            return res.status(403).json({message: 'Only customers can view their bids'});
+        }
+        
+        const auctionsSnapshot = await firebase_db.ref('auctions').once('value');
+        const auctions = auctionsSnapshot.val() || {};
+        
+        const myBids = [];
+        
+        Object.entries(auctions).forEach(([auctionId, auction]) => {
+            if (auction.bids) {
+                const userBids = Object.entries(auction.bids)
+                    .filter(([_, bid]) => bid.userId === userId)
+                    .map(([bidId, bid]) => ({
+                        bidId,
+                        auctionId,
+                        bidAmount: bid.bidAmount,
+                        timestamp: bid.timestamp,
+                        isHighestBid: auction.lastBidder === userId,
+                        auctionDetails: {
+                            productId: auction.productId,
+                            currentPrice: auction.currentPrice,
+                            endDate: auction.endDate,
+                            status: auction.status,
+                            timeRemaining: new Date(auction.endDate) - new Date()
+                        }
+                    }));
+                
+                myBids.push(...userBids);
+            }
+        });
+        
+        myBids.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        return res.status(200).json(myBids);
+        
+    } catch (error) {
+        console.error('Error getting user bids:', error);
+        return res.status(500).json({message: 'Internal server error'});
+    }
+};

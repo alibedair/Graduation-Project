@@ -1,27 +1,29 @@
 const router = require('express').Router();
 const auctionController = require('../controllers/auctionController');
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 router.post('/create', 
     authMiddleware,
+    roleMiddleware('admin'),
     [
-        body('productId').isInt().withMessage('Product ID must be an integer'),
-        body('startingPrice').isFloat({ min: 0 }).withMessage('Starting price must be a positive number'),
-        body('endDate').isISO8601().withMessage('End date must be a valid date')
+        body('requestId').isInt().withMessage('Request ID must be an integer'),
+        body('incrementPercentage').optional().isFloat({ min: 1, max: 50 }).withMessage('Increment percentage must be between 1 and 50'),
+        body('reservePrice').optional().isFloat({ min: 0 }).withMessage('Reserve price must be a positive number')
     ],
     auctionController.createAuction
 );
 
-router.get('/', auctionController.getAuctions);
-
-router.post('/bid', 
-    authMiddleware,
+router.get('/', 
     [
-        body('auctionId').notEmpty().withMessage('Auction ID is required'),
-        body('bidAmount').isFloat({ min: 0 }).withMessage('Bid amount must be a positive number')
+        query('status').optional().isIn(['active', 'ended']).withMessage('Status must be either active or ended'),
+        query('category').optional().isInt().withMessage('Category ID must be an integer'),
+        query('artist').optional().isInt().withMessage('Artist ID must be an integer'),
+        query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
+        query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer')
     ],
-    auctionController.placeBid
+    auctionController.getAuctions
 );
 
 router.get('/:auctionId', 

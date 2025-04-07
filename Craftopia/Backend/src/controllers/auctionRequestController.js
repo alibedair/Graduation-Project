@@ -136,37 +136,14 @@ exports.approveAuctionRequest = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found for this auction request' });
         }
-
-        const auctionsRef = firebase_db.ref('auctions');
-        const newAuctionRef = auctionsRef.push();
         
-        await newAuctionRef.set({
-            productId: request.productId,
-            artistId: request.artistId,
-            startingPrice: parseFloat(request.startingPrice),
-            currentPrice: parseFloat(request.startingPrice),
-            endDate: endDate || request.suggestedEndDate,
-            status: 'active',
-            createdAt: new Date().toISOString(),
-            incrementPercentage: parseFloat(incrementPercentage), 
-            reservePrice: reservePrice ? parseFloat(reservePrice) : null,
-            bidCount: 0,
-            lastBidTime: null,
-            productDetails: {
-                name: product.name,
-                description: product.description,
-                images: product.image
-            }
-        });
-
         await request.update({
             status: 'approved',
             adminNotes
         });
 
         return res.status(200).json({
-            message: 'Auction request approved and auction created',
-            auctionId: newAuctionRef.key
+            message: 'Auction request approved',
         });
     } catch (error) {
         console.error('Error approving auction request:', error);

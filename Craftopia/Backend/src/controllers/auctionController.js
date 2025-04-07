@@ -1,33 +1,82 @@
-const firebase_db = require("../config/firebase");
-const product = require("../models/product");
+const { firebase_db } = require("../config/firebase");
+const Product = require("../models/product");
+const Artist = require("../models/artist");
+const Admin = require("../models/admin");
+const AuctionRequest = require("../models/auctionRequest");
+const { validationResult } = require('express-validator');
 
 exports.createAuction = async (req, res) => {
     try {
-        const { productId, startingPrice, endDate, incrementPercentage = 10, reservePrice = null } = req.body;
-        
-        if (!productId || !startingPrice || !endDate) {
-            return res.status(400).json({ message: 'Missing required fields' });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
         
+        const userId = req.user.id;
+        const admin = await Admin.findOne({where: {userId}});
+        
+        if (!admin) {
+            return res.status(403).json({ message: 'Only admins can create auctions' });
+        }
+        
+        const { requestId, startDate, endDate } = req.body;
+        
+        const auctionRequest = await AuctionRequest.findByPk(requestId, {
+            include: [{ model: Product }]
+        });
+        
+        if (!auctionRequest) {
+            return res.status(404).json({ message: 'Auction request not found' });
+        }
+        
+        if (auctionRequest.status !== 'approved') {
+            return res.status(403).json({ message: 'Only approved auction requests can be used to create auctions' });
+        }
+        
+        let product = auctionRequest.Product;
+        if (!product) {
+            const productData = await Product.findByPk(auctionRequest.productId);
+            if (!productData) {
+                return res.status(404).json({ message: 'Product not found for this auction request' });
+            }
+            product = productData;
+        }
+        
+        // Validate dates
+        const startDateTime = new Date(startDate);
         const endDateTime = new Date(endDate);
-        if (isNaN(endDateTime.getTime()) || endDateTime <= new Date()) {
-            return res.status(400).json({ message: 'Invalid end date. Must be a future date.' });
+        const now = new Date();
+        
+        if (isNaN(startDateTime.getTime()) || startDateTime < now) {
+            return res.status(400).json({ message: 'Invalid start date. Must be a future date.' });
+        }
+        
+        if (isNaN(endDateTime.getTime()) || endDateTime <= startDateTime) {
+            return res.status(400).json({ message: 'Invalid end date. Must be after the start date.' });
         }
 
-        const auctionsRef = firebase_db.ref().child('auctions');
-        
+        const auctionsRef = firebase_db.ref('auctions');
         const newAuctionRef = auctionsRef.push();
         
         await newAuctionRef.set({
-            productId,
-            startingPrice: parseFloat(startingPrice),
-            currentPrice: parseFloat(startingPrice),
-            endDate,
-            status: 'active',
+            productId: auctionRequest.productId,
+            artistId: auctionRequest.artistId,
+            requestId: auctionRequest.requestId,
+            startingPrice: parseFloat(auctionRequest.startingPrice),
+            currentPrice: parseFloat(auctionRequest.startingPrice),
+            startDate: startDateTime.toISOString(),
+            endDate: endDateTime.toISOString(),
+            status: 'scheduled',
             createdAt: new Date().toISOString(),
-            incrementPercentage, 
+            incrementPercentage: auctionRequest.incrementPercentage || 10, 
+            reservePrice: auctionRequest.reservePrice || null,
             bidCount: 0,
-            lastBidTime: null
+            lastBidTime: null,
+            productDetails: {
+                name: product.name,
+                description: product.description,
+                images: product.image
+            }
         });
         
         return res.status(201).json({
@@ -42,112 +91,53 @@ exports.createAuction = async (req, res) => {
 
 exports.getAuctions = async (req, res) => {
     try {
-        const { status, limit = 20 } = req.query;
-        let query = firebase_db.ref("auctions");
+        const { status, category, artist, limit = 20, page = 1 } = req.query;
         
-        
-        query = query.orderByChild("createdAt");
-        
-        const auctionsSnapshot = await query.once("value");
-        const auctionsData = auctionsSnapshot.val();
-        
-        if (!auctionsData) {
-            return res.status(200).json({ auctions: [] });
-        }
+        const auctionsSnapshot = await firebase_db.ref("auctions").once("value");
+        const auctionsData = auctionsSnapshot.val() || {};
         
         let auctions = Object.entries(auctionsData).map(([id, data]) => ({
             id,
             ...data
         }));
         
+        const now = new Date();
+        auctions = auctions.map(auction => {
+            if (auction.status === 'active' && new Date(auction.endDate) <= now) {
+                firebase_db.ref(`auctions/${auction.id}`).update({ status: 'ended' });
+                return { ...auction, status: 'ended' };
+            }
+            return auction;
+        });
+        
         if (status) {
             auctions = auctions.filter(auction => auction.status === status);
         }
         
-        auctions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        if (limit) {
-            auctions = auctions.slice(0, parseInt(limit));
+        if (category) {
+            const products = await Product.findAll({ where: { categoryId: category } });
+            const productIds = products.map(p => p.productId.toString());
+            auctions = auctions.filter(auction => productIds.includes(auction.productId.toString()));
         }
         
-        return res.status(200).json({ auctions });
+        if (artist) {
+            auctions = auctions.filter(auction => auction.artistId.toString() === artist);
+        }
+        
+        auctions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        const paginatedAuctions = auctions.slice(startIndex, endIndex);
+        
+        return res.status(200).json({ 
+            auctions: paginatedAuctions,
+            totalCount: auctions.length,
+            page: parseInt(page),
+            totalPages: Math.ceil(auctions.length / limit)
+        });
     } catch (error) {
         console.error("Error fetching auctions:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
-exports.placeBid = async (req, res) => {
-    try {
-        const { auctionId, userId, bidAmount } = req.body;
-        
-        if (!auctionId || !userId || !bidAmount) {
-            return res.status(400).json({ message: "Missing required fields" });
-        }
-        
-        const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
-        
-        return firebase_db.runTransaction(auctionRef, (currentData) => {
-            if (!currentData) {
-                throw new Error("Auction not found");
-            }
-            
-            if (currentData.status !== 'active') {
-                throw new Error("This auction is no longer active");
-            }
-            
-            const endTime = new Date(currentData.endDate);
-            const now = new Date();
-            if (now > endTime) {
-                throw new Error("This auction has ended");
-            }
-            
-            const minBidIncrement = (currentData.currentPrice * currentData.incrementPercentage) / 100;
-            const minimumBid = currentData.currentPrice + minBidIncrement;
-            
-            if (parseFloat(bidAmount) < minimumBid) {
-                throw new Error(`Bid must be at least ${minimumBid.toFixed(2)}`);
-            }
-            
-            if (!currentData.bids) {
-                currentData.bids = {};
-            }
-            
-            const bidId = Date.now().toString();
-            currentData.bids[bidId] = {
-                userId,
-                bidAmount: parseFloat(bidAmount),
-                timestamp: now.toISOString()
-            };
-            
-            currentData.currentPrice = parseFloat(bidAmount);
-            currentData.lastBidTime = now.toISOString();
-            currentData.bidCount = (currentData.bidCount || 0) + 1;
-            
-            const timeLeftMinutes = (endTime - now) / (1000 * 60);
-            if (timeLeftMinutes < 5) {
-                const newEndTime = new Date(now.getTime() + 5 * 60 * 1000);
-                currentData.endDate = newEndTime.toISOString();
-                currentData.autoExtended = true;
-            }
-            
-            return currentData;
-        })
-        .then(() => {
-            return res.status(200).json({ 
-                message: "Bid placed successfully!",
-                success: true
-            });
-        })
-        .catch(error => {
-            return res.status(400).json({ 
-                message: error.message,
-                success: false
-            });
-        });
-        
-    } catch (error) {
-        console.error("Error placing bid:", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -185,15 +175,20 @@ exports.getAuctionDetails = async (req, res) => {
             bids.sort((a, b) => b.bidAmount - a.bidAmount);
         }
         
-        const productData = await product.findByPk(auctionData.productId);
+        let productData = auctionData.productDetails;
+        if (!productData) {
+            const product = await Product.findByPk(auctionData.productId);
+            productData = product || null;
+        }
         
         return res.status(200).json({
             auction: {
                 id: auctionId,
                 ...auctionData,
                 bids,
-                product: productData || null,
-                timeRemaining: Math.max(0, endTime - now)
+                product: productData,
+                timeRemaining: Math.max(0, endTime - now),
+                isEnded: now > endTime
             }
         });
     } catch (error) {
@@ -201,4 +196,3 @@ exports.getAuctionDetails = async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
-  

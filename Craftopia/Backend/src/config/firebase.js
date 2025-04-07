@@ -14,8 +14,9 @@ firebase_db.ref = function() {
   const ref = originalRef.apply(firebase_db, arguments);
   
   const originalTransaction = ref.transaction;
-  ref.transaction = function(updateFn, options = {}) {
-    return originalTransaction.call(ref, updateFn, options);
+  ref.transaction = function(updateFn, onComplete) {
+    const callback = typeof onComplete === 'function' ? onComplete : () => {};
+    return originalTransaction.call(ref, updateFn, callback);
   };
   
   return ref;
