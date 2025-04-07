@@ -35,9 +35,6 @@ app.use(cors({
 app.use(express.json({ limit: '2mb' }));
 
 // Routes
-const auctionRoute = require('./routes/auctionRoute');
-app.use('/auction', auctionRoute);
-
 const authRoute = require('./routes/authRoute');
 app.use('/auth', authLimiter, authRoute); 
 
@@ -46,6 +43,9 @@ app.use('/customer', customerRoute);
 
 const artistRoute = require('./routes/artistRoute');
 app.use('/artist', artistRoute);
+
+const adminRoute = require('./routes/adminRoute');
+app.use('/admin', adminRoute);
 
 const productRoute = require('./routes/productRoute');
 app.use('/product', productRoute);
@@ -58,6 +58,15 @@ app.use('/customizationRequest', customizationRequestRoute);
 
 const customizationResponseRoute = require('./routes/customizationResponseRoute');
 app.use('/customizationResponse', customizationResponseRoute);
+
+const auctionRoute = require('./routes/auctionRoute');
+app.use('/auction', auctionRoute);
+
+const auctionRequestRoute = require('./routes/auctionRequestRoute');
+app.use('/auctionRequest', auctionRequestRoute);
+
+const bidRoute = require('./routes/bidRoute');
+app.use('/bid', bidRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

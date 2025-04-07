@@ -9,4 +9,16 @@ admin.initializeApp({
 const firebase_db = admin.database();
 const firebase_auth = admin.auth();
 
-module.exports = {firebase_db, firebase_auth};
+const originalRef = firebase_db.ref;
+firebase_db.ref = function() {
+  const ref = originalRef.apply(firebase_db, arguments);
+  
+  const originalTransaction = ref.transaction;
+  ref.transaction = function(updateFn, options = {}) {
+    return originalTransaction.call(ref, updateFn, options);
+  };
+  
+  return ref;
+};
+
+module.exports = { firebase_db, firebase_auth };
