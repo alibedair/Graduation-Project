@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { FaSearch, FaUser } from "react-icons/fa";
 import { AiOutlineHeart, AiOutlineShoppingCart } from "react-icons/ai";
+import SignIn from "./SignIn";
 
 const Navbar = () => {
+  const [showSignIn, setShowSignIn] = useState(false);
+
   return (
     <>
       <nav className="flex justify-between items-center px-6 py-3 bg-[#FAF9F6] shadow-md">
@@ -26,44 +30,36 @@ const Navbar = () => {
           <AiOutlineShoppingCart className="text-black" />
           <div className="flex items-center space-x-2 text-lg">
             <FaUser className="text-black text-3xl" />
-            <a href="#" className="text-black text-lg hover:underline">
+            <a
+              href="#"
+              onClick={() => setShowSignIn(!showSignIn)}
+              className="text-black text-lg hover:underline"
+            >
               Sign in
             </a>
           </div>
         </div>
       </nav>
+
       <div className="flex justify-center space-x-15 py-2 bg-[#FAF9F6] text-[#921A40] font-semibold text-lg -mt-2">
-        <a
-          href="#"
-          className="hover:text-[#E07385] transition-colors duration-300"
-        >
+        <a href="#" className="hover:text-[#E07385] transition-colors duration-300">
           Home & Living
         </a>
-        <a
-          href="#"
-          className="hover:text-[#E07385] transition-colors duration-300"
-        >
+        <a href="#" className="hover:text-[#E07385] transition-colors duration-300">
           Jewelry
         </a>
-        <a
-          href="#"
-          className="hover:text-[#E07385] transition-colors duration-300"
-        >
+        <a href="#" className="hover:text-[#E07385] transition-colors duration-300">
           Arts
         </a>
-        <a
-          href="#"
-          className="hover:text-[#E07385] transition-colors duration-300"
-        >
+        <a href="#" className="hover:text-[#E07385] transition-colors duration-300">
           Bath & Beauty
         </a>
-        <a
-          href="#"
-          className="hover:text-[#E07385] transition-colors duration-300"
-        >
+        <a href="#" className="hover:text-[#E07385] transition-colors duration-300">
           More
         </a>
       </div>
+
+      {showSignIn && <SignIn />}
     </>
   );
 };
