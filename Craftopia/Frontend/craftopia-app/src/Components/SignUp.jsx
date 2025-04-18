@@ -1,10 +1,16 @@
 import 'font-awesome/css/font-awesome.min.css';
 import { useState } from 'react';
 import SignIn from './SignIn';
+import axios from 'axios';
 
 const SignUp = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const [role, setRole] = useState('Customer');
+  const [role, setRole] = useState('customer');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleClose = () => {
     setIsOpen(false);
@@ -14,14 +20,49 @@ const SignUp = () => {
     setIsOpen(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Sign up as:', role);
+  
+    const requestData = {
+      email,
+      username,
+      password,
+      role: role.toLowerCase(),
+    };
+  
+    console.log('Sending registration data:', requestData);
+  
+    try {
+      const response = await axios.post('http://localhost:3000/auth/register', requestData);
+      console.log('Register success:', response.data.message || response.data);
+      setSuccessMessage('Registration successful!');
+      setError('');
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 2000);
+  
+    } catch (err) {
+      setSuccessMessage('');
+      if (err.response) {
+        console.error('Registration error:', err.response.data);
+        if (err.response.data.message) {
+          setError(err.response.data.message);
+        } else if (err.response.data.errors) {
+          setError(err.response.data.errors.map(e => e.msg).join(', '));
+        } else {
+          setError('An unknown error occurred.');
+        }
+      } else {
+        setError('An error occurred during registration.');
+      }
+    }
   };
-
+  
   if (!isOpen) {
     return <SignIn />;
   }
+  {successMessage && <div className="text-green-600 text-center mb-4">{successMessage}</div>}
 
   return (
     <div className="relative">
@@ -36,6 +77,9 @@ const SignUp = () => {
         </button>
 
         <h2 className="text-2xl font-bold mb-6 text-black text-center">Create your account</h2>
+        
+        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+        
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="block mb-1 text-black text-sm font-medium">
@@ -44,17 +88,21 @@ const SignUp = () => {
             <input
               id="email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
             />
           </div>
 
           <div>
-            <label htmlFor="firstName" className="block mb-1 text-black text-sm font-medium">
+            <label htmlFor="username" className="block mb-1 text-black text-sm font-medium">
               Username *
             </label>
             <input
-              id="firstName"
+              id="username"
               type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
             />
           </div>
@@ -66,9 +114,12 @@ const SignUp = () => {
             <input
               id="password"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
             />
           </div>
+
           <div>
             <label className="block mb-1 text-black text-sm font-medium">Sign up as *</label>
             <div className="flex gap-4">
@@ -76,11 +127,11 @@ const SignUp = () => {
                 <input
                   type="radio"
                   name="role"
-                  value="Customer"
-                  checked={role === 'Customer'}
-                  onChange={(e) => setRole(e.target.value)}
+                  value="customer"
+                  checked={role === 'customer'}
+                  onChange={(e) => setRole(e.target.value)}  // Ensure role is 'customer' or 'artist'
                 />
-               Customer
+                Customer
               </label>
               <label className="flex items-center gap-2 text-black">
                 <input
@@ -88,7 +139,7 @@ const SignUp = () => {
                   name="role"
                   value="artist"
                   checked={role === 'artist'}
-                  onChange={(e) => setRole(e.target.value)}
+                  onChange={(e) => setRole(e.target.value)}  // Ensure role is 'customer' or 'artist'
                 />
                 Artist
               </label>
