@@ -31,7 +31,7 @@ exports.createProduct = async (req, res) => {
 
         const uploadPromises = files.map(file => 
             uploadBuffer(file.buffer, {
-                folder: `artists/${artist.artistId}/products`,
+                folder: `artists/${artist.userId}/products`,
                 resource_type: 'image'
             })
         );

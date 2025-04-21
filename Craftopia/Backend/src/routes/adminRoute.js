@@ -27,4 +27,10 @@ router.get('/dashboard',
     adminController.getDashboardStats
 );
 
+router.delete('/artists/:artistId',
+    authMiddleware,
+    roleMiddleware('admin'),
+    adminController.removeArtist
+);
+
 module.exports = router;

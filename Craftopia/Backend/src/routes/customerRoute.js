@@ -2,7 +2,7 @@ const router = require('express').Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 const customerController = require('../controllers/customerController');
 const roleMiddleware = require('../middlewares/roleMiddleware');
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 
 router.get('/getprofile', authMiddleware, customerController.getProfile);
 
@@ -16,6 +16,26 @@ router.post('/createprofile',
         body('profilePicture').optional().isURL().withMessage('Profile picture must be a valid URL')
     ],
     customerController.updateProfile
+);
+
+router.post('/follow/:artistId', 
+    authMiddleware,
+    roleMiddleware('customer'),
+    param('artistId').isInt().withMessage('Artist ID must be an integer'),
+    customerController.followArtist
+);
+
+router.delete('/unfollow/:artistId', 
+    authMiddleware,
+    roleMiddleware('customer'),
+    param('artistId').isInt().withMessage('Artist ID must be an integer'),
+    customerController.unfollowArtist
+);
+
+router.get('/followed-artists', 
+    authMiddleware,
+    roleMiddleware('customer'),
+    customerController.getFollowing
 );
 
 module.exports = router;

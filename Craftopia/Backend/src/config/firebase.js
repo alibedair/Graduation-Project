@@ -1,10 +1,16 @@
 const admin = require("firebase-admin");
+require('dotenv').config();
 const serviceAccount = require("./firebaseServiceAccount.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://craftopia-b79f8-default-rtdb.europe-west1.firebasedatabase.app/", 
-});
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL, 
+  });
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Firebase initialization error:', error);
+}
 
 const firebase_db = admin.database();
 const firebase_auth = admin.auth();

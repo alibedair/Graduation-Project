@@ -1,5 +1,7 @@
 const customer = require('../models/customer');
 const User = require('../models/user');
+const Artist = require('../models/artist');
+const ArtistFollow = require('../models/artistFollow');
 
 exports.updateProfile = async (req, res) => {
     try{
@@ -57,5 +59,103 @@ exports.getProfile = async (req, res) => {
     }catch(error){
         console.error("Error getting customer profile:", error);
         return res.status(500).json({message: "Internal server error"});
+    }
+};
+
+exports.followArtist = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { artistId } = req.params;
+        
+        const customerProfile = await customer.findOne({ where: { userId } });
+        if (!customerProfile) {
+            return res.status(403).json({ message: 'You must have a customer profile to follow artists' });
+        }
+        
+        const artist = await Artist.findByPk(artistId);
+        if (!artist) {
+            return res.status(404).json({ message: 'Artist not found' });
+        }
+
+        const existingFollow = await ArtistFollow.findOne({
+            where: {
+                customerId: customerProfile.customerId,
+                artistId: artist.artistId
+            }
+        });
+        
+        if (existingFollow) {
+            return res.status(400).json({ message: 'You are already following this artist' });
+        }
+        
+        await ArtistFollow.create({
+            customerId: customerProfile.customerId,
+            artistId: artist.artistId
+        });
+        
+        return res.status(201).json({ message: 'Successfully followed artist' });
+    } catch (error) {
+        console.error('Error following artist:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.unfollowArtist = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { artistId } = req.params;
+        
+        const customerProfile = await customer.findOne({ where: { userId } });
+        if (!customerProfile) {
+            return res.status(403).json({ message: 'You must have a customer profile to unfollow artists' });
+        }
+        
+        const artist = await Artist.findByPk(artistId);
+        if (!artist) {
+            return res.status(404).json({ message: 'Artist not found' });
+        }
+        
+        const existingFollow = await ArtistFollow.findOne({
+            where: {
+                customerId: customerProfile.customerId,
+                artistId: artist.artistId
+            }
+        });
+        
+        if (!existingFollow) {
+            return res.status(400).json({ message: 'You are not following this artist' });
+        }
+        
+        await existingFollow.destroy();
+        
+        return res.status(200).json({ message: 'Successfully unfollowed artist' });
+    } catch (error) {
+        console.error('Error unfollowing artist:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getFollowing = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const customerProfile = await customer.findOne({ where: { userId } });
+        if (!customerProfile) {
+            return res.status(403).json({ message: 'You must have a customer profile to view followed artists' });
+        }
+        
+        const follows = await ArtistFollow.findAll({
+            where: { customerId: customerProfile.customerId },
+            include: [{
+                model: Artist,
+                attributes: ['artistId', 'name', 'username', 'profilePicture', 'biography']
+            }]
+        });
+        const followedArtists = follows.map(follow => follow.artist);
+        
+        return res.status(200).json({ followedArtists });
+    } catch (error) {
+        console.error('Error getting followed artists:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };

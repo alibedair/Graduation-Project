@@ -6,6 +6,10 @@ const Product = require('../models/product');
 const AuctionRequest = require('../models/auctionRequest');
 const { firebase_db } = require('../config/firebase');
 const { validationResult } = require('express-validator');
+const sequelize = require('../config/db');
+const Report = require('../models/Report');
+const ArtistFollow = require('../models/artistFollow');
+const CustomizationResponse = require('../models/customizationResponse');
 
 exports.getProfile = async (req, res) => {
     try {
@@ -117,6 +121,162 @@ exports.getDashboardStats = async (req, res) => {
         });
     } catch (error) {
         console.error("Error getting dashboard stats:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.removeArtist = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { artistId } = req.params;
+        const transaction = await sequelize.transaction();
+        
+        try {
+            const artist = await Artist.findByPk(artistId, { transaction });
+            
+            if (!artist) {
+                await transaction.rollback();
+                return res.status(404).json({ message: "Artist not found" });
+            }
+            
+            const user = await User.findByPk(artist.userId, { transaction });
+            
+            if (!user) {
+                await transaction.rollback();
+                return res.status(404).json({ message: "User not found for this artist" });
+            }
+            
+            if (artist.profilePicture && artist.profilePicture.includes('cloudinary.com')) {
+                try {
+                    const cloudinary = require('../config/cloudinary');
+                    const publicId = artist.profilePicture.split('/').slice(-1)[0].split('.')[0];
+                    const folder = `artists/${artist.userId}/profilePicture`;
+                    await cloudinary.uploader.destroy(`${folder}/${publicId}`);
+                } catch (cloudinaryError) {
+                    console.error('Error deleting profile picture from Cloudinary:', cloudinaryError);
+                }
+            }
+            
+            if (artist.profileVideo && artist.profileVideo.includes('cloudinary.com')) {
+                try {
+                    const cloudinary = require('../config/cloudinary');
+                    const publicId = artist.profileVideo.split('/').slice(-1)[0].split('.')[0];
+                    const folder = `artists/${artist.userId}/profileVideo`;
+                    await cloudinary.uploader.destroy(`${folder}/${publicId}`, { resource_type: 'video' });
+                } catch (cloudinaryError) {
+                    console.error('Error deleting profile video from Cloudinary:', cloudinaryError);
+                }
+            }
+            
+            const customizationResponses = await CustomizationResponse.findAll({
+                where: { artistId: artist.artistId },
+                transaction
+            });
+            
+            for (const response of customizationResponses) {
+                if (response.image && response.image.includes('cloudinary.com')) {
+                    try {
+                        const cloudinary = require('../config/cloudinary');
+                        const publicId = response.image.split('/').slice(-1)[0].split('.')[0];
+                        const folder = `artists/${artist.userId}/customizationResponses`;
+                        await cloudinary.uploader.destroy(`${folder}/${publicId}`);
+                    } catch (cloudinaryError) {
+                        console.error('Error deleting customization response image from Cloudinary:', cloudinaryError);
+                    }
+                }
+            }
+            
+            const products = await Product.findAll({ 
+                where: { artistId: artist.artistId },
+                transaction
+            });
+            
+            for (const product of products) {
+                if (product.image && product.image.includes('cloudinary.com')) {
+                    try {
+                        const cloudinary = require('../config/cloudinary');
+                        let images = product.image;
+                        try {
+                            images = JSON.parse(product.image);
+                        } catch (e) {
+                            images = [product.image];
+                        }
+                        
+                        if (Array.isArray(images)) {
+                            for (const imageUrl of images) {
+                                if (imageUrl && imageUrl.includes('cloudinary.com')) {
+                                    const publicId = imageUrl.split('/').slice(-1)[0].split('.')[0];
+                                    const folder = `artists/${artist.userId}/products`;
+                                    await cloudinary.uploader.destroy(`${folder}/${publicId}`);
+                                }
+                            }
+                        }
+                    } catch (cloudinaryError) {
+                        console.error('Error deleting product images from Cloudinary:', cloudinaryError);
+                    }
+                }
+            }
+            
+            const auctionRequests = await AuctionRequest.findAll({
+                where: { artistId: artist.artistId },
+                transaction
+            });
+            
+            for (const request of auctionRequests) {
+                if (request.status === 'approved') {
+                    try {
+                        const auctionsRef = firebase_db.ref('auctions');
+                        const snapshot = await auctionsRef.orderByChild('requestId').equalTo(request.requestId).once('value');
+                        const auctions = snapshot.val();
+                        
+                        if (auctions) {
+                            for (const auctionId in auctions) {
+                                await firebase_db.ref(`auctions/${auctionId}`).remove();
+                            }
+                        }
+                    } catch (firebaseError) {
+                        console.error('Firebase error when deleting auctions:', firebaseError);
+                    }
+                }
+                await request.destroy({ transaction });
+            }
+            
+            await CustomizationResponse.destroy({
+                where: { artistId: artist.artistId },
+                transaction
+            });
+            
+            await ArtistFollow.destroy({
+                where: { artistId: artist.artistId },
+                transaction
+            });
+            
+            await Report.destroy({
+                where: { ReportedID: artist.artistId },
+                transaction
+            });
+            
+            for (const product of products) {
+                await product.destroy({ transaction });
+            }
+            
+            await artist.destroy({ transaction });
+            
+            await user.destroy({ transaction });
+            
+            await transaction.commit();
+            
+            return res.status(200).json({ message: "Artist and all associated data removed successfully" });
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    } catch (error) {
+        console.error("Error removing artist:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
