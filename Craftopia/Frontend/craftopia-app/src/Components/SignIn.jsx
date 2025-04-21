@@ -3,7 +3,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import SignUp from './SignUp';
 
-const SignIn = () => {
+const SignIn = ({ onLoginSuccess }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [showSignUp, setShowSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -32,14 +32,17 @@ const SignIn = () => {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
 
-      setSuccessMessage('Login successful! ');
+      setSuccessMessage('Login successful!');
       setError('');
+      onLoginSuccess?.();
+
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
       setSuccessMessage('');
     }
   };
+
 
   if (showSignUp) return <SignUp />;
   if (!isOpen) return null;
