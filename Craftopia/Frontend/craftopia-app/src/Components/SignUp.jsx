@@ -7,7 +7,6 @@ const SignUp = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [role, setRole] = useState('customer');
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -25,7 +24,6 @@ const SignUp = () => {
   
     const requestData = {
       email,
-      username,
       password,
       role: role.toLowerCase(),
     };
@@ -37,7 +35,6 @@ const SignUp = () => {
       console.log('Register success:', response.data.message || response.data);
       setSuccessMessage('Registration successful!');
       setError('');
-      // Redirect after 2 seconds
       setTimeout(() => {
         setIsOpen(false);
       }, 2000);
@@ -94,18 +91,6 @@ const SignUp = () => {
             />
           </div>
 
-          <div>
-            <label htmlFor="username" className="block mb-1 text-black text-sm font-medium">
-              Username *
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
-            />
-          </div>
 
           <div>
             <label htmlFor="password" className="block mb-1 text-black text-sm font-medium">
@@ -129,7 +114,7 @@ const SignUp = () => {
                   name="role"
                   value="customer"
                   checked={role === 'customer'}
-                  onChange={(e) => setRole(e.target.value)}  // Ensure role is 'customer' or 'artist'
+                  onChange={(e) => setRole(e.target.value)} 
                 />
                 Customer
               </label>
@@ -139,7 +124,7 @@ const SignUp = () => {
                   name="role"
                   value="artist"
                   checked={role === 'artist'}
-                  onChange={(e) => setRole(e.target.value)}  // Ensure role is 'customer' or 'artist'
+                  onChange={(e) => setRole(e.target.value)} 
                 />
                 Artist
               </label>

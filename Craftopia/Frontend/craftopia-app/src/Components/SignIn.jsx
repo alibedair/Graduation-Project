@@ -27,22 +27,26 @@ const SignIn = ({ onLoginSuccess }) => {
         email,
         password,
       });
+      console.log(response.data);
 
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+  
       const { token, user } = response.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-
+      localStorage.setItem('user', JSON.stringify(user)); 
+  
       setSuccessMessage('Login successful!');
       setError('');
       onLoginSuccess?.();
-
+  
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
       setSuccessMessage('');
     }
   };
-
+  
 
   if (showSignUp) return <SignUp />;
   if (!isOpen) return null;

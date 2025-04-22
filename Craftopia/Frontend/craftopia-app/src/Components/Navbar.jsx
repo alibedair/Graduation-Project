@@ -2,12 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import { FaSearch, FaUser } from "react-icons/fa";
 import { AiOutlineHeart, AiOutlineShoppingCart } from "react-icons/ai";
 import SignIn from "./SignIn";
+import CompleteProfile from "./CompleteProfile";
+import Profile from "./Profile";
 
 const Navbar = () => {
   const [showSignIn, setShowSignIn] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const handleLoginSuccess = () => {
     setLoggedIn(true);
@@ -19,9 +23,16 @@ const Navbar = () => {
     setShowDropdown(false);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("profileCompleted"); 
   };
 
-  // Close dropdown when clicking outside
+  
+  useEffect(() => {
+    if (localStorage.getItem("profileCompleted") === "true") {
+      setShowCompleteProfile(false);  
+    }
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -31,6 +42,11 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleProfileComplete = () => {
+    localStorage.setItem("profileCompleted", "true"); 
+    setShowCompleteProfile(false);
+  };
 
   return (
     <>
@@ -76,11 +92,25 @@ const Navbar = () => {
             {showDropdown && loggedIn && (
               <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E07385] rounded-xl shadow-lg z-50">
                 <ul className="text-sm font-medium text-[#333]">
-                  <li className="px-5 py-3 hover:bg-[#FCE8EC] transition-all duration-200 cursor-pointer rounded-t-xl">
-                    Complete My Profile
-                  </li>
-                  <li className="px-5 py-3 hover:bg-[#FCE8EC] transition-all duration-200 cursor-pointer">
-                    View My Profile
+                  {!localStorage.getItem("profileCompleted") && (
+                    <li
+                      className="px-5 py-3 hover:bg-[#FCE8EC] transition-all duration-200 cursor-pointer rounded-t-xl"
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setShowCompleteProfile(true);
+                      }}
+                    >
+                      Complete My Account
+                    </li>
+                  )}
+                  <li
+                    className="px-5 py-3 hover:bg-[#FCE8EC] transition-all duration-200 cursor-pointer"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowProfile(true);
+                    }}
+                  >
+                    View My Account
                   </li>
                   <li
                     className="px-5 py-3 hover:bg-[#FCE8EC] text-[#E07385] font-semibold transition-all duration-200 cursor-pointer rounded-b-xl"
@@ -91,7 +121,6 @@ const Navbar = () => {
                 </ul>
               </div>
             )}
-            
           </div>
         </div>
       </nav>
@@ -115,6 +144,17 @@ const Navbar = () => {
       </div>
 
       {showSignIn && <SignIn onLoginSuccess={handleLoginSuccess} />}
+      {showCompleteProfile && (
+        <CompleteProfile
+          onClose={() => setShowCompleteProfile(false)}
+          onProfileComplete={handleProfileComplete}
+        />
+      )}
+      {showProfile && (
+        <Profile
+          onClose={() => setShowProfile(false)}
+        />
+      )}
     </>
   );
 };
