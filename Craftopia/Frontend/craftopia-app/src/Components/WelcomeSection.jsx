@@ -19,7 +19,7 @@ const WelcomeSection = () => {
         <img
           src="https://m.media-amazon.com/images/I/81DcsqABleL._AC_UF1000,1000_QL80_.jpg"
           alt="Hand knitting art"
-          className="w-[400px] md:w-[700px] lg:w-[550px] h-[300px] md:h-[500px] lg:h-[300px] rounded-lg shadow-md border-2 border-[#E07385] object-cover"
+          className="w-[400px] md:w-[700px] lg:w-[800px] h-[300px] md:h-[500px] lg:h-[400px] rounded-lg shadow-md border-2 border-[#E07385] object-cover"
         />
       </div>
       

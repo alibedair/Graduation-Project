@@ -95,10 +95,10 @@ const Profile = ({ onClose }) => {
       </div>
     ) : (
       <CompleteProfile
-        onClose={() => setShowEdit(false)}
-        onProfileComplete={handleProfileUpdate}
-        initialProfile={profileData}
-      />
+  onClose={onClose}
+  onProfileComplete={handleProfileUpdate}
+  initialProfile={profileData}
+/>
     )}
     
     </>

@@ -1,7 +1,7 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
 const admin = require('./admin');
-const report = require('./Report');
+const report = require('./report');
 
 const ReportHandling = sequelize.define('reporthandling', {
     adminId: {

@@ -1,26 +1,41 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Footer from "./Components/Footer";
 import Navbar from "./Components/Navbar";
 import PopularProducts from "./Components/PopularProducts";
 import WelcomeSection from "./Components/WelcomeSection";
-import AdminPage from "./Pages/AdminPage";
+import AdminPage from "./pages/AdminPage";
+import LandingPage from "./pages/LandingPage";
+import SignIn from "./Components/SignIn";
+import { useState } from "react";
+import BestSellingProducts from "./Components/BestSellingProducts";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
     <Router>
+      <Navbar isLoggedIn={isLoggedIn} />
       <Routes>
         <Route
           path="/"
           element={
             <div>
-              <Navbar />
               <WelcomeSection />
               <PopularProducts />
+              <BestSellingProducts />
               <Footer />
             </div>
           }
         />
         <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/landing"
+          element={<LandingPage />}
+        />
+        <Route
+          path="/login"
+          element={isLoggedIn ? <Navigate to="/landing" /> : <SignIn onLoginSuccess={() => setIsLoggedIn(true)} />}
+        />
       </Routes>
     </Router>
   );

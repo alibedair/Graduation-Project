@@ -7,7 +7,7 @@ const AuctionRequest = require('../models/auctionRequest');
 const { firebase_db } = require('../config/firebase');
 const { validationResult } = require('express-validator');
 const sequelize = require('../config/db');
-const Report = require('../models/Report');
+const Report = require('../models/report');
 const ArtistFollow = require('../models/artistFollow');
 const CustomizationResponse = require('../models/customizationResponse');
 
