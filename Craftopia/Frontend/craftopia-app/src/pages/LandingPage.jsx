@@ -1,4 +1,4 @@
-// LandingPage.jsx
+
 import BestSellingProducts from "../Components/BestSellingProducts";
 import Footer from "../Components/Footer";
 import Navbar from "../Components/Navbar";

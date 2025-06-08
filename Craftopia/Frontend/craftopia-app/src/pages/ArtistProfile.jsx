@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { FaUser, FaEdit, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUser, FaEdit, FaSignOutAlt, FaPlus } from "react-icons/fa";
 import GetProfile from "../Components/GetProfile";
 import EditProfile from "../Components/EditProfile";
-import Footer from "../Components/Footer"; 
+import AddProduct from "../Components/AddProduct";
+import Footer from "../Components/Footer";
+import AddCategory from "../Components/AddCategory";
 
 const ArtistProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove token
+    navigate("/login"); // Redirect to login
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAF9F6]">
@@ -31,7 +40,32 @@ const ArtistProfile = () => {
                 <FaEdit className="text-black" />
                 Update
               </li>
-              <li className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2">
+              <li
+                onClick={() => setActiveTab("addcategory")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
+                  activeTab === "addcategory"
+                    ? "bg-gray-200 font-semibold"
+                    : ""
+                }`}
+              >
+                <FaPlus className="text-black" />
+                Add Category
+              </li>
+              <li
+                onClick={() => setActiveTab("addproduct")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
+                  activeTab === "addproduct"
+                    ? "bg-gray-200 font-semibold"
+                    : ""
+                }`}
+              >
+                <FaPlus className="text-black" />
+                Add Product
+              </li>
+              <li
+                onClick={handleLogout}
+                className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
+              >
                 <FaSignOutAlt className="text-black" />
                 Logout
               </li>
@@ -40,8 +74,12 @@ const ArtistProfile = () => {
         </div>
         <div className="flex-1 p-8 mt-20">
           <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6">
-            {activeTab === "profile" && <GetProfile setActiveTab={setActiveTab} />}
+            {activeTab === "profile" && (
+              <GetProfile setActiveTab={setActiveTab} />
+            )}
             {activeTab === "edit" && <EditProfile />}
+            {activeTab === "addcategory" && <AddCategory />}
+            {activeTab === "addproduct" && <AddProduct />}
           </div>
         </div>
       </div>

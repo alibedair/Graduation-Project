@@ -85,9 +85,6 @@ const EditProfile = () => {
             setProfileVideoPreview(URL.createObjectURL(file));
         }
     };
-
-
-
     return (
         <form onSubmit={handleSubmit} className="max-w-5xl mx-auto">
             <div className="flex flex-col md:flex-row gap-8">
@@ -177,20 +174,21 @@ const EditProfile = () => {
 
                             <div>
                                 <label className="block font-semibold text-black mb-1">Profile Video</label>
-                                <input
-                                    type="file"
-                                    accept="video/*"
-                                    ref={videoInputRef}
-                                    onChange={(e) => handleFileChange(e, "video")}
-                                    className="hidden"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => videoInputRef.current.click()}
-                                    className="w-full py-2 bg-[#E07385] text-white rounded hover:bg-[#921A40] transition"
-                                >
-                                    {profileVideoPreview ? "Change Video" : "Upload Video"}
-                                </button>
+                                <div className="flex items-center gap-4">
+                                    <label
+                                        onClick={() => videoInputRef.current.click()}
+                                        className="cursor-pointer inline-flex items-center gap-2 bg-[#E07385] text-white px-4 py-2 rounded hover:bg-[#921A40] transition"
+                                    >
+                                        🎬 {profileVideoPreview ? "Update Video" : "Add Video"}
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="video/*"
+                                        ref={videoInputRef}
+                                        onChange={(e) => handleFileChange(e, "video")}
+                                        className="hidden"
+                                    />
+                                </div>
 
                                 {profileVideoPreview && (
                                     <video

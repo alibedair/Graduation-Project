@@ -9,9 +9,9 @@ import SignIn from "./Components/SignIn";
 import { useState } from "react";
 import BestSellingProducts from "./Components/BestSellingProducts";
 import ArtistProfile from "./pages/ArtistProfile";
+import Logout from "./Components/ Logout"; 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   return (
     <Router>
       <Navbar isLoggedIn={isLoggedIn} />
@@ -33,6 +33,7 @@ function App() {
           element={<LandingPage />}
         />
         <Route path="/artist-profile" element={<ArtistProfile />} />
+        <Route path="/logout" element={<Logout />} />
         <Route
           path="/login"
           element={isLoggedIn ? <Navigate to="/landing" /> : <SignIn onLoginSuccess={() => setIsLoggedIn(true)} />}
