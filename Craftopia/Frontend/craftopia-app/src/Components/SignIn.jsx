@@ -1,6 +1,6 @@
-import 'font-awesome/css/font-awesome.min.css';
 import { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import SignUp from './SignUp';
 
 const SignIn = ({ onLoginSuccess }) => {
@@ -10,6 +10,7 @@ const SignIn = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
   const handleClose = () => {
     setIsOpen(false);
@@ -31,22 +32,25 @@ const SignIn = ({ onLoginSuccess }) => {
 
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-  
-      const { token, user } = response.data;
+
+      const { token, userId, role } = response.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user)); 
-  
+      localStorage.setItem('user', JSON.stringify({ userId, role }));
+
       setSuccessMessage('Login successful!');
       setError('');
       onLoginSuccess?.();
-  
+
+      if (role === 'artist') {
+        navigate('/artist-profile');
+      }
+
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
       setSuccessMessage('');
     }
   };
-  
 
   if (showSignUp) return <SignUp />;
   if (!isOpen) return null;

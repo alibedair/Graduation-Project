@@ -8,7 +8,7 @@ import LandingPage from "./pages/LandingPage";
 import SignIn from "./Components/SignIn";
 import { useState } from "react";
 import BestSellingProducts from "./Components/BestSellingProducts";
-
+import ArtistProfile from "./pages/ArtistProfile";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -32,6 +32,7 @@ function App() {
           path="/landing"
           element={<LandingPage />}
         />
+        <Route path="/artist-profile" element={<ArtistProfile />} />
         <Route
           path="/login"
           element={isLoggedIn ? <Navigate to="/landing" /> : <SignIn onLoginSuccess={() => setIsLoggedIn(true)} />}
