@@ -9,6 +9,7 @@ import SignIn from "./Components/SignIn";
 import { useState } from "react";
 import BestSellingProducts from "./Components/BestSellingProducts";
 import ArtistProfile from "./pages/ArtistProfile";
+import CustomerProfile from "./pages/CustomerProfile";
 import Logout from "./Components/ Logout"; 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -33,6 +34,7 @@ function App() {
           element={<LandingPage />}
         />
         <Route path="/artist-profile" element={<ArtistProfile />} />
+          <Route path="/customer-profile" element={<CustomerProfile />} />
         <Route path="/logout" element={<Logout />} />
         <Route
           path="/login"

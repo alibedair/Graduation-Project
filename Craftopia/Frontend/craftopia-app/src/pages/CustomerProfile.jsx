@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaEdit, FaSignOutAlt, FaPlus } from "react-icons/fa";
-import GetProfile from "../Components/GetProfile";
-import EditProfile from "../Components/EditProfile";
-import AddProduct from "../Components/AddProduct";
+import { FaUser, FaEdit, FaSignOutAlt } from "react-icons/fa";
+import Profile from "../Components/Profile"; 
+import CompleteProfile from "../Components/CompleteProfile";
 import Footer from "../Components/Footer";
 
-const ArtistProfile = () => {
+const CustomerProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const navigate = useNavigate();
 
@@ -31,26 +30,6 @@ const ArtistProfile = () => {
                 My Profile
               </li>
               <li
-                onClick={() => setActiveTab("edit")}
-                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-                  activeTab === "edit" ? "bg-gray-200 font-semibold" : ""
-                }`}
-              >
-                <FaEdit className="text-black" />
-                Update
-              </li>
-              <li
-                onClick={() => setActiveTab("addproduct")}
-                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-                  activeTab === "addproduct"
-                    ? "bg-gray-200 font-semibold"
-                    : ""
-                }`}
-              >
-                <FaPlus className="text-black" />
-                Add Product
-              </li>
-              <li
                 onClick={handleLogout}
                 className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
               >
@@ -63,10 +42,9 @@ const ArtistProfile = () => {
         <div className="flex-1 p-8 mt-20">
           <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6">
             {activeTab === "profile" && (
-              <GetProfile setActiveTab={setActiveTab} />
+              <Profile setActiveTab={setActiveTab} />
             )}
-            {activeTab === "edit" && <EditProfile />}
-            {activeTab === "addproduct" && <AddProduct />}
+            {activeTab === "edit" && <CompleteProfile />}
           </div>
         </div>
       </div>
@@ -75,4 +53,4 @@ const ArtistProfile = () => {
   );
 };
 
-export default ArtistProfile;
+export default CustomerProfile;

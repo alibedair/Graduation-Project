@@ -1,37 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaUser, FaSearch } from 'react-icons/fa';
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
+import { useNavigate } from 'react-router-dom';  
 import SignIn from './SignIn';
-import Profile from './Profile';
 
 const Navbar = () => {
   const [showSignIn, setShowSignIn] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
-  const [showProfile, setShowProfile] = useState(false);
+  const navigate = useNavigate();  
 
   const handleLoginSuccess = () => {
     setLoggedIn(true);
     setShowSignIn(false);
   };
 
-  const handleLogout = () => {
-    setLoggedIn(false);
-    setShowDropdown(false);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
+  const handleUserClick = () => {
+    if (loggedIn) {
+      navigate('/customer-profile'); 
+    } else {
+      setShowSignIn(true);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  };
 
   return (
     <>
@@ -52,54 +41,21 @@ const Navbar = () => {
         <div className="flex items-center space-x-6 text-3xl text-black pr-20">
           <AiOutlineHeart />
           <AiOutlineShoppingCart />
-          <div className="relative" ref={dropdownRef}>
-            <div
-              className="flex items-center space-x-2 text-lg cursor-pointer"
-              onClick={() => {
-                if (loggedIn) {
-                  setShowDropdown((prev) => !prev);
-                } else {
-                  setShowSignIn(true);
-                }
-              }}
-            >
-              <FaUser className="text-black text-3xl" />
-              {!loggedIn ? (
-                <span className="text-black text-lg hover:underline">Sign in</span>
-              ) : (
-                <span className="text-black text-lg font-semibold">My Account</span>
-              )}
-            </div>
-
-            {showDropdown && loggedIn && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E07385] rounded-xl shadow-lg z-50">
-                <ul className="text-sm font-medium text-[#333]">
-                  <li
-                    className="px-5 py-3 hover:bg-[#FCE8EC] transition-all duration-200 cursor-pointer"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowProfile(true);
-                    }}
-                  >
-                    View My Account
-                  </li>
-                  <li
-                    className="px-5 py-3 hover:bg-[#FCE8EC] text-[#E07385] font-semibold transition-all duration-200 cursor-pointer rounded-b-xl"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </li>
-                </ul>
-              </div>
+          <div
+            className="flex items-center space-x-2 text-lg cursor-pointer"
+            onClick={handleUserClick}
+          >
+            <FaUser className="text-black text-3xl" />
+            {!loggedIn ? (
+              <span className="text-black text-lg hover:underline">Sign in</span>
+            ) : (
+              <span className="text-black text-lg font-semibold">My Account</span>
             )}
           </div>
         </div>
       </nav>
 
       {showSignIn && <SignIn onLoginSuccess={handleLoginSuccess} />}
-      {showProfile && (
-        <Profile onClose={() => setShowProfile(false)} />
-      )}
     </>
   );
 };
