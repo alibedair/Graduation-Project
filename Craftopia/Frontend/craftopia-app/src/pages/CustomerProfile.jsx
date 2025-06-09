@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaEdit, FaSignOutAlt } from "react-icons/fa";
-import Profile from "../Components/Profile"; 
+import { FaUser, FaSignOutAlt, FaHeart } from "react-icons/fa";
+import Profile from "../Components/Profile";
 import CompleteProfile from "../Components/CompleteProfile";
+import Wishlist from "../Components/Wishlist"; 
 import Footer from "../Components/Footer";
 
 const CustomerProfile = () => {
@@ -29,6 +30,17 @@ const CustomerProfile = () => {
                 <FaUser className="text-black" />
                 My Profile
               </li>
+
+              <li
+                onClick={() => setActiveTab("wishlist")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
+                  activeTab === "wishlist" ? "bg-gray-200 font-semibold" : ""
+                }`}
+              >
+                <FaHeart className="text-black" />
+                Wishlist
+              </li>
+
               <li
                 onClick={handleLogout}
                 className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
@@ -41,10 +53,9 @@ const CustomerProfile = () => {
         </div>
         <div className="flex-1 p-8 mt-20">
           <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6">
-            {activeTab === "profile" && (
-              <Profile setActiveTab={setActiveTab} />
-            )}
+            {activeTab === "profile" && <Profile setActiveTab={setActiveTab} />}
             {activeTab === "edit" && <CompleteProfile />}
+            {activeTab === "wishlist" && <Wishlist />} 
           </div>
         </div>
       </div>
