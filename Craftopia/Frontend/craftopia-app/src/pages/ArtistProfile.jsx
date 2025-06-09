@@ -5,7 +5,7 @@ import GetProfile from "../Components/GetProfile";
 import EditProfile from "../Components/EditProfile";
 import AddProduct from "../Components/AddProduct";
 import Footer from "../Components/Footer";
-
+import ReviewRequests from "../Components/ReviewRequests";
 const ArtistProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const navigate = useNavigate();
@@ -51,6 +51,15 @@ const ArtistProfile = () => {
                 Add Product
               </li>
               <li
+  onClick={() => setActiveTab("review")}
+  className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
+    activeTab === "review" ? "bg-gray-200 font-semibold" : ""
+  }`}
+>
+  📋 View Requests
+</li>
+
+              <li
                 onClick={handleLogout}
                 className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
               >
@@ -67,6 +76,8 @@ const ArtistProfile = () => {
             )}
             {activeTab === "edit" && <EditProfile />}
             {activeTab === "addproduct" && <AddProduct />}
+            {activeTab === "review" && <ReviewRequests />}
+
           </div>
         </div>
       </div>
