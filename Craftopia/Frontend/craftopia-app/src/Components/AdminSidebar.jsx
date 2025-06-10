@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { FaHome, FaClipboardList, FaAngleDown, FaGavel, FaThList, FaSignOutAlt, FaExclamation } from "react-icons/fa";
+import {
+  FaHome,
+  FaClipboardList,
+  FaAngleDown,
+  FaGavel,
+  FaThList,
+  FaSignOutAlt,
+  FaExclamation,
+  FaPlus
+} from "react-icons/fa";
 
 const AdminSidebar = ({ selected, setSelected }) => {
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -12,7 +21,12 @@ const AdminSidebar = ({ selected, setSelected }) => {
       </div>
 
       <div className="flex flex-col rounded-lg p-2 mx-2 gap-2">
-        <SidebarButton icon={<FaHome />} text="Home" selected={selected === "Home"} onClick={() => setSelected("Home")} />
+        <SidebarButton
+          icon={<FaHome />}
+          text="Home"
+          selected={selected === "Home"}
+          onClick={() => setSelected("Home")}
+        />
 
         <div>
           <button
@@ -28,16 +42,41 @@ const AdminSidebar = ({ selected, setSelected }) => {
           </button>
 
           <div className={`ml-6 transition-all ${openDropdown ? "max-h-40 opacity-100" : "max-h-0 opacity-0 overflow-hidden"}`}>
-            <SidebarButton icon={<FaGavel />} text="Auctions" selected={selected === "Auctions"} onClick={() => setSelected("Auctions")} />
-            <SidebarButton icon={<FaThList />} text="Categories" selected={selected === "Categories"} onClick={() => setSelected("Categories")} />
+            <SidebarButton
+              icon={<FaGavel />}
+              text="Auctions"
+              selected={selected === "Auctions"}
+              onClick={() => setSelected("Auctions")}
+            />
+            <SidebarButton
+              icon={<FaThList />}
+              text="Categories"
+              selected={selected === "Categories"}
+              onClick={() => setSelected("Categories")}
+            />
           </div>
         </div>
+        <SidebarButton
+          icon={<FaPlus />}
+          text="Add Category"
+          selected={selected === "Add Category"}
+          onClick={() => setSelected("Add Category")}
+        />
 
-        <SidebarButton icon={<FaExclamation />} text="Reports" selected={selected === "Reports"} onClick={() => setSelected("Reports")} />
+        <SidebarButton
+          icon={<FaExclamation />}
+          text="Reports"
+          selected={selected === "Reports"}
+          onClick={() => setSelected("Reports")}
+        />
       </div>
-
       <div className="mt-auto pl-3">
-        <SidebarButton icon={<FaSignOutAlt />} text="Logout" selected={false} onClick={() => console.log("Logging out...")} />
+        <SidebarButton
+          icon={<FaSignOutAlt />}
+          text="Logout"
+          selected={false}
+          onClick={() => console.log("Logging out...")}
+        />
       </div>
     </div>
   );

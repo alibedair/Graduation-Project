@@ -1,4 +1,3 @@
-// src/Components/AddCategory.jsx
 import { useState } from "react";
 
 const AddCategory = () => {
@@ -10,7 +9,7 @@ const AddCategory = () => {
     e.preventDefault();
 
     if (!name.trim()) {
-      setMessage("Category name is required.");
+      setMessage("Category name is required!");
       return;
     }
 
@@ -35,7 +34,7 @@ const AddCategory = () => {
         setMessage("Category added successfully!");
         setName("");
       }
-    } catch (error) {
+    } catch {
       setMessage("Server error, please try again later.");
     } finally {
       setLoading(false);
@@ -43,30 +42,50 @@ const AddCategory = () => {
   };
 
   return (
-    <div className="p-10 bg-[#F6EEEE]">
-      <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
-      {message && (
-        <p className={`mb-4 ${message.includes("success") ? "text-green-600" : "text-red-600"}`}>
-          {message}
-        </p>
-      )}
-      <form onSubmit={handleAddCategory} className="space-y-4 max-w-md">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Category Name"
-          required
-          className="w-full p-2 border rounded"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-[#E07385] text-white py-2 px-4 rounded hover:bg-[#7a162e] transition"
-        >
-          {loading ? "Adding..." : "Add Category"}
-        </button>
-      </form>
+    <div className="p-10 mt-30 flex items-center justify-center mr-50">
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-lg border border-[#e4cfcf]">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add New Category</h2>
+
+        {message && (
+          <div
+            className={`mb-4 px-4 py-3 rounded text-sm transition-all duration-300 ${
+              message.includes("success")
+                ? "bg-[#f8fff8] text-green-700 border border-green-300"
+                : "bg-[#fff7f7] text-red-700 border border-red-300"
+            }`}
+          >
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleAddCategory} className="space-y-5">
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-3">
+              Category Name
+            </label>
+            <input
+              id="category"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Pottery"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 text-white font-medium rounded-lg transition-all ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#E07385] hover:bg-[#c85c6f] shadow-md"
+            }`}
+          >
+            {loading ? "Adding..." : "Add Category"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
