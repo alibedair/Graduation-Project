@@ -19,7 +19,7 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
     const profileData = { name, username, phone, address };
     const token = localStorage.getItem("token");
     fetch("http://localhost:3000/customer/createprofile", {
-      method: "POST", 
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -28,7 +28,7 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Failed to update profile');
+          throw new Error("Failed to update profile");
         }
         return response.json();
       })
@@ -48,81 +48,72 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
   };
 
   return (
-    <div className="relative">
-      <div className="fixed inset-0 bg-black opacity-50 z-40" />
-
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#FAF9F6] border border-black rounded-lg p-6 shadow-lg w-96 z-50">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-xl text-black hover:text-gray-500"
-        >
-          <i className="fa fa-times"></i>
-        </button>
-
-        <h2 className="text-2xl font-bold mb-4 text-black text-center">Complete Your Account</h2>
+    <div className="w-full bg-[#F6EEEE] mt-5 p-4 rounded-lg shadow-md">
+      <div className="bg-[#F6EEEE] p-6 rounded-lg">
+        <h2 className="text-2xl font-bold mb-6 text-black">Complete Your Account</h2>
 
         {successMessage && (
-          <p className="text-green-600 text-center mb-4">{successMessage}</p>
+          <p className="text-green-600 mb-4">{successMessage}</p>
         )}
         {error && (
-          <p className="text-red-500 text-center mb-4">{error}</p>
+          <p className="text-red-500 mb-4">{error}</p>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name" className="block text-black font-medium">Full Name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
-              required
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-black font-semibold mb-1">Full Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-black font-semibold mb-1">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-black font-semibold mb-1">Phone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-black font-semibold mb-1">Address</label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="username" className="block text-black font-medium">Username</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
-              required
-            />
+          <div className="flex justify-between mt-6">
+            <button
+              type="submit"
+              className="bg-[#E07385] text-white px-5 py-2 rounded hover:bg-[#921A40] transition"
+            >
+              Save
+            </button>
           </div>
-
-          <div>
-            <label htmlFor="phone" className="block text-black font-medium">Phone</label>
-            <input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="address" className="block text-black font-medium">Address</label>
-            <input
-              id="address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-2 border border-black rounded focus:outline-none text-black"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 rounded hover:bg-[#FAF9F6] hover:text-black border hover:border-black transition duration-300"
-          >
-            Save
-          </button>
         </form>
       </div>
     </div>

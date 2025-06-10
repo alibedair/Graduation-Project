@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { FiChevronRight } from "react-icons/fi";
+import { useCart } from "../context/CartContext";
+
 import axios from "axios";
 
 const BestSellingProducts = () => {
   const [products, setProducts] = useState([]);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     axios
-      .get("https://dummyjson.com/products/category/home-decoration?limit=10") 
+      .get("https://dummyjson.com/products/category/home-decoration?limit=10")
       .then((res) => setProducts(res.data.products))
       .catch((err) => console.error(err));
   }, []);
@@ -30,11 +33,24 @@ const BestSellingProducts = () => {
                   className="rounded-md w-full h-40 object-cover"
                 />
                 <FaHeart className="absolute top-2 left-2 text-[#921A40] text-3xl rounded-full p-1" />
-                
+
                 {/* Add to Cart Button (At the Bottom) */}
-                <button className="absolute bottom-0 left-0 w-full bg-[#E07385] text-white text-sm font-bold py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <button
+                  onClick={() =>
+                    addToCart({
+                      id: product.id,
+                      name: product.title,
+                      price: product.price,
+                      image: product.thumbnail,
+                      category: product.category,
+                    })
+                  }
+
+                  className="absolute bottom-0 left-0 w-full bg-[#E07385] text-white text-sm font-bold py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
                   Add to cart
                 </button>
+
               </div>
 
               <h3 className="font-bold mt-2 text-sm h-8 truncate">{product.title}</h3>

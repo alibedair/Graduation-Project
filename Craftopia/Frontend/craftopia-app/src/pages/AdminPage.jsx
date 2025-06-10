@@ -4,6 +4,7 @@ import AdminSearchbar from "../Components/AdminSearchbar";
 import AdminDashboard from "../Components/AdminDashboard";
 import AdminReports from "../Components/AdminReports";
 import AdminCategory from "../Components/AdminCategory";
+import AddCategory from "../Components/AddCategory";
 
 const AdminPage = () => {
   const [selected, setSelected] = useState("Home");
@@ -16,6 +17,8 @@ const AdminPage = () => {
         return <AdminReports />;
       case "Categories":
         return <AdminCategory />;
+      case "Add Category":
+        return <AddCategory />;
       default:
         return <AdminDashboard />;
     }

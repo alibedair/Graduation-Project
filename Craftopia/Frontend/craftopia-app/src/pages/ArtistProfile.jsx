@@ -5,15 +5,14 @@ import GetProfile from "../Components/GetProfile";
 import EditProfile from "../Components/EditProfile";
 import AddProduct from "../Components/AddProduct";
 import Footer from "../Components/Footer";
-import AddCategory from "../Components/AddCategory";
-
+import ReviewRequests from "../Components/ReviewRequests";
 const ArtistProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Remove token
-    navigate("/login"); // Redirect to login
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
@@ -41,17 +40,6 @@ const ArtistProfile = () => {
                 Update
               </li>
               <li
-                onClick={() => setActiveTab("addcategory")}
-                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-                  activeTab === "addcategory"
-                    ? "bg-gray-200 font-semibold"
-                    : ""
-                }`}
-              >
-                <FaPlus className="text-black" />
-                Add Category
-              </li>
-              <li
                 onClick={() => setActiveTab("addproduct")}
                 className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
                   activeTab === "addproduct"
@@ -62,6 +50,15 @@ const ArtistProfile = () => {
                 <FaPlus className="text-black" />
                 Add Product
               </li>
+              <li
+  onClick={() => setActiveTab("review")}
+  className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
+    activeTab === "review" ? "bg-gray-200 font-semibold" : ""
+  }`}
+>
+  📋 View Requests
+</li>
+
               <li
                 onClick={handleLogout}
                 className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
@@ -78,8 +75,9 @@ const ArtistProfile = () => {
               <GetProfile setActiveTab={setActiveTab} />
             )}
             {activeTab === "edit" && <EditProfile />}
-            {activeTab === "addcategory" && <AddCategory />}
             {activeTab === "addproduct" && <AddProduct />}
+            {activeTab === "review" && <ReviewRequests />}
+
           </div>
         </div>
       </div>
