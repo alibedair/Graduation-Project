@@ -83,7 +83,13 @@ exports.getCustomizationResponses = async (req, res) => {
         }
         const requests = await CustomizationRequest.findAll({where:{customerId: customer.customerId}});
         const requestIds = requests.map(request => request.requestId);
-        const responses = await CustomizationResponse.findAll({where:{requestId: requestIds}});
+        const responses = await CustomizationResponse.findAll({
+            where:{requestId: requestIds},
+            include: [{
+                model: Artist,
+                attributes: ['username']
+            }]
+        });
         return res.status(200).json(responses);
     }catch(error){
         res.status(500).send({message: error.message});
