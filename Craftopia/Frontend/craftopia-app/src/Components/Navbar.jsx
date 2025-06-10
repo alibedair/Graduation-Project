@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { FaUser, FaSearch } from 'react-icons/fa';
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';  
@@ -40,7 +40,7 @@ const Navbar = () => {
 
         <div className="flex items-center space-x-6 text-3xl text-black pr-20">
           <AiOutlineHeart />
-          <AiOutlineShoppingCart />
+          <AiOutlineShoppingCart className="cursor-pointer" onClick={() => navigate('/cart')} />
           <div
             className="flex items-center space-x-2 text-lg cursor-pointer"
             onClick={handleUserClick}

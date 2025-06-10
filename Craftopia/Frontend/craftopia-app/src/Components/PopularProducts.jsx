@@ -3,10 +3,13 @@ import { FaStar, FaHeart } from "react-icons/fa";
 import { FiChevronRight } from "react-icons/fi";
 import axios from "axios";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
 const PopularProducts = () => {
   const [products, setProducts] = useState([]);
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
+
 
   useEffect(() => {
     axios
@@ -43,11 +46,22 @@ const PopularProducts = () => {
                   />
                   <FaHeart
                     onClick={() => toggleWishlist(product)}
-                    className={`absolute top-2 left-2 text-3xl rounded-full p-1 cursor-pointer transition-colors ${
-                      isWishlisted ? "text-red-600" : "text-[#921A40]"
-                    }`}
+                    className={`absolute top-2 left-2 text-3xl rounded-full p-1 cursor-pointer transition-colors ${isWishlisted ? "text-red-600" : "text-[#921A40]"
+                      }`}
                   />
-                  <button className="absolute bottom-0 left-0 w-full bg-[#E07385] text-white text-sm font-bold py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button
+                    onClick={() =>
+                      addToCart({
+                        id: product.id,
+                        name: product.title,
+                        price: product.price,
+                        image: product.image,
+                        category: product.category,
+                      })
+                    }
+
+                    className="absolute bottom-0 left-0 w-full bg-[#E07385] text-white text-sm font-bold py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
                     Add to cart
                   </button>
                 </div>
