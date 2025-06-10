@@ -23,41 +23,37 @@ const ArtistProfile = () => {
             <ul className="space-y-3">
               <li
                 onClick={() => setActiveTab("profile")}
-                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-                  activeTab === "profile" ? "bg-gray-200 font-semibold" : ""
-                }`}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "profile" ? "bg-gray-200 font-semibold" : ""
+                  }`}
               >
                 <FaUser className="text-black" />
                 My Profile
               </li>
               <li
                 onClick={() => setActiveTab("edit")}
-                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-                  activeTab === "edit" ? "bg-gray-200 font-semibold" : ""
-                }`}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "edit" ? "bg-gray-200 font-semibold" : ""
+                  }`}
               >
                 <FaEdit className="text-black" />
                 Update
               </li>
               <li
                 onClick={() => setActiveTab("addproduct")}
-                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-                  activeTab === "addproduct"
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "addproduct"
                     ? "bg-gray-200 font-semibold"
                     : ""
-                }`}
+                  }`}
               >
                 <FaPlus className="text-black" />
                 Add Product
               </li>
               <li
-  onClick={() => setActiveTab("review")}
-  className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${
-    activeTab === "review" ? "bg-gray-200 font-semibold" : ""
-  }`}
->
-  📋 View Requests
-</li>
+                onClick={() => setActiveTab("review")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "review" ? "bg-gray-200 font-semibold" : ""
+                  }`}
+              >
+                📋 View Requests
+              </li>
 
               <li
                 onClick={handleLogout}
@@ -70,7 +66,7 @@ const ArtistProfile = () => {
           </nav>
         </div>
         <div className="flex-1 p-8 mt-20">
-          <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6">
+          <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6 -mt-8">
             {activeTab === "profile" && (
               <GetProfile setActiveTab={setActiveTab} />
             )}

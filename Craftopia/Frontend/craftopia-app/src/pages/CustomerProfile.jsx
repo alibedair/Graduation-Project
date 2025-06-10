@@ -57,7 +57,7 @@ const CustomerProfile = () => {
                     </nav>
                 </div>
                 <div className="flex-1 p-8 mt-20">
-                    <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6">
+                   <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6 -mt-8">
                         {activeTab === "profile" && <Profile setActiveTab={setActiveTab} />}
                         {activeTab === "edit" && <CompleteProfile />}
                         {activeTab === "wishlist" && <Wishlist />}

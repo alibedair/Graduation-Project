@@ -75,23 +75,33 @@ exports.respondToCustomizationRequest = async (req, res) => {
 };
 
 exports.getCustomizationResponses = async (req, res) => {
-    try{
+    try {
         const userId = req.user.id;
-        const customer = await Customer.findOne({where:{userId}});
-        if(!customer){
-            return res.status(403).send({message: 'You are not authorized to view customization responses'});
+        const customer = await Customer.findOne({ where: { userId } });
+
+        if (!customer) {
+            return res.status(403).send({ message: 'You are not authorized to view customization responses' });
         }
-        const requests = await CustomizationRequest.findAll({where:{customerId: customer.customerId}});
+
+        const requests = await CustomizationRequest.findAll({ where: { customerId: customer.customerId } });
         const requestIds = requests.map(request => request.requestId);
+
         const responses = await CustomizationResponse.findAll({
-            where:{requestId: requestIds},
-            include: [{
-                model: Artist,
-                attributes: ['username']
-            }]
+            where: { requestId: requestIds },
+            include: [
+                {
+                    model: Artist,
+                    attributes: ['username','profilePicture']
+                },
+                {
+                    model: CustomizationRequest,
+                    attributes: ['title', 'image']
+                }
+            ]
         });
+
         return res.status(200).json(responses);
-    }catch(error){
-        res.status(500).send({message: error.message});
+    } catch (error) {
+        res.status(500).send({ message: error.message });
     }
 };
