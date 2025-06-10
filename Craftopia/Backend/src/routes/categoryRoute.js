@@ -14,6 +14,21 @@ router.post('/create',
     categoryController.createCategory
 );
 
+router.post('/createrequest', 
+    authMiddleware,
+    roleMiddleware('artist'),
+    [
+        body('name').notEmpty().withMessage('Category name is required')
+    ],
+    categoryController.requestCategory
+);
+
+router.get('/getrequest', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    categoryController.getRequestedCategories
+);
+
 router.get('/all', categoryController.getAllCategories);
 
 module.exports = router;
