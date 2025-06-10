@@ -15,9 +15,6 @@ import ArtistProfile from "./pages/ArtistProfile";
 
 import Logout from "./Components/ Logout"; 
 import HeroSection from './Components/HeroSection';
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
 import CustomerProfile from "./pages/CustomerProfile";
 import CartPage from "./pages/CartPage";
 
