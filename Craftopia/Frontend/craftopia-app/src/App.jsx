@@ -12,7 +12,10 @@ import LandingPage from "./pages/LandingPage";
 import SignIn from "./Components/SignIn";
 import BestSellingProducts from "./Components/BestSellingProducts";
 import ArtistProfile from "./pages/ArtistProfile";
-
+// import Auctions from "./pages/Auctions";
+// import AdminAuctionManagement from "./pages/AdminAuctionManagement";
+// import ArtistDashboard from "./pages/ArtistDashboard";
+// import Artists from "./pages/Artists";
 import Logout from "./Components/ Logout"; 
 import HeroSection from './Components/HeroSection';
 import CustomerProfile from "./pages/CustomerProfile";
@@ -38,6 +41,10 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
             </div>
           }
         />
+        {/* <Route path="/auctions" element={<Auctions />} /> */}
+        {/* <Route path="/artists" element={<Artists />} /> */}
+        {/* <Route path="/artist-dashboard" element={<ArtistDashboard />} /> */}
+        {/* <Route path="/admin/auctions" element={<AdminAuctionManagement />} /> */}
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/artist-profile" element={<ArtistProfile />} />
