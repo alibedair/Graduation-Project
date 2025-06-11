@@ -6,6 +6,8 @@ import EditProfile from "../Components/EditProfile";
 import AddProduct from "../Components/AddProduct";
 import Footer from "../Components/Footer";
 import ReviewRequests from "../Components/ReviewRequests";
+import { Gavel } from "lucide-react";
+import AuctionRequest from "../Components/AuctionRequest";
 const ArtistProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const navigate = useNavigate();
@@ -54,7 +56,14 @@ const ArtistProfile = () => {
               >
                 📋 View Requests
               </li>
-
+              <li
+                onClick={() => setActiveTab("auction")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "auction" ? "bg-gray-200 font-semibold" : ""
+                  }`}
+              >
+                <Gavel className="h-4 w-4" />
+                Auction Request
+              </li>
               <li
                 onClick={handleLogout}
                 className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
@@ -66,13 +75,14 @@ const ArtistProfile = () => {
           </nav>
         </div>
         <div className="flex-1 p-8 mt-20">
-          <div className="max-w-6xl mx-auto bg-[#FAF9F6] rounded-lg shadow-md p-6 -mt-8">
+          <div className="max-w-6xl mx-auto bg-cream rounded-lg shadow-md p-6 -mt-8">
             {activeTab === "profile" && (
               <GetProfile setActiveTab={setActiveTab} />
             )}
             {activeTab === "edit" && <EditProfile />}
             {activeTab === "addproduct" && <AddProduct />}
             {activeTab === "review" && <ReviewRequests />}
+            {activeTab === "auction" && <AuctionRequest />}
 
           </div>
         </div>

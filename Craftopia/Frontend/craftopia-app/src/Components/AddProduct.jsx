@@ -75,7 +75,7 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="p-10 bg-[#F6EEEE]">
+    <div className="p-10 bg-cream">
       <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
       {message && (
         <p

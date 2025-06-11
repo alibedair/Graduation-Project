@@ -60,7 +60,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="text-center text-white mt-10 text-[10px]">
-        © Copyright Craftopia 2025. All rights reserved.
+        © Copyright Craftopia 2025. All rights reserved. Made with ❤️ from artisans everywhere.
       </div>
     </footer>
   );
