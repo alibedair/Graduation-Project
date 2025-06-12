@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
-import ProductCard from '../components/ProductCard';
+import ProductCard from '../Components/ProductCard';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 
