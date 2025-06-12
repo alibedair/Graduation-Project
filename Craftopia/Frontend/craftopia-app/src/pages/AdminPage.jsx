@@ -20,7 +20,7 @@ const AdminPage = () => {
         return <AdminCategory />;
       case "Add Category":
         return <AddCategory />;
-      case "Auction Requests":
+      case "Auctions":
         return <AdminAuctionManagement />;
       default:
         return <AdminDashboard />;
