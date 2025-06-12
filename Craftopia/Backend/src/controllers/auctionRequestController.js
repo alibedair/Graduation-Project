@@ -5,7 +5,6 @@ const Admin = require('../models/admin');
 const { validationResult } = require('express-validator');
 const { firebase_db } = require('../config/firebase');
 
-
 exports.createAuctionRequest = async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -122,7 +121,8 @@ exports.approveAndScheduleAuction = async (req, res) => {
             return res.status(400).json({ message: 'Request ID is required' });
         }
         
-        const { startDate, Duration, adminNotes } = req.body;        const auctionRequest = await AuctionRequest.findByPk(requestId, {
+        const { startDate, Duration, adminNotes } = req.body;        
+        const auctionRequest = await AuctionRequest.findByPk(requestId, {
             include: [{ 
                 model: Product,
                 required: false
@@ -145,10 +145,9 @@ exports.approveAndScheduleAuction = async (req, res) => {
             return res.status(404).json({ 
                 message: `Product with ID ${auctionRequest.productId} not found. The product may have been deleted.` 
             });
-        }        
-        const durationMinutes = Duration || auctionRequest.suggestedDuration;
+        }        const durationHours = Duration || auctionRequest.suggestedDuration;
         const startDateTime = new Date(startDate);
-        const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60 * 1000);
+        const endDateTime = new Date(startDateTime.getTime() + durationHours * 60 * 60 * 1000);
         const now = new Date();
         if (isNaN(startDateTime.getTime())) {
             return res.status(400).json({ message: 'Invalid start date format.' });
@@ -189,15 +188,15 @@ exports.approveAndScheduleAuction = async (req, res) => {
             scheduledEndDate: endDateTime,
             auctionId: newAuctionRef.key,
             adminNotes: adminNotes || null
-        });
-          return res.status(201).json({
+        });        
+        return res.status(201).json({
             message: 'Auction request approved and auction scheduled successfully',
             auctionId: newAuctionRef.key,
             status: initialStatus,
             scheduledStartDate: startDateTime.toISOString(),
             scheduledEndDate: endDateTime.toISOString(),
             durationUsed: Duration ? 'admin-specified' : 'artist-suggested',
-            durationMinutes: durationMinutes
+            durationHours: durationHours
         });
     } catch (error) {
         console.error('Error approving auction request:', error);

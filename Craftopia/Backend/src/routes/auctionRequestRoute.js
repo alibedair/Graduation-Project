@@ -10,7 +10,7 @@ router.post('/create',
     [
         body('productId').isInt().withMessage('Product ID must be an integer'),
         body('startingPrice').isFloat({ min: 0 }).withMessage('Starting price must be a positive number'),
-        body('Duration').isInt({ min: 1 }).withMessage('Duration must be a positive integer (minutes)'),
+        body('Duration').isInt({ min: 1 }).withMessage('Duration must be a positive integer (hours)'),
         body('notes').optional().isString().withMessage('Notes must be a string')
     ],
     auctionRequestController.createAuctionRequest
@@ -37,7 +37,7 @@ router.post('/schedule/:requestId',
     [
         param('requestId').isInt().withMessage('Request ID must be an integer'),
         body('startDate').isISO8601().withMessage('Start date must be a valid date'),
-        body('Duration').optional().isInt({ min: 1 }).withMessage('Duration must be a positive integer (minutes)'),
+        body('Duration').optional().isInt({ min: 1 }).withMessage('Duration must be a positive integer (hours)'),
         body('adminNotes').optional().isString().withMessage('Admin notes must be a string')
     ],
     auctionRequestController.approveAndScheduleAuction
