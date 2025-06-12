@@ -22,7 +22,7 @@ const AdminSidebar = ({ selected, setSelected }) => {
 
       <div className="flex flex-col rounded-lg p-2 mx-2 gap-2">
         <SidebarButton
-          icon={<FaHome />}
+          // icon={<FaHome />}
           text="Home"
           selected={selected === "Home"}
           onClick={() => setSelected("Home")}
@@ -68,6 +68,13 @@ const AdminSidebar = ({ selected, setSelected }) => {
           text="Reports"
           selected={selected === "Reports"}
           onClick={() => setSelected("Reports")}
+        />
+
+        <SidebarButton
+          icon={<FaExclamation />}
+          text="Auction Requests"
+          selected={selected === "Auction Requests"}
+          onClick={() => setSelected("Auction Requests")}
         />
       </div>
       <div className="mt-auto pl-3">

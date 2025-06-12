@@ -9,7 +9,7 @@ import HeroSection from "./Components/HeroSection";
 import PopularProducts from "./Components/PopularProducts";
 import BestSellingProducts from "./Components/BestSellingProducts";
 import SignIn from "./Components/SignIn";
-
+import AdminAuctionManagement from "./pages/AdminAuctionManagement";
 import AdminPage from "./pages/AdminPage";
 import LandingPage from "./pages/LandingPage";
 import ArtistProfile from "./pages/ArtistProfile";
@@ -38,6 +38,8 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
           }
         />
         <Route path="/admin" element={<AdminPage />} />
+        
+        {/* <Route path="/admin-auctions" element={<AdminAuctionManagement />} /> */}
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/artist-profile" element={<ArtistProfile />} />
         <Route path="/customer-profile" element={<CustomerProfile />} />
