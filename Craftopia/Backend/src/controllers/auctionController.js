@@ -1,93 +1,5 @@
 const { firebase_db } = require("../config/firebase");
 const Product = require("../models/product");
-const Artist = require("../models/artist");
-const Admin = require("../models/admin");
-const AuctionRequest = require("../models/auctionRequest");
-const { validationResult } = require('express-validator');
-
-exports.createAuction = async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        
-        const userId = req.user.id;
-        const admin = await Admin.findOne({where: {userId}});
-        
-        if (!admin) {
-            return res.status(403).json({ message: 'Only admins can create auctions' });
-        }
-        
-        const { requestId, startDate, endDate } = req.body;
-        
-        const auctionRequest = await AuctionRequest.findByPk(requestId, {
-            include: [{ model: Product }]
-        });
-        
-        if (!auctionRequest) {
-            return res.status(404).json({ message: 'Auction request not found' });
-        }
-        
-        if (auctionRequest.status !== 'approved') {
-            return res.status(403).json({ message: 'Only approved auction requests can be used to create auctions' });
-        }
-        
-        let product = auctionRequest.Product;
-        if (!product) {
-            const productData = await Product.findByPk(auctionRequest.productId);
-            if (!productData) {
-                return res.status(404).json({ message: 'Product not found for this auction request' });
-            }
-            product = productData;
-        }
-        
-        // Validate dates
-        const startDateTime = new Date(startDate);
-        const endDateTime = new Date(endDate);
-        const now = new Date();
-        
-        if (isNaN(startDateTime.getTime()) || startDateTime < now) {
-            return res.status(400).json({ message: 'Invalid start date. Must be a future date.' });
-        }
-        
-        if (isNaN(endDateTime.getTime()) || endDateTime <= startDateTime) {
-            return res.status(400).json({ message: 'Invalid end date. Must be after the start date.' });
-        }
-
-        const auctionsRef = firebase_db.ref('auctions');
-        const newAuctionRef = auctionsRef.push();
-        
-        await newAuctionRef.set({
-            productId: auctionRequest.productId,
-            artistId: auctionRequest.artistId,
-            requestId: auctionRequest.requestId,
-            startingPrice: parseFloat(auctionRequest.startingPrice),
-            currentPrice: parseFloat(auctionRequest.startingPrice),
-            startDate: startDateTime.toISOString(),
-            endDate: endDateTime.toISOString(),
-            status: 'scheduled',
-            createdAt: new Date().toISOString(),
-            incrementPercentage: auctionRequest.incrementPercentage || 10, 
-            reservePrice: auctionRequest.reservePrice || null,
-            bidCount: 0,
-            lastBidTime: null,
-            productDetails: {
-                name: product.name,
-                description: product.description,
-                images: product.image
-            }
-        });
-        
-        return res.status(201).json({
-            message: 'Auction created successfully',
-            auctionId: newAuctionRef.key
-        });
-    } catch (error) {
-        console.error('Error creating auction:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
 
 exports.getAuctions = async (req, res) => {
     try {
@@ -100,9 +12,12 @@ exports.getAuctions = async (req, res) => {
             id,
             ...data
         }));
-        
-        const now = new Date();
+          const now = new Date();
         auctions = auctions.map(auction => {
+            if (auction.status === 'scheduled' && new Date(auction.startDate) <= now) {
+                firebase_db.ref(`auctions/${auction.id}`).update({ status: 'active' });
+                return { ...auction, status: 'active' };
+            }
             if (auction.status === 'active' && new Date(auction.endDate) <= now) {
                 firebase_db.ref(`auctions/${auction.id}`).update({ status: 'ended' });
                 return { ...auction, status: 'ended' };
@@ -157,10 +72,13 @@ exports.getAuctionDetails = async (req, res) => {
         if (!auctionData) {
             return res.status(404).json({ message: "Auction not found" });
         }
-        
-        const now = new Date();
+          const now = new Date();
+        const startTime = new Date(auctionData.startDate);
         const endTime = new Date(auctionData.endDate);
-        
+        if (auctionData.status === 'scheduled' && now >= startTime) {
+            await auctionRef.update({ status: 'active' });
+            auctionData.status = 'active';
+        }
         if (auctionData.status === 'active' && now > endTime) {
             await auctionRef.update({ status: 'ended' });
             auctionData.status = 'ended';

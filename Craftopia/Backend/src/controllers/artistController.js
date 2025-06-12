@@ -57,8 +57,6 @@ exports.updateArtist = async (req, res) => {
                     })
                 );
             }
-            
-            // Wait for all uploads to complete
             if (uploadPromises.length > 0) {
                 await Promise.all(uploadPromises);
             }
@@ -110,5 +108,22 @@ exports.getArtist = async (req, res) => {
             status: 'fail',
             message: error.message
         });
+    }
+}
+
+exports.getAllArtists = async (req, res) => {
+    try {
+        let artists = await Artist.findAll({
+            attributes: ['artistId', 'name', 'username'],
+            include: [{
+                model: User,
+                attributes: ['email']
+            }],
+            order: [['artistId', 'DESC']]
+        });
+        return res.status(200).json({artists});
+    } catch (error) {
+        console.error('Error fetching artists:', error);
+        res.status(500).json({message: 'Internal server error'});
     }
 }

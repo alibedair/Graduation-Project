@@ -6,8 +6,9 @@ const roleMiddleware = require('../middlewares/roleMiddleware');
 const { body } = require('express-validator');
 
 router.get('/getprofile', authMiddleware, artistController.getArtist);
+router.get('/all', artistController.getAllArtists);
 
-router.post('/update', 
+router.post('/update',
     authMiddleware, 
     roleMiddleware('artist'),
     upload.fields([

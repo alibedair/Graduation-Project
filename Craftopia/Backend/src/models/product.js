@@ -43,7 +43,15 @@ const Product = sequelize.define('product', {
             model: category,
             key: 'categoryId'
         }
-    }
+    },
+    dimensions: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    material: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
 });
 
 

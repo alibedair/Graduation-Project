@@ -5,6 +5,7 @@ const Admin = require('../models/admin');
 const { validationResult } = require('express-validator');
 const { firebase_db } = require('../config/firebase');
 
+
 exports.createAuctionRequest = async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -18,7 +19,7 @@ exports.createAuctionRequest = async (req, res) => {
             return res.status(403).json({message: 'Only artists can request auctions'});
         }
 
-        const { productId, startingPrice, suggestedEndDate, notes } = req.body;
+        const { productId, startingPrice, Duration, notes } = req.body;
 
         const product = await Product.findByPk(productId);
         if (!product) {
@@ -27,20 +28,19 @@ exports.createAuctionRequest = async (req, res) => {
         
         if (product.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'You can only request auctions for your own products' });
-        }
-
-        const auctionRequest = await AuctionRequest.create({
+        }        const auctionRequest = await AuctionRequest.create({
             artistId: artist.artistId,
             productId,
             startingPrice,
-            suggestedEndDate,
+            suggestedDuration: Duration,
             notes,
             status: 'pending'
         });
-
         return res.status(201).json({
             message: 'Auction request created successfully',
-            requestId: auctionRequest.requestId
+            requestId: auctionRequest.requestId,
+            productId: productId,
+            artistId: artist.artistId
         });
     } catch (error) {
         console.error('Error creating auction request:', error);
@@ -105,45 +105,99 @@ exports.getAllAuctionRequests = async (req, res) => {
     }
 };
 
-exports.approveAuctionRequest = async (req, res) => {
+exports.approveAndScheduleAuction = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-
         const userId = req.user.id;
         const admin = await Admin.findOne({where: {userId}});
         if (!admin) {
             return res.status(403).json({message: 'Only admins can approve auction requests'});
         }
 
-        const { requestId } = req.params;
-        const { adminNotes, endDate, incrementPercentage = 10, reservePrice = null } = req.body;
-
-        const request = await AuctionRequest.findByPk(requestId);
+        const requestId = req.params.requestId;
+        if (!requestId) {
+            return res.status(400).json({ message: 'Request ID is required' });
+        }
         
-        if (!request) {
+        const { startDate, Duration, adminNotes } = req.body;        const auctionRequest = await AuctionRequest.findByPk(requestId, {
+            include: [{ 
+                model: Product,
+                required: false
+            }]
+        });
+        
+        if (!auctionRequest) {
             return res.status(404).json({ message: 'Auction request not found' });
         }
-
-        if (request.status !== 'pending') {
-            return res.status(400).json({ message: `Request is already ${request.status}` });
+        
+        if (auctionRequest.status !== 'pending') {
+            return res.status(400).json({ message: `Request is already ${auctionRequest.status}` });
         }
-
-        const product = await Product.findByPk(request.productId);
+        let product = auctionRequest.Product;
+        if (!product && auctionRequest.productId) {
+            product = await Product.findByPk(auctionRequest.productId);
+        }
         
         if (!product) {
-            return res.status(404).json({ message: 'Product not found for this auction request' });
+            return res.status(404).json({ 
+                message: `Product with ID ${auctionRequest.productId} not found. The product may have been deleted.` 
+            });
+        }        
+        const durationMinutes = Duration || auctionRequest.suggestedDuration;
+        const startDateTime = new Date(startDate);
+        const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60 * 1000);
+        const now = new Date();
+        if (isNaN(startDateTime.getTime())) {
+            return res.status(400).json({ message: 'Invalid start date format.' });
         }
-        
-        await request.update({
-            status: 'approved',
-            adminNotes
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+        if (startDateTime < oneHourAgo) {
+            return res.status(400).json({ 
+                message: 'Please choose a current or future date.' 
+            });
+        }
+        if (isNaN(endDateTime.getTime()) || endDateTime <= startDateTime) {
+            return res.status(400).json({ message: 'Invalid duration. Must result in a future end date.' });
+        }const auctionRef = firebase_db.ref('auctions');
+        const newAuctionRef = auctionRef.push();
+        const initialStatus = startDateTime <= now ? 'active' : 'scheduled';
+        await newAuctionRef.set({
+            productId: auctionRequest.productId,
+            artistId: auctionRequest.artistId,
+            requestId: auctionRequest.requestId,
+            startingPrice: parseFloat(auctionRequest.startingPrice),
+            currentPrice: parseFloat(auctionRequest.startingPrice),
+            startDate: startDateTime.toISOString(),
+            endDate: endDateTime.toISOString(),
+            status: initialStatus,
+            createdAt: new Date().toISOString(),
+            bidCount: 0,
+            lastBidTime: null,
+            productDetails: {
+                name: product.name,
+                description: product.description,
+                image: product.image
+            }
         });
-
-        return res.status(200).json({
-            message: 'Auction request approved',
+        
+        await auctionRequest.update({
+            status: 'scheduled',
+            scheduledStartDate: startDateTime,
+            scheduledEndDate: endDateTime,
+            auctionId: newAuctionRef.key,
+            adminNotes: adminNotes || null
+        });
+          return res.status(201).json({
+            message: 'Auction request approved and auction scheduled successfully',
+            auctionId: newAuctionRef.key,
+            status: initialStatus,
+            scheduledStartDate: startDateTime.toISOString(),
+            scheduledEndDate: endDateTime.toISOString(),
+            durationUsed: Duration ? 'admin-specified' : 'artist-suggested',
+            durationMinutes: durationMinutes
         });
     } catch (error) {
         console.error('Error approving auction request:', error);
@@ -155,34 +209,33 @@ exports.rejectAuctionRequest = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const userId = req.user.id;
-        const admin = await Admin.findOne({where: {userId}});
-        if (!admin) {
-            return res.status(403).json({message: 'Only admins can reject auction requests'});
-        }
-
-        const { requestId } = req.params;
+            return res.status(400).json({ errors: errors.array() });        }
+        
+        const requestId = req.params.requestId;
         const { adminNotes } = req.body;
-
-        const request = await AuctionRequest.findByPk(requestId);
-        if (!request) {
+        
+        if (!requestId) {
+            return res.status(400).json({ message: 'Request ID is required' });
+        }
+        
+        const auctionRequest = await AuctionRequest.findByPk(requestId);
+        
+        if (!auctionRequest) {
             return res.status(404).json({ message: 'Auction request not found' });
         }
-
-        if (request.status !== 'pending') {
-            return res.status(400).json({ message: `Request is already ${request.status}` });
+        
+        if (auctionRequest.status !== 'pending') {
+            return res.status(400).json({ message: `Request is already ${auctionRequest.status}` });
         }
-
-        await request.update({
+        
+        await auctionRequest.update({
             status: 'rejected',
-            adminNotes
+            adminNotes: adminNotes || null
         });
-
+        
         return res.status(200).json({
-            message: 'Auction request rejected'
+            message: 'Auction request rejected successfully',
+            requestId: auctionRequest.requestId
         });
     } catch (error) {
         console.error('Error rejecting auction request:', error);

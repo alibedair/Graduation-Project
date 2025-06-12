@@ -11,8 +11,8 @@ exports.createProduct = async (req, res) => {
             return res.status(403).json({message: 'You are not authorized to create a product'});
         }
         
-        const {name, description, price, categoryName, quantity} = req.body;
-        if(!name || !description || !price || !categoryName || !quantity) {
+        const {name, description, price, categoryName, quantity,dimension,material} = req.body;
+        if(!name || !description || !price || !categoryName || !quantity || !dimension || !material) {
             return res.status(400).json({
                 message: 'Please provide all required fields',
                 required: ['name', 'description', 'price', 'categoryName', 'quantity']
@@ -51,7 +51,9 @@ exports.createProduct = async (req, res) => {
             image: images,
             categoryId: category.categoryId,
             artistId: artist.artistId,
-            quantity
+            quantity: quantity,
+            dimensions: dimension,
+            material: material
         });
 
         res.status(201).json({product});
@@ -101,13 +103,15 @@ exports.updateProduct = async (req, res) => {
         if(product.artistId !== artist.artistId) {
             return res.status(403).json({message: 'Forbidden'});
         }
-        const {name, description, price,  quantity} = req.body;
+        const {name, description, price,  quantity,dimension,material} = req.body;
 
 
         product.name = name || product.name;
         product.description = description || product.description;
         product.price = price || product.price;
         product.quantity = quantity || product.quantity;
+        product.dimensions = dimension || product.dimensions;
+        product.material = material || product.material;
         await product.save();
 
 
