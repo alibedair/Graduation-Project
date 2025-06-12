@@ -2,12 +2,16 @@ import { useState } from "react";
 
 const AddProduct = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    categoryName: "",
-    quantity: "",
+    name: '',
+    description: '',
+    price: '',
+    categoryName: '',
+    quantity: '',
+    material: '',
+    dimension: '',
+    images: []
   });
+
   const [images, setImages] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -64,6 +68,8 @@ const AddProduct = () => {
           price: "",
           categoryName: "",
           quantity: "",
+          material: "",
+          dimension: "",
         });
         setImages([]);
       }
@@ -86,109 +92,129 @@ const AddProduct = () => {
           {message}
         </p>
       )}
-     <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6 max-w-4xl">
-  <div className="flex flex-col gap-4">
-    <input
-      name="name"
-      value={formData.name}
-      onChange={handleChange}
-      placeholder="Product Name"
-      required
-      className="w-full p-2 border rounded h-12"
-    />
-    <textarea
-      name="description"
-      value={formData.description}
-      onChange={handleChange}
-      placeholder="Description"
-      required
-      className="w-full p-2 border rounded resize-none h-32"
-    />
-    <input
-      name="price"
-      value={formData.price}
-      onChange={handleChange}
-      type="number"
-      min="0"
-      step="0.01"
-      placeholder="Price"
-      required
-      className="w-full p-2 border rounded h-12"
-    />
-  </div>
-  <div className="flex flex-col gap-4">
-    <input
-      name="categoryName"
-      value={formData.categoryName}
-      onChange={handleChange}
-      placeholder="Category Name"
-      required
-      className="w-full p-2 border rounded h-12"
-    />
-    <input
-      name="quantity"
-      value={formData.quantity}
-      onChange={handleChange}
-      type="number"
-      min="0"
-      placeholder="Quantity"
-      required
-      className="w-full p-2 border rounded h-12"
-    />
-    <div>
-      <label
-        htmlFor="file-upload"
-        className="cursor-pointer inline-block bg-[#E07385] text-white py-2 px-4 rounded hover:bg-[#7a162e] transition"
-      >
-        Upload Images
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={(e) => {
-          const selectedFiles = Array.from(e.target.files).slice(0, 5);
-          setImages(selectedFiles);
-        }}
-        className="hidden"
-      />
 
-      {images.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {images.map((file, index) => (
-            <div key={index} className="relative group">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={`preview-${index}`}
-                className="w-full h-32 object-cover rounded border"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setImages((prev) => prev.filter((_, i) => i !== index))
-                }
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
-                title="Remove"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+      <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6 max-w-4xl">
+        <div className="flex flex-col gap-4">
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Product Name"
+            required
+            className="w-full p-2 border rounded h-12"
+          />
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Description"
+            required
+            className="w-full p-2 border rounded resize-none h-32"
+          />
+          <input
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Price"
+            required
+            className="w-full p-2 border rounded h-12"
+          />
         </div>
-      )}
-    </div>
-  </div>
-  <div className="md:col-span-2">
-    <button
-      type="submit"
-      disabled={loading}
-      className="bg-[#E07385] text-white py-2 px-4 rounded hover:bg-[#7a162e] transition w-full md:w-auto"
-    >
-      {loading ? "Uploading..." : "Add Product"}
-    </button>
-  </div>
-</form>
+
+        <div className="flex flex-col gap-4">
+          <input
+            name="categoryName"
+            value={formData.categoryName}
+            onChange={handleChange}
+            placeholder="Category Name"
+            required
+            className="w-full p-2 border rounded h-12"
+          />
+          <input
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChange}
+            type="number"
+            min="0"
+            placeholder="Quantity"
+            required
+            className="w-full p-2 border rounded h-12"
+          />
+          <input
+            name="material"
+            value={formData.material}
+            onChange={handleChange}
+            placeholder="Material"
+            required
+            className="w-full p-2 border rounded h-12"
+          />
+          <input
+            name="dimension"
+            value={formData.dimension}
+            onChange={handleChange}
+            placeholder="Dimensions"
+            required
+            className="w-full p-2 border rounded h-12"
+          />
+
+          <div>
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer inline-block bg-[#E07385] text-white py-2 px-4 rounded hover:bg-[#7a162e] transition"
+            >
+              Upload Image
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files).slice(0, 5);
+                setImages(selectedFiles);
+              }}
+              className="hidden"
+            />
+
+            {images.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {images.map((file, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`preview-${index}`}
+                      className="w-full h-32 object-cover rounded border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImages((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                      title="Remove"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="md:col-span-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#E07385] text-white py-2 px-4 rounded hover:bg-[#7a162e] transition w-full md:w-auto"
+          >
+            {loading ? "Uploading..." : "Add Product"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
