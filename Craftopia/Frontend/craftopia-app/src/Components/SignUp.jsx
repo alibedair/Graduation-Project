@@ -21,15 +21,15 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const requestData = {
       email,
       password,
       role: role.toLowerCase(),
     };
-  
+
     console.log('Sending registration data:', requestData);
-  
+
     try {
       const response = await axios.post('http://localhost:3000/auth/register', requestData);
       console.log('Register success:', response.data.message || response.data);
@@ -38,7 +38,7 @@ const SignUp = () => {
       setTimeout(() => {
         setIsOpen(false);
       }, 2000);
-  
+
     } catch (err) {
       setSuccessMessage('');
       if (err.response) {
@@ -55,11 +55,11 @@ const SignUp = () => {
       }
     }
   };
-  
+
   if (!isOpen) {
     return <SignIn />;
   }
-  {successMessage && <div className="text-green-600 text-center mb-4">{successMessage}</div>}
+  { successMessage && <div className="text-green-600 text-center mb-4">{successMessage}</div> }
 
   return (
     <div className="relative">
@@ -74,9 +74,9 @@ const SignUp = () => {
         </button>
 
         <h2 className="text-2xl font-bold mb-6 text-black text-center">Create your account</h2>
-        
+
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-        
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="block mb-1 text-black text-sm font-medium">
@@ -114,7 +114,7 @@ const SignUp = () => {
                   name="role"
                   value="customer"
                   checked={role === 'customer'}
-                  onChange={(e) => setRole(e.target.value)} 
+                  onChange={(e) => setRole(e.target.value)}
                 />
                 Customer
               </label>
@@ -124,9 +124,19 @@ const SignUp = () => {
                   name="role"
                   value="artist"
                   checked={role === 'artist'}
-                  onChange={(e) => setRole(e.target.value)} 
+                  onChange={(e) => setRole(e.target.value)}
                 />
                 Artist
+              </label>
+              <label className="flex items-center gap-2 text-black">
+                <input
+                  type="radio"
+                  name="role"
+                  value="admin"
+                  checked={role === 'admin'}
+                  onChange={(e) => setRole(e.target.value)}
+                />
+                Admin
               </label>
             </div>
           </div>

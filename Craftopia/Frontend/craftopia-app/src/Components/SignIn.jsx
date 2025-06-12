@@ -44,7 +44,9 @@ const SignIn = ({ onLoginSuccess }) => {
       if (role === 'artist') {
         navigate('/artist-profile');
       }
-
+      else if (role === 'admin') {
+        navigate('/admin');
+      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
