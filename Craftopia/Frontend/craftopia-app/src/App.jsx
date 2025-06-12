@@ -3,23 +3,19 @@ import { useState } from "react";
 import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
 
-import Footer from "./Components/Footer";
 import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
+import HeroSection from "./Components/HeroSection";
 import PopularProducts from "./Components/PopularProducts";
-import WelcomeSection from "./Components/WelcomeSection";
+import BestSellingProducts from "./Components/BestSellingProducts";
+import SignIn from "./Components/SignIn";
+
 import AdminPage from "./pages/AdminPage";
 import LandingPage from "./pages/LandingPage";
-import SignIn from "./Components/SignIn";
-import BestSellingProducts from "./Components/BestSellingProducts";
 import ArtistProfile from "./pages/ArtistProfile";
-// import Auctions from "./pages/Auctions";
-// import AdminAuctionManagement from "./pages/AdminAuctionManagement";
-// import ArtistDashboard from "./pages/ArtistDashboard";
-// import Artists from "./pages/Artists";
-import Logout from "./Components/ Logout"; 
-import HeroSection from './Components/HeroSection';
 import CustomerProfile from "./pages/CustomerProfile";
 import CartPage from "./pages/CartPage";
+import Shop from "./pages/Shop";
 
 function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
@@ -34,22 +30,18 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
           element={
             <div>
               <HeroSection />
-              {/* <WelcomeSection /> */}
               <PopularProducts />
               <BestSellingProducts />
               <Footer />
             </div>
           }
         />
-        {/* <Route path="/auctions" element={<Auctions />} /> */}
-        {/* <Route path="/artists" element={<Artists />} /> */}
-        {/* <Route path="/artist-dashboard" element={<ArtistDashboard />} /> */}
-        {/* <Route path="/admin/auctions" element={<AdminAuctionManagement />} /> */}
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/artist-profile" element={<ArtistProfile />} />
         <Route path="/customer-profile" element={<CustomerProfile />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/shop" element={<Shop />} />
         <Route
           path="/login"
           element={
