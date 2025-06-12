@@ -4,6 +4,7 @@ const Product = require('../models/product');
 const Admin = require('../models/admin');
 const { validationResult } = require('express-validator');
 const { firebase_db } = require('../config/firebase');
+const Category = require('../models/category');
 
 exports.createAuctionRequest = async (req, res) => {
     try {
@@ -59,7 +60,11 @@ exports.getMyAuctionRequests = async (req, res) => {
             where: {artistId: artist.artistId},
             include: [{
                 model: Product,
-                attributes: ['productId', 'name', 'image']
+                attributes: ['productId', 'name', 'image'],
+                include: [{
+                    model: Category,
+                    attributes: ['name']
+                }]
             }],
             order: [['createdAt', 'DESC']]
         });
