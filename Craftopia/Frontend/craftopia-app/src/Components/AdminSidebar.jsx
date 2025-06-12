@@ -70,12 +70,12 @@ const AdminSidebar = ({ selected, setSelected }) => {
           onClick={() => setSelected("Reports")}
         />
 
-        <SidebarButton
+        {/* <SidebarButton
           icon={<FaExclamation />}
           text="Auction Requests"
           selected={selected === "Auction Requests"}
           onClick={() => setSelected("Auction Requests")}
-        />
+        /> */}
       </div>
       <div className="mt-auto pl-3">
         <SidebarButton
