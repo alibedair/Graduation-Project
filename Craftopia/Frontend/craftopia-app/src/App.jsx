@@ -16,6 +16,7 @@ import ArtistProfile from "./pages/ArtistProfile";
 import CustomerProfile from "./pages/CustomerProfile";
 import CartPage from "./pages/CartPage";
 import Shop from "./pages/Shop";
+import WishlistPage from './pages/WishlistPage';
 
 function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
@@ -42,6 +43,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
         <Route path="/customer-profile" element={<CustomerProfile />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
         <Route
           path="/login"
           element={

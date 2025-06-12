@@ -39,7 +39,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center space-x-6 text-3xl text-black pr-20">
-          <AiOutlineHeart />
+          <AiOutlineHeart className="cursor-pointer" onClick={() => navigate('/wishlist')} />
           <AiOutlineShoppingCart className="cursor-pointer" onClick={() => navigate('/cart')} />
           <div
             className="flex items-center space-x-2 text-lg cursor-pointer"
