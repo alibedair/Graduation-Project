@@ -19,5 +19,21 @@ router.post('/respond/:requestId',
     ],
     customizationResponseController.respondToCustomizationRequest
 );
+router.put('/accept/:responseId',
+    authMiddleware,
+    roleMiddleware('customer'),
+    [
+        param('responseId').isInt().withMessage('Response ID must be an integer')
+    ],
+    customizationResponseController.acceptCustomizationResponse
+);
+router.put('/decline/:responseId',
+    authMiddleware,
+    roleMiddleware('customer'),
+    [
+        param('responseId').isInt().withMessage('Response ID must be an integer')
+    ],
+    customizationResponseController.declineCustomizationResponse
+);
 
 module.exports = router;

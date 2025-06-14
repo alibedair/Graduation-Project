@@ -42,6 +42,11 @@ const customizationResponse = sequelize.define('customizationresponse', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    status: {
+        type: DataTypes.ENUM('PENDING', 'ACCEPTED', 'DECLINED'),
+        allowNull: false,
+        defaultValue: 'PENDING'
+    },
 });
 
 module.exports = customizationResponse;
