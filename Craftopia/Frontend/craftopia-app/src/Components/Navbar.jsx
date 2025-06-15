@@ -1,62 +1,92 @@
-import { useState } from 'react';
-import { FaUser, FaSearch } from 'react-icons/fa';
+
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
-import { useNavigate } from 'react-router-dom';  
-import SignIn from './SignIn';
+import { FaUser, FaSearch } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const handleLoginSuccess = () => {
-    setLoggedIn(true);
-    setShowSignIn(false);
-  };
-
-  const handleUserClick = () => {
-    if (loggedIn) {
-      navigate('/customer-profile'); 
-    } else {
-      setShowSignIn(true);
-    }
+  // where “My Account” should send you
+  const getProfileLink = () => {
+    if (!user) return '/login';
+    if (user.role === 'artist') return '/artist-profile';
+    if (user.role === 'admin')  return '/admin';
+    return '/customer-profile';
   };
 
   return (
-    <>
-      <nav className="flex justify-between items-center px-6 py-3 bg-[#FAF9F6] shadow-md">
-        <div className="text-3xl font-bold text-black pl-25" style={{ fontFamily: "'Lily Script One', cursive" }}>
-          Craftopia
-        </div>
+    <nav className="flex justify-between items-center px-6 py-3 bg-[#FAF9F6] shadow-md sticky top-0 z-50">
+      {/* Logo */}
+      <Link
+        to="/"
+        className="text-3xl font-bold text-black"
+        style={{ fontFamily: "'Lily Script One', cursive" }}
+      >
+        Craftopia
+      </Link>
 
-        <div className="relative w-1/3">
-          <input
-            type="text"
-            placeholder="Search For artist / Products ......."
-            className="w-full border border-[#E07385] rounded-full px-4 py-2 text-m text-black placeholder-black focus:outline-none"
+      {/* Search bar */}
+      <div className="relative w-1/3">
+        <input
+          type="text"
+          placeholder="Search for artist / products..."
+          className="w-full border border-[#E07385] rounded-full px-4 py-2 text-base placeholder-black focus:outline-none"
+        />
+        <FaSearch className="absolute right-4 top-3 text-black text-lg" />
+      </div>
+
+      {/* Icons & buttons */}
+      <div className="flex items-center space-x-6 text-2xl text-black">
+        {/* Wishlist & Cart only for customers */}
+        {user && user.role === 'customer' && (
+          <>
+            <AiOutlineHeart
+              className="cursor-pointer"
+              onClick={() => navigate('/wishlist')}
+            />
+            <AiOutlineShoppingCart
+              className="cursor-pointer"
+              onClick={() => navigate('/cart')}
+            />
+          </>
+        )}
+
+        {/* Profile */}
+        <div className="flex items-center space-x-2 cursor-pointer">
+          <FaUser
+            className="text-3xl"
+            onClick={() => navigate(getProfileLink())}
           />
-          <FaSearch className="absolute right-4 top-3 text-black text-lg" />
-        </div>
-
-        <div className="flex items-center space-x-6 text-3xl text-black pr-20">
-          <AiOutlineHeart className="cursor-pointer" onClick={() => navigate('/wishlist')} />
-          <AiOutlineShoppingCart className="cursor-pointer" onClick={() => navigate('/cart')} />
-          <div
-            className="flex items-center space-x-2 text-lg cursor-pointer"
-            onClick={handleUserClick}
+          <span
+            className="text-lg font-medium hover:underline"
+            onClick={() => navigate(getProfileLink())}
           >
-            <FaUser className="text-black text-3xl" />
-            {!loggedIn ? (
-              <span className="text-black text-lg hover:underline">Sign in</span>
-            ) : (
-              <span className="text-black text-lg font-semibold">My Account</span>
-            )}
-          </div>
+            {user ? 'My Account' : 'Sign In'}
+          </span>
         </div>
-      </nav>
 
-      {showSignIn && <SignIn onLoginSuccess={handleLoginSuccess} />}
-    </>
+        {/* Logout or Sign Up */}
+        {user ? (
+          <button
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="ml-4 px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-[#E07385] hover:text-white transition"
+          >
+            Logout
+          </button>
+        ) : (
+          <Link to="/register">
+            <button className="ml-4 px-4 py-2 bg-[#E07385] text-white rounded-md text-sm hover:bg-[#C05264] transition">
+              Sign Up
+            </button>
+          </Link>
+        )}
+      </div>
+    </nav>
   );
 };
 

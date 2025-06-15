@@ -1,78 +1,110 @@
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
-import { useState } from "react";
-import { WishlistProvider } from "./context/WishlistContext";
-import { CartProvider } from "./context/CartContext";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { WishlistProvider } from './context/WishlistContext';
+import { CartProvider }     from './context/CartContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-import Navbar from "./Components/Navbar";
-import Footer from "./Components/Footer";
-import HeroSection from "./Components/HeroSection";
-import PopularProducts from "./Components/PopularProducts";
-import BestSellingProducts from "./Components/BestSellingProducts";
-import SignIn from "./Components/SignIn";
-import AdminAuctionManagement from "./pages/AdminAuctionManagement";
-import AdminPage from "./pages/AdminPage";
-import LandingPage from "./pages/LandingPage";
-import ArtistProfile from "./pages/ArtistProfile";
-import CustomerProfile from "./pages/CustomerProfile";
-import CartPage from "./pages/CartPage";
-import Shop from "./pages/Shop";
-import WishlistPage from './pages/WishlistPage';
+import Navbar from './Components/Navbar';
+import HeroSection from './Components/HeroSection';
+import PopularProducts     from './Components/PopularProducts';
+import BestSellingProducts from './Components/BestSellingProducts';
+import Footer              from './Components/Footer';
+import Login from './Components/login';
+import ArtistProfile       from './pages/ArtistProfile';
+import CustomerProfile     from './pages/CustomerProfile';
+import CartPage            from './pages/CartPage';
+import Shop                from './pages/Shop';
+import WishlistPage        from './pages/WishlistPage';
+import AdminPage           from './pages/AdminPage';
+import Register from './Components/Register';
+import ProtectedRoute from './Components/ProtectedRoute';
 
-function AppContent({ isLoggedIn, setIsLoggedIn }) {
-  const location = useLocation();
-  const hideNavbar = location.pathname.startsWith("/admin");
+
+function LoginRoute() {
+  const { user } = useAuth();
+
+  if (!user) {
+    // not logged in → show the form
+    return <Login />;
+  }
+
+  // logged in → redirect by role
+  switch (user.role) {
+    case 'artist':
+      return <Navigate to="/artist-profile" replace />;
+    case 'admin':
+      return <Navigate to="/admin" replace />;
+    default:
+      return <Navigate to="/" replace />;
+  }
+}
+function AppContent() {
+  const { user }   = useAuth();
+  const location   = useLocation();
+  const hideNavbar = location.pathname.startsWith('/admin');
 
   return (
     <>
-      {!hideNavbar && <Navbar isLoggedIn={isLoggedIn} />}
+      {!hideNavbar && <Navbar />}
+
       <Routes>
         <Route
           path="/"
           element={
-            <div>
+            <>
               <HeroSection />
               <PopularProducts />
               <BestSellingProducts />
               <Footer />
-            </div>
+            </>
           }
         />
-        <Route path="/admin" element={<AdminPage />} />
-        
-        {/* <Route path="/admin-auctions" element={<AdminAuctionManagement />} /> */}
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/artist-profile" element={<ArtistProfile />} />
-        <Route path="/customer-profile" element={<CustomerProfile />} />
+                <Route
+          path="/admin"
+          element={
+            <ProtectedRoute
+              element={<AdminPage />}
+              allowedRoles={['admin']}
+            />
+          }
+        />
+        <Route
+          path="/artist-profile"
+          element={
+            <ProtectedRoute
+              element={<ArtistProfile />}
+              allowedRoles={['artist']}
+            />
+          }
+        />
+        <Route
+          path="/customer-profile"
+          element={
+            <ProtectedRoute
+              element={<CustomerProfile />}
+              allowedRoles={['customer']}
+            />
+          }
+        />
+        <Route path="/register" element={<Register/>}/>
         <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/wishlist" element={<WishlistPage />} />
-        <Route
-          path="/login"
-          element={
-            isLoggedIn ? (
-              <Navigate to="/landing" />
-            ) : (
-              <SignIn onLoginSuccess={() => setIsLoggedIn(true)} />
-            )
-          }
-        />
+        <Route path="/login" element={<LoginRoute />} />
       </Routes>
     </>
   );
 }
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+export default function App() {
   return (
-    <WishlistProvider>
-      <CartProvider>
-        <Router>
-          <AppContent isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-        </Router>
-      </CartProvider>
-    </WishlistProvider>
+    <AuthProvider>
+      <WishlistProvider>
+        <CartProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </CartProvider>
+      </WishlistProvider>
+    </AuthProvider>
   );
 }
-
-export default App;
