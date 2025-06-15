@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
 
@@ -22,6 +22,20 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
   const hideNavbar = location.pathname.startsWith("/admin");
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+
+    if (token && user) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [location.pathname]);
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user?.role;
+
   return (
     <>
       {!hideNavbar && <Navbar isLoggedIn={isLoggedIn} />}
@@ -38,11 +52,12 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
           }
         />
         <Route path="/admin" element={<AdminPage />} />
-        
-        {/* <Route path="/admin-auctions" element={<AdminAuctionManagement />} /> */}
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/artist-profile" element={<ArtistProfile />} />
-        <Route path="/customer-profile" element={<CustomerProfile />} />
+        <Route
+          path="/customer-profile"
+          element={<CustomerProfile setIsLoggedIn={setIsLoggedIn} />}
+        />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/wishlist" element={<WishlistPage />} />
@@ -50,7 +65,13 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
           path="/login"
           element={
             isLoggedIn ? (
-              <Navigate to="/landing" />
+              role === "artist" ? (
+                <Navigate to="/artist-profile" />
+              ) : role === "admin" ? (
+                <Navigate to="/admin" />
+              ) : (
+                <Navigate to="/landing" />
+              )
             ) : (
               <SignIn onLoginSuccess={() => setIsLoggedIn(true)} />
             )
@@ -60,6 +81,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
     </>
   );
 }
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

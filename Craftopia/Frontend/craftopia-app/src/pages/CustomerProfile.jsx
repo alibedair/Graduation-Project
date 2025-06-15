@@ -7,15 +7,16 @@ import Wishlist from "../Components/Wishlist";
 import Footer from "../Components/Footer";
 import RequestCustomization from "../Components/RequestCustomization";
 
-const CustomerProfile = () => {
+const CustomerProfile = ({ setIsLoggedIn }) => {
     const [activeTab, setActiveTab] = useState("profile");
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-    };
-
+   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    navigate("/login");
+  };
     return (
         <div className="flex flex-col min-h-screen bg-[#FAF9F6]">
             <div className="flex w-full flex-grow">

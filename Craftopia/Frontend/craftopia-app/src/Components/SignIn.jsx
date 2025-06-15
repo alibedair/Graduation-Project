@@ -10,8 +10,6 @@ const SignIn = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const navigate = useNavigate();
-
   const handleClose = () => {
     setIsOpen(false);
   };
@@ -40,13 +38,6 @@ const SignIn = ({ onLoginSuccess }) => {
       setSuccessMessage('Login successful!');
       setError('');
       onLoginSuccess?.();
-
-      if (role === 'artist') {
-        navigate('/artist-profile');
-      }
-      else if (role === 'admin') {
-        navigate('/admin');
-      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
