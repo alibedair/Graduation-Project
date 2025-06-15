@@ -53,7 +53,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
         />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/landing" element={<LandingPage />} />
-        <Route path="/artist-profile" element={<ArtistProfile />} />
+       <Route path="/artist-profile" element={<ArtistProfile setIsLoggedIn={setIsLoggedIn} />} />
         <Route
           path="/customer-profile"
           element={<CustomerProfile setIsLoggedIn={setIsLoggedIn} />}
