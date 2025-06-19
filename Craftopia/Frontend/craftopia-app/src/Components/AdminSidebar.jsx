@@ -9,9 +9,13 @@ import {
   FaExclamation,
   FaPlus
 } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext";
 
 const AdminSidebar = ({ selected, setSelected }) => {
-  const [openDropdown, setOpenDropdown] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState(false);
+    const navigate = useNavigate();
+    const { logout } = useAuth();
 
   return (
     <div className="w-64 h-screen bg-[#F6EEEE] p-5 flex flex-col shadow-md shadow-gray-400">
@@ -82,9 +86,13 @@ const AdminSidebar = ({ selected, setSelected }) => {
           icon={<FaSignOutAlt />}
           text="Logout"
           selected={false}
-          onClick={() => console.log("Logging out...")}
+          onClick={() => {
+            logout();              // clear context + localStorage
+            navigate('/login');    // client‑side redirect
+          }}
         />
       </div>
+
     </div>
   );
 };
