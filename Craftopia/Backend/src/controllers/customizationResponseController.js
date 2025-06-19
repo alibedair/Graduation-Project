@@ -45,16 +45,15 @@ exports.respondToCustomizationRequest = async (req, res) => {
                 return res.status(500).json({message: 'Error uploading image'});
             }
         }
-        
-        const newResponse = await CustomizationResponse.create({
+          const newResponse = await CustomizationResponse.create({
             price,
             notes: note,
             estimationCompletionTime: estimationCompletionDate,
             artistId: artist.artistId,
             requestId: request.requestId,
-            image: image
-        });
-
+            image: image,
+            status: 'PENDING'
+        });        
         return res.status(201).json({
             message: 'Response created successfully',
             response: {
@@ -64,7 +63,8 @@ exports.respondToCustomizationRequest = async (req, res) => {
                 estimationCompletionTime: newResponse.estimationCompletionTime,
                 artistId: newResponse.artistId,
                 requestId: newResponse.requestId,
-                image: newResponse.image
+                image: newResponse.image,
+                status: newResponse.status
             }
         });
 
@@ -103,5 +103,89 @@ exports.getCustomizationResponses = async (req, res) => {
         return res.status(200).json(responses);
     } catch (error) {
         res.status(500).send({ message: error.message });
+    }
+};
+
+exports.acceptCustomizationResponse = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const customer = await Customer.findOne({ where: { userId } });
+        if (!customer) {
+            return res.status(403).send({ message: 'You are not authorized to accept customization responses' });
+        }
+        
+        const responseId = req.params.responseId;
+        const response = await CustomizationResponse.findOne({ 
+            where: { responseId },
+            include: [{
+                model: CustomizationRequest,
+                attributes: ['customerId', 'requestId']
+            }]
+        });
+        
+        if (!response) {
+            return res.status(404).send({ message: 'Response not found' });
+        }
+        if (response.customizationrequest.customerId !== customer.customerId) {
+            return res.status(403).send({ message: 'You are not authorized to accept this response' });
+        }
+        if (response.status !== 'PENDING') {
+            return res.status(400).send({ message: 'Response has already been processed' });
+        }
+        await response.update({ status: 'ACCEPTED' });
+        await CustomizationRequest.update(
+            { status: 'ACCEPTED' },
+            { where: { requestId: response.requestId } }
+        );
+        
+        return res.status(200).json({
+            message: 'Customization response accepted successfully',
+            responseId: response.responseId,
+            status: 'ACCEPTED'
+        });
+        
+    } catch (error) {
+        console.error('Error accepting customization response:', error);
+        res.status(500).send({ message: 'Internal server error' });
+    }
+};
+
+exports.declineCustomizationResponse = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const customer = await Customer.findOne({ where: { userId } });
+        if (!customer) {
+            return res.status(403).send({ message: 'You are not authorized to decline customization responses' });
+        }
+        
+        const responseId = req.params.responseId;
+        const response = await CustomizationResponse.findOne({ 
+            where: { responseId },
+            include: [{
+                model: CustomizationRequest,
+                attributes: ['customerId', 'requestId']
+            }]
+        });
+        
+        if (!response) {
+            return res.status(404).send({ message: 'Response not found' });
+        }
+        if (response.customizationrequest.customerId !== customer.customerId) {
+            return res.status(403).send({ message: 'You are not authorized to decline this response' });
+        }
+        if (response.status !== 'PENDING') {
+            return res.status(400).send({ message: 'Response has already been processed' });
+        }
+        await response.update({ status: 'DECLINED' });
+        
+        return res.status(200).json({
+            message: 'Customization response declined successfully',
+            responseId: response.responseId,
+            status: 'DECLINED'
+        });
+        
+    } catch (error) {
+        console.error('Error declining customization response:', error);
+        res.status(500).send({ message: 'Internal server error' });
     }
 };

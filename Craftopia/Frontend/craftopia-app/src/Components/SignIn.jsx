@@ -43,9 +43,10 @@ const SignIn = ({ onLoginSuccess }) => {
 
       if (role === 'artist') {
         navigate('/artist-profile');
-      }
-      else if (role === 'admin') {
+      } else if (role === 'admin') {
         navigate('/admin');
+      } else if (role === 'customer') {
+        navigate('/landing');
       }
     } catch (err) {
       console.error(err);

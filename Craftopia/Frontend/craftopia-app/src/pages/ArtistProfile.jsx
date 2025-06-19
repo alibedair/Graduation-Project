@@ -8,12 +8,14 @@ import Footer from "../Components/Footer";
 import ReviewRequests from "../Components/ReviewRequests";
 import { Gavel } from "lucide-react";
 import AuctionRequest from "../Components/AuctionRequest";
-const ArtistProfile = () => {
+const ArtistProfile = ({ setIsLoggedIn }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+    const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false); 
     navigate("/login");
   };
 
