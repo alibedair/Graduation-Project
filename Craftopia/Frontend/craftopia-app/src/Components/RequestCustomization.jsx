@@ -16,7 +16,7 @@ const RequestCustomization = () => {
     const [showForm, setShowForm] = useState(false);
     const [expandedRequestIds, setExpandedRequestIds] = useState([]);
     const [selectedReply, setSelectedReply] = useState(null);
-   
+
     useEffect(() => {
         const fetchReplies = async () => {
             const token = localStorage.getItem("token");
@@ -107,13 +107,14 @@ const RequestCustomization = () => {
                 : [...prev, requestId]
         );
     };
+
     const handleAccept = async (replyId) => {
         const token = localStorage.getItem("token");
         try {
             const response = await fetch(
                 `http://localhost:3000/customizationResponse/accept/${replyId}`,
                 {
-                    method: "POST",
+                    method: "PUT",
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
@@ -130,6 +131,15 @@ const RequestCustomization = () => {
             });
             const data = await res.json();
             setReplies(data);
+            const grouped = data.reduce((acc, reply) => {
+                const requestId = reply.requestId;
+                if (!acc[requestId]) {
+                    acc[requestId] = [];
+                }
+                acc[requestId].push(reply);
+                return acc;
+            }, {});
+            setGroupedReplies(grouped);
         } catch (error) {
             console.error(error);
             alert("Error accepting offer: " + error.message);
@@ -142,7 +152,7 @@ const RequestCustomization = () => {
             const response = await fetch(
                 `http://localhost:3000/customizationResponse/decline/${replyId}`,
                 {
-                    method: "POST",
+                    method: "PUT",
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
@@ -159,6 +169,15 @@ const RequestCustomization = () => {
             });
             const data = await res.json();
             setReplies(data);
+            const grouped = data.reduce((acc, reply) => {
+                const requestId = reply.requestId;
+                if (!acc[requestId]) {
+                    acc[requestId] = [];
+                }
+                acc[requestId].push(reply);
+                return acc;
+            }, {});
+            setGroupedReplies(grouped);
         } catch (error) {
             console.error(error);
             alert("Error declining offer: " + error.message);
@@ -175,15 +194,28 @@ const RequestCustomization = () => {
         });
     };
 
+    const getStatusBadge = (status) => {
+        const statusStyles = {
+            PENDING: "bg-yellow-100 text-yellow-800",
+            ACCEPTED: "bg-green-100 text-green-800",
+            DECLINED: "bg-red-100 text-red-800"
+        };
+
+        return (
+            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusStyles[status]}`}>
+                {status}
+            </span>
+        );
+    };
+
     return (
-        <div className="max-w-5xl  bg-[#F6EEEE] p-8 rounded-3xl ">
+        <div className="max-w-5xl bg-[#FAF9F6] p-8 rounded-3xl">
             {!showForm ? (
                 <>
-                    <h2 className="text-4xl font-extrabold text-[#E07385] mb-8  tracking-wide">
+                    <h2 className="text-4xl font-extrabold text-[black] mb-8 tracking-wide">
                         🎨 Artist Offers
                     </h2>
-
-                    <div className="bg-[#FAF9F6] p-6 rounded-2xl shadow-md max-w-3xl mx-auto space-y-6">
+                    <div className="bg-[#FAF9F6] p-6 rounded-2xl shadow-md max-w-3xl ml-0 mr-auto space-y-6">
                         {Object.keys(groupedReplies).length === 0 ? (
                             <p className="text-gray-500 text-center text-lg">No offers yet.</p>
                         ) : (
@@ -194,7 +226,7 @@ const RequestCustomization = () => {
                                 return (
                                     <div
                                         key={requestId}
-                                        className="border border-[#E07385]/40 rounded-xl p-5 bg-[#fff7f9] shadow-sm hover:shadow-md transition-all duration-300"
+                                        className="border border-[#E07385]/40 rounded-xl p-5 bg-[#F6EEEE] shadow-sm hover:shadow-md transition-all duration-300"
                                     >
                                         <div
                                             className="flex items-center justify-between cursor-pointer"
@@ -212,9 +244,17 @@ const RequestCustomization = () => {
                                                     <p className="text-xl font-semibold text-[black]">
                                                         🛍️ {request.title || "Unknown Product"}
                                                     </p>
-                                                    <p className="text-l text-gray-500">
-                                                        {replies.length} {replies.length === 1 ? "offer" : "offers"} available
-                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-l text-gray-500">
+                                                            {replies.length} {replies.length === 1 ? "offer" : "offers"} available
+                                                        </p>
+
+                                                        {replies.some(r => r.status === 'ACCEPTED') && (
+                                                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                                                                Accepted
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <span className="text-2xl text-[#E07385] font-bold">
@@ -223,26 +263,32 @@ const RequestCustomization = () => {
                                         </div>
 
                                         {expandedRequestIds.includes(requestId) && (
-                                            <div className="mt-4 pt-4 border-t space-y-6">
+                                            <div className="mt-4 pt-4  space-y-6">
                                                 {replies.map((reply) => (
                                                     <div
                                                         key={reply.responseId}
-                                                        className={`p-4 rounded-lg ${selectedReply === reply.responseId ? 'bg-[#E07385]/10 border border-[#E07385]/50' : 'bg-white border border-gray-200'}`}
+                                                        className={`p-4 rounded-lg border border-gray-200 ${selectedReply === reply.responseId
+                                                            ? 'bg-[color:var(--color-coral)/10]'
+                                                            : 'bg-white'
+                                                            }`}
                                                     >
+
                                                         <div className="flex items-center justify-between gap-4 mb-3">
                                                             <div className="flex items-center gap-3">
                                                                 {reply.artist?.profilePicture && (
                                                                     <img
                                                                         src={reply.artist.profilePicture}
                                                                         alt="Artist"
-                                                                        className="w-17 h-17 rounded-full object-cover "
+                                                                        className="w-17 h-17 rounded-full object-cover"
                                                                     />
                                                                 )}
-                                                                <div>
+                                                                <div className="flex items-center gap-2">
                                                                     <span className="text-lg font-semibold text-black">
                                                                         {reply.artist?.username || "Unknown Artist"}
                                                                     </span>
+                                                                    {getStatusBadge(reply.status)}
                                                                 </div>
+
                                                             </div>
                                                             <span className="text-xl font-bold text-[#921A40]">
                                                                 {reply.price} LE
@@ -275,26 +321,35 @@ const RequestCustomization = () => {
                                                                     alt="Reply Image"
                                                                     className="w-28 h-28 object-cover rounded-lg shadow border border-[#E07385]/30"
                                                                 />
-
                                                             </div>
                                                         )}
 
                                                         <div className="flex justify-end gap-4 mt-4">
-                                                            <button
-                                                                onClick={() => handleDecline(reply.responseId)}
-                                                                className="bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-700 transition"
-                                                            >
-                                                                Decline
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedReply(reply.responseId);
-                                                                    handleAccept(reply.responseId);
-                                                                }}
-                                                                className="bg-[#e07385] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#c26075] transition"
-                                                            >
-                                                                Accept
-                                                            </button>
+                                                            {reply.status === 'PENDING' ? (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleDecline(reply.responseId)}
+                                                                        className="bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-700 transition"
+                                                                    >
+                                                                        Decline
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSelectedReply(reply.responseId);
+                                                                            handleAccept(reply.responseId);
+                                                                        }}
+                                                                        className="bg-[#e07385] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#c26075] transition"
+                                                                    >
+                                                                        Accept
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <div className="text-sm italic text-gray-500">
+                                                                    {reply.status === 'ACCEPTED' ?
+                                                                        "You've accepted this offer" :
+                                                                        "You've declined this offer"}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -317,50 +372,72 @@ const RequestCustomization = () => {
                 </>
             ) : (
                 <>
-                    <h2 className="text-3xl font-bold text-[black] mb-6">Tell Us What You Need</h2>
+                    <h2 className="text-3xl font-extrabold text-[black] mb-6  ">
+                        Tell Us What You Need
+                    </h2>
+
                     {message && (
                         <div className="mb-6 text-center text-[#E07385] font-medium">{message}</div>
                     )}
 
                     <div className="flex flex-col md:flex-row gap-8">
-                        <form onSubmit={handleSubmit} className="flex-1 space-y-4">
-                            <input
-                                type="text"
-                                name="title"
-                                placeholder="Title"
-                                value={formData.title}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                                required
-                            />
-                            <textarea
-                                name="description"
-                                placeholder="Description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                                rows={4}
-                                required
-                            ></textarea>
-                            <input
-                                type="text"
-                                name="budget"
-                                placeholder="Budget (LE)"
-                                value={formData.budget}
-                                onChange={handleChange}
-                                className="w-full p-2 border rounded"
-                                required
-                            />
+                        <form onSubmit={handleSubmit} className="flex-1 space-y-6">
+                            <div className="flex flex-col">
+                                <label className="font-semibold mb-1">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    placeholder="Title"
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#E07385] transition"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className="font-semibold mb-1">
+                                    Description <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    name="description"
+                                    placeholder="Description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#E07385] transition"
+                                    rows={4}
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label className="font-semibold mb-1">
+                                    Budget (LE) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="budget"
+                                    placeholder="Budget"
+                                    value={formData.budget}
+                                    onChange={handleChange}
+                                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#E07385] transition"
+                                    required
+                                />
+                            </div>
 
                             <button
                                 type="submit"
-                                className="mt-8 w-full md:w-1/3 bg-white border-2 border-[#E07385] text-[#E07385] py-3 rounded-full font-semibold hover:bg-[#E07385] hover:text-white transition duration-300"
+                                className="mt-8 w-full md:w-1/3 bg-[#E07385] text-white py-3 rounded-full font-semibold hover:bg-white hover:text-[#E07385] border-2 border-[#E07385] transition duration-300"
                             >
                                 📩 Submit Request
                             </button>
                         </form>
-
                         <div className="md:w-1/3 flex flex-col items-center space-y-4">
+                            <label className="font-semibold">
+                                Upload Your Design <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="file"
                                 accept="image/*"
@@ -375,6 +452,7 @@ const RequestCustomization = () => {
                             >
                                 ➕ Upload Your Design
                             </div>
+
                             {preview && (
                                 <div className="flex justify-center mt-4">
                                     <img
@@ -387,15 +465,17 @@ const RequestCustomization = () => {
                         </div>
                     </div>
 
+                    {/* Back Button */}
                     <div className="text-center mt-10">
                         <button
                             onClick={() => setShowForm(false)}
-                            className="text-[#E07385] hover:underline"
+                            className="text-[#E07385] hover:underline font-medium"
                         >
                             ⬅ Back to Offers
                         </button>
                     </div>
                 </>
+
             )}
         </div>
     );

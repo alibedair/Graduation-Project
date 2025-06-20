@@ -226,8 +226,6 @@ const AddProduct = () => {
               className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
             />
           </div>
-
-          {/* Material */}
           <div>
             <label className="block font-semibold text-sm text-[#7a162e] mb-2">
               Material <span className="text-red-500">*</span>

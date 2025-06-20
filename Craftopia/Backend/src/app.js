@@ -70,7 +70,7 @@ app.use('/auctionRequest', auctionRequestRoute);
 const bidRoute = require('./routes/bidRoute');
 app.use('/bid', bidRoute);
 
-const wishlistRoute = require('./routes/wishlistRoute');
+const wishlistRoute = require('./routes/WishlistRoute');
 app.use('/wishlist', wishlistRoute);
 
 const PORT = process.env.PORT || 3000;
