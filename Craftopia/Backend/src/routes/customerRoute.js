@@ -38,4 +38,9 @@ router.get('/followed-artists',
     customerController.getFollowing
 );
 
+router.get('/search-artists',
+    authMiddleware,
+    customerController.searchArtists
+);
+
 module.exports = router;

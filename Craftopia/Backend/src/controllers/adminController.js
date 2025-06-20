@@ -226,6 +226,8 @@ exports.removeArtist = async (req, res) => {
                 transaction
             });
             
+            // don't delete active auctions
+
             for (const request of auctionRequests) {
                 if (request.status === 'approved') {
                     try {

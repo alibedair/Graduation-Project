@@ -1,8 +1,11 @@
 const Artist = require('../models/artist');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const User = require('../models/user');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const { validationResult } = require('express-validator');
+const Product = require('../models/product');
+const ArtistFollow = require('../models/artistFollow');
+const Customer = require('../models/customer');
 
 exports.updateArtist = async (req, res) => {
     try {
@@ -114,12 +117,37 @@ exports.getArtist = async (req, res) => {
 
 exports.getAllArtists = async (req, res) => {
     try {
+        const errors = validationResult(req);        
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
         let artists = await Artist.findAll({
-            attributes: ['artistId', 'name', 'username'],
+            attributes: [
+                'artistId', 
+                'name', 
+                'username',
+                'profilePicture',
+                'biography',
+                [Sequelize.fn('COUNT', Sequelize.col('products.productId')), 'numberOfProducts'],
+                [Sequelize.fn('COUNT', Sequelize.col('artistfollows.customerId')), 'followersCount']
+            ],
             include: [{
                 model: User,
                 attributes: ['email']
-            }],
+            },
+            {
+                model: Product,
+                attributes: [],
+                required: false
+            },
+            {
+                model: ArtistFollow,
+                attributes: [],
+                required: false
+            }
+            ],
+            group: ['artist.artistId', 'user.userId'],
             order: [['artistId', 'DESC']]
         });
         return res.status(200).json({artists});
@@ -128,3 +156,34 @@ exports.getAllArtists = async (req, res) => {
         res.status(500).json({message: 'Internal server error'});
     }
 }
+
+exports.getArtistFollowers = async (req, res) => {
+    try {
+        const { artistId } = req.params;
+        
+        const artist = await Artist.findByPk(artistId);
+        if (!artist) {
+            return res.status(404).json({ message: 'Artist not found' });
+        }
+
+        const followersCount = await ArtistFollow.count({
+            where: { artistId }
+        });
+
+        const followers = await ArtistFollow.findAll({
+            where: { artistId },
+            include: [{
+                model: Customer,
+                attributes: ['customerId', 'name', 'username']
+            }]
+        });
+
+        return res.status(200).json({ 
+            followersCount,
+            followers: followers.map(follow => follow.customer)
+        });
+    } catch (error) {
+        console.error('Error getting artist followers:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

@@ -92,9 +92,10 @@ exports.getAllAuctionRequests = async (req, res) => {
             include: [
                 {
                     model: Product,
-                    attributes: ['productId', 'name', 'image']
+                    attributes: ['productId', 'name', 'image','dimensions',]
                 },
                 {
+                    // still need sales and rating
                     model: Artist,
                     attributes: ['artistId', 'name', 'username']
                 }

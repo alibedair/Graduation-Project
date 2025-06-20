@@ -159,3 +159,60 @@ exports.getFollowing = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+exports.searchArtists = async (req, res) => {
+    try {
+        const { query } = req.query;
+        const userId = req.user?.id;
+        
+        if (!query || query.trim().length < 2) {
+            return res.status(400).json({ message: 'Search query must be at least 2 characters long' });
+        }
+
+        let customerProfile = null;
+        if (userId) {
+            customerProfile = await customer.findOne({ where: { userId } });
+        }
+        const artists = await Artist.findAll({
+            where: {
+                [require('sequelize').Op.or]: [
+                    { name: { [require('sequelize').Op.iLike]: `%${query}%` } },
+                    { username: { [require('sequelize').Op.iLike]: `%${query}%` } },
+                    { biography: { [require('sequelize').Op.iLike]: `%${query}%` } }
+                ]
+            },
+            attributes: ['artistId', 'name', 'username', 'profilePicture', 'biography'],
+            limit: 20
+        });
+        const artistsWithCounts = await Promise.all(
+            artists.map(async (artist) => {
+                const followersCount = await ArtistFollow.count({
+                    where: { artistId: artist.artistId }
+                });
+                
+                return {
+                    ...artist.dataValues,
+                    followersCount
+                };
+            })
+        );
+        artistsWithCounts.sort((a, b) => b.followersCount - a.followersCount); 
+        for (let artist of artistsWithCounts) {
+            artist.isFollowing = false;
+            if (customerProfile) {
+                const followRecord = await ArtistFollow.findOne({
+                    where: {
+                        customerId: customerProfile.customerId,
+                        artistId: artist.artistId
+                    }
+                });
+                artist.isFollowing = !!followRecord;
+            }
+        }
+
+        return res.status(200).json({ artists: artistsWithCounts });
+    } catch (error) {
+        console.error('Error searching artists:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};

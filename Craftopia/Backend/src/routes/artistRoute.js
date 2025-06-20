@@ -3,10 +3,14 @@ const artistController = require('../controllers/artistController');
 const upload = require('../middlewares/upload');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 
 router.get('/getprofile', authMiddleware, artistController.getArtist);
 router.get('/all', artistController.getAllArtists);
+router.get('/:artistId/followers', 
+    param('artistId').isInt().withMessage('Artist ID must be an integer'),
+    artistController.getArtistFollowers
+);
 
 router.post('/update',
     authMiddleware, 
