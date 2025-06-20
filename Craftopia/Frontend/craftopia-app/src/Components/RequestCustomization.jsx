@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Upload } from "lucide-react";
 
 const RequestCustomization = () => {
     const [formData, setFormData] = useState({
@@ -448,9 +449,10 @@ const RequestCustomization = () => {
                             />
                             <div
                                 onClick={() => fileInputRef.current.click()}
-                                className="cursor-pointer w-full border-2 border-dashed border-[#E07385] rounded-lg py-12 flex justify-center items-center text-[#E07385] font-semibold text-lg hover:bg-[#E07385] hover:text-white transition duration-300 select-none"
+                                className="cursor-pointer w-full border-2 border-dashed border-[#E07385] rounded-lg py-12 flex flex-col justify-center items-center text-[#E07385] font-semibold text-lg hover:bg-[#E07385] hover:text-white transition duration-300 select-none"
                             >
-                                ➕ Upload Your Design
+                                <Upload className="w-8 h-8 mb-2" />
+                                <span>Upload Your Design</span>
                             </div>
 
                             {preview && (
@@ -462,10 +464,17 @@ const RequestCustomization = () => {
                                     />
                                 </div>
                             )}
+                            {preview && (
+                                <div className="flex justify-center mt-4">
+                                    <img
+                                        src={preview}
+                                        alt="Preview"
+                                        className="w-40 h-40 object-contain rounded-lg shadow"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
-
-                    {/* Back Button */}
                     <div className="text-center mt-10">
                         <button
                             onClick={() => setShowForm(false)}
