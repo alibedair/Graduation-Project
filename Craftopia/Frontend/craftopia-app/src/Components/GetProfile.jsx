@@ -81,15 +81,16 @@ const GetProfile = ({ setActiveTab }) => {
         <div className="flex-1">
           <div className="flex items-start gap-4 mb-4">
             <img
-              src={profile.profilePicture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
+             src={profile.profilePicture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover border-2 border-[#E07385] shadow-md"
             />
-
-            <div>
-              <h1 className="text-2xl font-bold mt-3">{profile.name || "Artist Name"}</h1>
-              <p className="text-lg text-[#921A40] mt-2">@{profile.username || "username"}</p>
+            <div className="mt-3">
+              <h1 className="text-2xl font-semibold text-gray-900">{profile.name || "Artist Name"}</h1>
+              <p className="text-base text-[#921A40]">@{profile.username || "username"}</p>
+              <p className="text-sm text-gray-500 mt-1">{profile.visitors || 0} visitors during this week</p>
             </div>
+
           </div>
 
           <p className="text-black bg-[#F6EEEE] p-6 rounded-lg shadow-md text-xl leading-relaxed mt-10">
@@ -174,7 +175,6 @@ const GetProfile = ({ setActiveTab }) => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
