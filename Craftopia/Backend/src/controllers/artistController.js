@@ -100,12 +100,16 @@ exports.updateArtist = async (req, res) => {
 
 exports.getArtist = async (req, res) => {
     try {
+        const { artistId } = req.params; 
         const userId = req.user.id;
-        const artist = await Artist.findOne({where: {userId}});
+        const artist = await Artist.findOne({ where: { artistId } });
         if(!artist){
             return res.status(404).json({message: 'Artist profile not found'});
         }
+        const user = await User.findOne({where: {userId}});
+        if(user.role == 'customer'){
         await artist.increment('visitors');
+        }
         return res.status(200).json({artist});
     } catch (error) {
         res.status(400).json({
