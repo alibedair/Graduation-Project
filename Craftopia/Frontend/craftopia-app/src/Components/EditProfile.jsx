@@ -16,7 +16,8 @@ const EditProfile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch("http://localhost:3000/artist/getprofile", {
+                const artistId = localStorage.getItem("artistId"); 
+      const response = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -43,34 +44,39 @@ const EditProfile = () => {
     }, []);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData();
+    e.preventDefault();
+    const formData = new FormData();
 
-        formData.append("name", name);
-        formData.append("username", username);
-        formData.append("phone", phone);
-        formData.append("biography", biography);
+    formData.append("name", name);
+    formData.append("username", username);
+    formData.append("phone", phone);
+    formData.append("biography", biography);
 
-        if (profilePictureFile) formData.append("profilePicture", profilePictureFile);
-        if (profileVideoFile) formData.append("profileVideo", profileVideoFile);
+    if (profilePictureFile) formData.append("profilePicture", profilePictureFile);
+    if (profileVideoFile) formData.append("profileVideo", profileVideoFile);
 
-        try {
-            const response = await fetch("http://localhost:3000/artist/update", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: formData,
-            });
+    try {
+        const response = await fetch("http://localhost:3000/artist/update", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: formData,
+        });
 
-            if (!response.ok) throw new Error("Update failed");
+        if (!response.ok) throw new Error("Update failed");
 
-            setMessage("Profile updated successfully.");
-        } catch (err) {
-            console.error(err);
-            setMessage("Failed to update profile.");
+        const data = await response.json();
+        if (data.artist && data.artist.artistId) {
+            localStorage.setItem("artistId", data.artist.artistId);
         }
-    };
+
+        setMessage("Profile updated successfully.");
+    } catch (err) {
+        console.error(err);
+        setMessage("Failed to update profile.");
+    }
+};
 
     const handleFileChange = (e, type) => {
         const file = e.target.files[0];
