@@ -70,6 +70,9 @@ app.use('/auctionRequest', auctionRequestRoute);
 const bidRoute = require('./routes/bidRoute');
 app.use('/bid', bidRoute);
 
+const wishlistRoute = require('./routes/wishlistRoute');
+app.use('/wishlist', wishlistRoute);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
