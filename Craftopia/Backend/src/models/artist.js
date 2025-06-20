@@ -40,6 +40,10 @@ const Artist = sequelize.define('artist', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    visitors: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
 });
 
 

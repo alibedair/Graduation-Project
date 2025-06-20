@@ -102,6 +102,7 @@ exports.getArtist = async (req, res) => {
         if(!artist){
             return res.status(404).json({message: 'Artist profile not found'});
         }
+        await artist.increment('visitors');
         return res.status(200).json({artist});
     } catch (error) {
         res.status(400).json({
