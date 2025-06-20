@@ -22,12 +22,12 @@ const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => navigate('/shop')}
-                className="bg-coral hover:bg-coral/90 text-cream px-8 py-3 text-lg font-medium rounded-md transition-colors duration-200"
+                className="bg-coral hover:bg-coral/80 text-cream px-8 py-3 text-lg font-medium rounded-md transition-colors duration-200 cursor-pointer"
               >
                 Shop Now
               </button>
               <button
-                className="border border-burgundy text-burgundy hover:bg-burgundy hover:text-cream px-8 py-3 text-lg font-medium rounded-md transition-colors duration-200"
+                className="border border-burgundy text-burgundy hover:bg-burgundy hover:text-cream px-8 py-3 text-lg font-medium rounded-md transition-colors duration-200 cursor-pointer"
               >
                 Explore Artisans
               </button>

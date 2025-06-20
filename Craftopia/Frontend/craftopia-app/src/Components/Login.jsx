@@ -43,14 +43,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-burgundy">Welcome Back</h2>
+          <h2 className="text-3xl font-bold text-black/90">Welcome Back</h2>
           <p className="mt-2 text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <div className="bg-auction-card rounded-lg shadow-lg p-8">
+        <div className="bg-card rounded-lg shadow-lg p-8">
           {successMessage && (
             <p className="text-green-600 text-center mb-4">
               {successMessage}
@@ -71,7 +71,8 @@ const Login = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coral focus:border-coral"
+                // className="w-full px-3 py-2 border border-burgundy/20 rounded-md focus:outline-none focus:ring-2 focus:ring-coral focus:border-coral"
                 placeholder="Enter your email"
               />
             </div>
@@ -86,7 +87,7 @@ const Login = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                className="w-full px-4 py-2 border bg-white border-gray-300 rounded-md focus:ring-2 focus:outline-none focus:ring-coral focus:border-coral"
                 placeholder="Enter your password"
               />
             </div>
