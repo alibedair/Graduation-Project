@@ -22,12 +22,8 @@ const Login = () => {
         'http://localhost:3000/auth/login',
         { email, password }
       );
-
-      // Tell context about the new token:
       login(data.token);
       setSuccessMessage('Login successful!');
-
-      // Redirect based on role returned by backend
       if (data.role === 'artist') {
         navigate('/artist-profile');
       } else if (data.role === 'admin') {

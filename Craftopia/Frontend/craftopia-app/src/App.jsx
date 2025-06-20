@@ -8,7 +8,7 @@ import HeroSection from './Components/HeroSection';
 import PopularProducts     from './Components/PopularProducts';
 import BestSellingProducts from './Components/BestSellingProducts';
 import Footer              from './Components/Footer';
-import Login from './Components/login';
+import Login               from './Components/Login';
 import ArtistProfile       from './pages/ArtistProfile';
 import CustomerProfile     from './pages/CustomerProfile';
 import CartPage            from './pages/CartPage';
@@ -23,11 +23,8 @@ function LoginRoute() {
   const { user } = useAuth();
 
   if (!user) {
-    // not logged in → show the form
     return <Login />;
   }
-
-  // logged in → redirect by role
   switch (user.role) {
     case 'artist':
       return <Navigate to="/artist-profile" replace />;

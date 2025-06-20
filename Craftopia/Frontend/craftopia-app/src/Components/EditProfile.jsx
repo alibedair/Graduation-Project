@@ -10,7 +10,6 @@ const EditProfile = () => {
     const [profilePictureFile, setProfilePictureFile] = useState(null);
     const [profileVideoFile, setProfileVideoFile] = useState(null);
     const [message, setMessage] = useState("");
-
     const pictureInputRef = useRef(null);
     const videoInputRef = useRef(null);
 

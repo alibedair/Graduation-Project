@@ -6,7 +6,7 @@ const GetProfile = ({ setActiveTab }) => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [productsError, setProductsError] = useState("");
-    const [activeSection, setActiveSection] = useState("gallery");
+  const [activeSection, setActiveSection] = useState("gallery");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -81,10 +81,11 @@ const GetProfile = ({ setActiveTab }) => {
         <div className="flex-1">
           <div className="flex items-start gap-4 mb-4">
             <img
-              src={profile.profilePicture || "https://via.placeholder.com/150"}
+              src={profile.profilePicture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover border-2 border-[#E07385] shadow-md"
             />
+
             <div>
               <h1 className="text-2xl font-bold mt-3">{profile.name || "Artist Name"}</h1>
               <p className="text-lg text-[#921A40] mt-2">@{profile.username || "username"}</p>
@@ -107,63 +108,76 @@ const GetProfile = ({ setActiveTab }) => {
         )}
       </div>
 
-  <div className="mt-15">
-  <div className="flex  justify-start gap-30 mb-8 mr-50">
-    <button
-      onClick={() => setActiveSection("gallery")}
-      className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${
-        activeSection === "gallery"
-          ? "bg-[#E07385] text-white"
-          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-      }`}
-    >
-      Gallery Products
-    </button>
-    <button
-      onClick={() => setActiveSection("auction")}
-      className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${
-        activeSection === "auction"
-          ? "bg-[#E07385] text-white"
-          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-      }`}
-    >
-      Auction Products
-    </button>
-  </div>
-  {activeSection === "gallery" && (
-    <div>
-      <p className="text-xl font-bold mb-4">Gallery Products</p>
-      {loadingProducts && <p>Loading products...</p>}
-      {productsError && <p className="text-red-500">{productsError}</p>}
+      <div className="mt-15">
+        <div className="flex  justify-start gap-30 mb-8 mr-50">
+          <button
+            onClick={() => setActiveSection("gallery")}
+            className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
+                ? "bg-[#E07385] text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+          >
+            Gallery Products
+          </button>
+          <button
+            onClick={() => setActiveSection("auction")}
+            className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "auction"
+                ? "bg-[#E07385] text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+          >
+            Auction Products
+          </button>
+        </div>
+        {activeSection === "gallery" && (
+          <div>
+            <p className="text-xl font-bold mb-4">Gallery Products</p>
+            {loadingProducts && <p>Loading products...</p>}
+            {productsError && <p className="text-red-500">{productsError}</p>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.length === 0 && !loadingProducts && <p>No products found.</p>}
-        {products.map((product) => (
-          <div key={product._id || product.id} className="border rounded-lg p-4 shadow hover:shadow-lg transition">
-            <img
-              src={product.image || "https://via.placeholder.com/150"}
-              alt={product.name}
-              className="w-full h-48 object-cover rounded"
-            />
-            <h3 className="mt-2 font-semibold text-lg">{product.name}</h3>
-            <p className="text-[#E07385] font-bold mt-1">${product.price || "N/A"}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {products.length === 0 && !loadingProducts && <p>No products found.</p>}
+              {products.map((product) => (
+                <div key={product._id || product.id} className="border rounded-lg p-4 shadow hover:shadow-lg transition">
+                  <img
+                    src={product.image || "https://via.placeholder.com/150"}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded"
+                  />
+                  <h3 className="mt-2 font-semibold text-lg">{product.name}</h3>
+                  <p className="text-[#E07385] font-bold mt-1">${product.price || "N/A"}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
-  )}
+        )}
 
-  {activeSection === "auction" && (
-    <div>
-      <p className="text-xl font-bold mb-4">Auction Products</p>
-      <div className="border rounded-lg p-4 bg-[#F6EEEE] text-gray-600 text-center">
-        No auction products available.
+        {activeSection === "auction" && (
+          <div>
+            <p className="text-xl font-bold mb-4">Auction Products</p>
+            {loadingProducts && <p>Loading products...</p>}
+            {productsError && <p className="text-red-500">{productsError}</p>}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {products.length === 0 && !loadingProducts && <p>No products found.</p>}
+              {products.map((product) => (
+                <div key={product._id || product.id} className="border rounded-lg p-4 shadow hover:shadow-lg transition">
+                  <img
+                    src={product.image || "https://via.placeholder.com/150"}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded"
+                  />
+                  <h3 className="mt-2 font-semibold text-lg">{product.name}</h3>
+                  <p className="text-[#E07385] font-bold mt-1">${product.price || "N/A"}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
-    </div>
-  )}
-</div>
     </div>
   );
-}       
+}
 
 export default GetProfile;
