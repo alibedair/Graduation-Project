@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import ProductCard from '../Components/ProductCard';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import Footer from '../Components/Footer';
 
 const dummyCategories = [
     { name: 'Ceramics' },
@@ -79,67 +80,70 @@ const Shop = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAF9F6] py-10 px-4 md:px-12">
-            <h1 className="text-3xl font-bold text-center mb-8 text-[#333] mt-7">Shop All Products</h1>
+        <>
+            <div className="min-h-screen bg-[#FAF9F6] py-10 px-4 md:px-12">
+                <h1 className="text-3xl font-bold text-center mb-8 text-[#333] mt-7">Shop All Products</h1>
 
-            <div className="relative mb-18">
-                <div className="flex justify-center">
-                    <div className="inline-flex gap-3 sm:gap-4 md:gap-6 bg-white rounded-4xl shadow-sm px-4 py-3 sm:py-4">
-                        {['All', ...categories.map((cat) => cat.name)].map((name) => {
-                            const isSelected = selected === name;
-                            return (
-                                <button
-                                    key={name}
-                                    onClick={() => setSelected(name)}
-                                    className={`relative z-10 px-6 py-2 rounded-full font-semibold text-base transition-all duration-300 ${isSelected
-                                            ? 'text-white'
-                                            : 'text-gray-700 hover:text-[#E07385]'
-                                        }`}
-                                >
-                                    {isSelected && (
-                                        <motion.div
-                                            layoutId="highlight"
-                                            className="absolute inset-0 bg-[#E07385] rounded-full z-[-1]"
-                                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                                        />
-                                    )}
-                                    {name}
-                                </button>
-                            );
-                        })}
+                <div className="relative mb-18">
+                    <div className="flex justify-center">
+                        <div className="inline-flex gap-3 sm:gap-4 md:gap-6 bg-white rounded-4xl shadow-sm px-4 py-3 sm:py-4">
+                            {['All', ...categories.map((cat) => cat.name)].map((name) => {
+                                const isSelected = selected === name;
+                                return (
+                                    <button
+                                        key={name}
+                                        onClick={() => setSelected(name)}
+                                        className={`relative z-10 px-6 py-2 rounded-full font-semibold text-base transition-all duration-300 ${isSelected
+                                                ? 'text-white'
+                                                : 'text-gray-700 hover:text-[#E07385]'
+                                            }`}
+                                    >
+                                        {isSelected && (
+                                            <motion.div
+                                                layoutId="highlight"
+                                                className="absolute inset-0 bg-[#E07385] rounded-full z-[-1]"
+                                                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                                            />
+                                        )}
+                                        {name}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
+                </div>
+
+                <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+                    {filteredProducts.map((product) => {
+                        const normalizedProduct = {
+                            ...product,
+                            image: product.image,
+                            category: product.category?.name,
+                            artist: product.artist?.username || "Unknown",
+                        };
+
+                        const inCart = cartItems.find((item) => item.id === product.id);
+                        const quantity = inCart?.quantity || 0;
+
+                        return (
+                            <ProductCard
+                                key={normalizedProduct.id}
+                                product={normalizedProduct}
+                                isFavorite={wishlist.some((item) => item.id === normalizedProduct.id)}
+                                onToggleFavorite={() => toggleWishlist(normalizedProduct)}
+                                isInCart={!!inCart}
+                                quantity={quantity}
+                                onAddToCart={() => addToCart(normalizedProduct)}
+                                onIncrement={() => incrementQuantity(normalizedProduct.id)}
+                                onDecrement={() => decrementQuantity(normalizedProduct.id)}
+                            />
+                        );
+                    })}
                 </div>
             </div>
 
-            <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
-                {filteredProducts.map((product) => {
-                    const normalizedProduct = {
-                        ...product,
-                        image: product.image,
-                        category: product.category?.name,
-                        artist: product.artist?.username || "Unknown",
-                    };
-
-                    const inCart = cartItems.find((item) => item.id === product.id);
-                    const quantity = inCart?.quantity || 0;
-
-                    return (
-                        <ProductCard
-                            key={normalizedProduct.id}
-                            product={normalizedProduct}
-                            isFavorite={wishlist.some((item) => item.id === normalizedProduct.id)}
-                            onToggleFavorite={() => toggleWishlist(normalizedProduct)}
-                            isInCart={!!inCart}
-                            quantity={quantity}
-                            onAddToCart={() => addToCart(normalizedProduct)}
-                            onIncrement={() => incrementQuantity(normalizedProduct.id)}
-                            onDecrement={() => decrementQuantity(normalizedProduct.id)}
-                        />
-                    );
-
-                })}
-            </div>
-        </div>
+            <Footer />
+        </>
     );
 };
 

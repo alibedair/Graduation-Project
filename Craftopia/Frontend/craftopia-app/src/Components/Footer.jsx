@@ -1,66 +1,79 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 const Footer = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleAccountClick = () => {
+    if (!user) {
+      navigate("/login");
+    } else if (user.role === "customer") {
+      navigate("/customer-profile");
+    } else if (user.role === "artist") {
+      navigate("/artist-profile");
+    }
+  };
+
   return (
-    <footer className="bg-black text-white py-6 px-6 mt-6">
-   <div
-  className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-  style={{ gap: '6rem 8rem' }} 
->      
-<div className="space-y-4 -ml-50">
-          <h3 className="text-xl font-bold text-[#E07385]">Exclusive</h3>
-          <p className="text-base font-semibold text-white">Subscribe</p>
-          <p className="text-xs text-white">Get 10% off your first order</p>
-          <div className="flex border border-gray-500 rounded-md overflow-hidden w-3/4 max-w-xs">
+    <footer className="bg-black text-white py-12 mt-20">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
+        {/* Branding + Subscribe */}
+        <div>
+          <h2 className="text-2xl font-bold text-[#E07385] mb-3">Craftopia</h2>
+          <p className="text-sm mb-2">Subscribe & get 10% off your first order</p>
+          <div className="flex items-center bg-[#111] border border-gray-600 rounded-lg overflow-hidden max-w-xs">
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 p-1 text-white bg-black text-sm focus:outline-none"
+              className="flex-1 px-3 py-2 text-sm bg-transparent text-white placeholder-gray-400 focus:outline-none"
             />
-            <button className="bg-[#E07385] px-3 py-1 hover:bg-[#7a162e] transition text-sm">
-              &#10148;
+            <button className="bg-[#E07385] hover:bg-[#c1586c] transition-colors px-4 py-2 text-sm font-medium">
+              ➤
             </button>
           </div>
         </div>
 
-        <div className="space-y-4 mr-[-50px]">
-          <h4 className="text-base font-bold text-[#E07385]">Support</h4>
-          <p className="text-xs text-white">Craftopia@gmail.com</p>
-          <p className="text-xs text-white">+88015-88888-9999</p>
-        </div>
-
-        <div className="space-y-4 ml-[100px]">
-          <h4 className="text-base font-bold text-[#E07385]">Account</h4>
-          <ul className="space-y-2 text-xs text-white">
-            {["My Account", "Login / Register", "Cart", "Wishlist", "Shop"].map(
-              (item) => (
-                <li
-                  key={item}
-                  className="hover:text-[#E07385] transition cursor-pointer"
-                >
-                  {item}
-                </li>
-              )
-            )}
+        {/* Support */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#E07385] mb-4">Support</h3>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li>Email: <a href="mailto:craftopia@gmail.com" className="hover:text-white">craftopia@gmail.com</a></li>
+            <li>Phone: <span className="hover:text-white">+88015-88888-9999</span></li>
           </ul>
         </div>
 
-        <div className="space-y-4 ml-[120px]">
-  <h4 className="text-base font-bold text-[#E07385]">Quick Links</h4>
-          <ul className="space-y-2 text-xs text-white">
-            {["Privacy Policy", "Terms of Use", "FAQ", "Contact"].map(
-              (item) => (
-                <li
-                  key={item}
-                  className="hover:text-[#E07385] transition cursor-pointer"
-                >
-                  {item}
-                </li>
-              )
-            )}
+        {/* Account */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#E07385] mb-4">Account</h3>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li
+              className="cursor-pointer hover:text-white"
+              onClick={handleAccountClick}
+            >
+              My Account
+            </li>
+            <li><Link to="/login" className="hover:text-white">Login / Register</Link></li>
+            <li><Link to="/cart" className="hover:text-white">Cart</Link></li>
+            <li><Link to="/wishlist" className="hover:text-white">Wishlist</Link></li>
+            <li><Link to="/shop" className="hover:text-white">Shop</Link></li>
+          </ul>
+        </div>
+
+        {/* Quick Links */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#E07385] mb-4">Quick Links</h3>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li><Link to="/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="hover:text-white">Terms of Use</Link></li>
+            <li><Link to="/faq" className="hover:text-white">FAQ</Link></li>
+            <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
           </ul>
         </div>
       </div>
-      <div className="text-center text-white mt-10 text-[10px]">
-        © Copyright Craftopia 2025. All rights reserved. Made with ❤️ from artisans everywhere.
+
+      <div className="border-t border-gray-700 mt-12 pt-6 text-center text-xs text-gray-400">
+        © 2025 Craftopia. All rights reserved. Made with ❤️ by artisans everywhere.
       </div>
     </footer>
   );
