@@ -38,8 +38,7 @@ exports.placeOrder = async (req, res) => {
             orderDate: new Date(),
             totalAmount,
             status: 'Pending',
-            customerId: customer.customerId,
-            trackingInfo: 'unavailable'
+            customerId: customer.customerId
         });
 
         return res.status(201).json({
