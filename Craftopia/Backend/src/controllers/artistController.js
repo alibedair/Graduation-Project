@@ -233,3 +233,17 @@ exports.getArtistFollowers = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+exports.getProfile = async (req, res) => {
+    try{
+        const userId = req.user.id;
+        const ArtistProfile = await Artist.findOne({where: {userId}});
+        if(!ArtistProfile){
+            return res.status(404).json({message: "Artist profile not found"});
+        }
+        return res.status(200).json({ArtistProfile});
+    }catch(error){
+        console.error("Error getting Artist profile:", error);
+        return res.status(500).json({message: "Internal server error"});
+    }
+};

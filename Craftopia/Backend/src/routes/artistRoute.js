@@ -34,5 +34,11 @@ router.post('/update',
     artistController.updateArtist
 );
 
+router.get('/myprofile', 
+    authMiddleware, 
+    roleMiddleware('artist'),
+    artistController.getProfile
+);
+
 
 module.exports = router;
