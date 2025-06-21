@@ -6,6 +6,7 @@ const { validationResult } = require('express-validator');
 const Product = require('../models/product');
 const ArtistFollow = require('../models/artistFollow');
 const Customer = require('../models/customer');
+const Category = require('../models/category');
 
 exports.updateArtist = async (req, res) => {
     try {
@@ -124,8 +125,9 @@ exports.getAllArtists = async (req, res) => {
         const errors = validationResult(req);        
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
-        }
-        
+        }        
+        const userId = req.user.id;
+        const customer = await Customer.findOne({ where: { userId } });
         let artists = await Artist.findAll({            
             attributes: [
                 'artistId', 
@@ -162,8 +164,39 @@ exports.getAllArtists = async (req, res) => {
             ],
             group: ['artist.artistId', 'user.userId'],
             order: [['artistId', 'DESC']]
-        });
-        return res.status(200).json({artists});
+        });        
+        const artistsWithFollowingStatus = await Promise.all(
+            artists.map(async (artist) => {
+                const isFollowing = customer ? await ArtistFollow.findOne({
+                    where: {
+                        artistId: artist.artistId,
+                        customerId: customer.customerId
+                    }
+                }) !== null : false;               
+                const artistCategories = await Product.findAll({
+                    where: { artistId: artist.artistId },
+                    include: [{
+                        model: Category,
+                        attributes: ['categoryId', 'name'],
+                        required: true
+                    }],
+                    attributes: ['categoryId'],
+                    group: ['product.categoryId', 'category.categoryId', 'category.name']
+                });
+
+                const categoryNames = artistCategories.map(product => 
+                    product.category ? product.category.name : null
+                ).filter(name => name !== null);
+
+                return {
+                    ...artist.toJSON(),
+                    isFollowing,
+                    categories: categoryNames
+                };
+            })
+        );
+
+        return res.status(200).json({artists: artistsWithFollowingStatus});
     } catch (error) {
         console.error('Error fetching artists:', error);
         res.status(500).json({message: 'Internal server error'});

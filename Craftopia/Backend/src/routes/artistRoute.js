@@ -10,7 +10,7 @@ router.get('/getprofile/:artistId',
     param('artistId').isInt().withMessage('Artist ID must be an integer'),
     artistController.getArtist
 );
-router.get('/all', artistController.getAllArtists);
+router.get('/all', authMiddleware,artistController.getAllArtists);
 router.get('/:artistId/followers', 
     param('artistId').isInt().withMessage('Artist ID must be an integer'),
     artistController.getArtistFollowers
