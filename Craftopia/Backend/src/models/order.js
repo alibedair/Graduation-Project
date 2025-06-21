@@ -6,13 +6,13 @@ const Order = sequelize.define('order', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
-    },
+    },    
     orderDate: {
         type: DataTypes.DATE,
         allowNull: false
     },
     totalAmount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
     status: {
