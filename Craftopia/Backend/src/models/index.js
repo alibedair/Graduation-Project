@@ -22,6 +22,7 @@ const payment = require('./payment');
 const AuctionRequest = require('./auctionRequest');
 const categoryRequests = require('./categoriesRequests');
 const Rating = require('./rating');
+const Visitor = require('./visitor');
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -138,6 +139,17 @@ Rating.belongsTo(Customer, { foreignKey: 'customerId' });
 Artist.hasMany(Rating, { foreignKey: 'artistId' });
 Rating.belongsTo(Artist, { foreignKey: 'artistId' });
 
+// Visitor associations (Customer visits Artist)
+Artist.belongsToMany(Customer, { through: Visitor, foreignKey: 'artistId', as: 'visitorCustomers' });
+Customer.belongsToMany(Artist, { through: Visitor, foreignKey: 'customerId', as: 'visitedArtists' });
+
+// Direct associations for Visitor
+Artist.hasMany(Visitor, { foreignKey: 'artistId', as: 'visitorRecords' });
+Visitor.belongsTo(Artist, { foreignKey: 'artistId' });
+
+Customer.hasMany(Visitor, { foreignKey: 'customerId', as: 'visitRecords' });
+Visitor.belongsTo(Customer, { foreignKey: 'customerId' });
+
 // Export all models and sequelize instance
 module.exports = {
   sequelize,
@@ -161,5 +173,6 @@ module.exports = {
   payment,
   AuctionRequest,
   categoryRequests,
-  Rating
+  Rating,
+  Visitor
 };

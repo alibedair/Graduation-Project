@@ -7,6 +7,7 @@ const Product = require('../models/product');
 const ArtistFollow = require('../models/artistFollow');
 const Customer = require('../models/customer');
 const Category = require('../models/category');
+const Visitor = require('../models/visitor');
 
 exports.updateArtist = async (req, res) => {
     try {
@@ -107,9 +108,23 @@ exports.getArtist = async (req, res) => {
         if(!artist){
             return res.status(404).json({message: 'Artist profile not found'});
         }
-        const user = await User.findOne({where: {userId}});
-        if(user.role == 'customer'){
-        await artist.increment('visitors');
+        const user = await User.findOne({where: {userId}});        if(user.role == 'customer'){
+            const customer = await Customer.findOne({where: {userId}});
+            if(customer) {
+                const visitorRecord = await Visitor.findOne({
+                    where: {
+                        artistId: artist.artistId,
+                        customerId: customer.customerId
+                    }
+                });
+                if(visitorRecord==null){
+                    await Visitor.create({
+                        artistId: artist.artistId,
+                        customerId: customer.customerId
+                    });
+                    await artist.increment('visitors');
+                }
+            }
         }
         return res.status(200).json({artist});
     } catch (error) {
