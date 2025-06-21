@@ -1,57 +1,69 @@
 import { useEffect, useState } from "react";
-import { FaUser, FaTag } from "react-icons/fa";
+import { FaChartBar } from "react-icons/fa";
 
 const AdminCategory = () => {
-    const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState([]);
 
-    useEffect(() => {
-        const dummyData = [
-            {
-                username: "artist_jane",
-                category: "Pottery",
-                reason: "I specialize in handmade pottery and would love to list under a relevant category.",
-            },
-            {
-                username: "crafts_by_John",
-                category: "Recycled Art",
-                reason: "My art uses recycled materials and doesn't fit in any existing category.",
-            },
-        ];
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-        setRequests(dummyData);
-    }, []);
+        const response = await fetch("http://localhost:3000/category/getrequest", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    return (
-        <div className="bg-[#FAF9F6] w-4/5 ml-6 mt-10">
-            <div className="bg-[#F6EEEE] p-6 rounded-2xl border border-black">
-                <h2 className="text-xl font-semibold mb-6">Category Requests</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {requests.map((req, index) => (
-                        <div
-                            key={index}
-                            className="bg-white border rounded-xl shadow-md p-5 transition-transform hover:scale-[1.02] hover:shadow-lg"
-                        >
-                            <div className="flex items-center gap-2 text-[#4B2E2E] mb-2">
-                                <FaUser className="text-[#de929f]" />
-                                <h3 className="font-semibold text-lg">@{req.username}</h3>
-                            </div>
+        if (!response.ok) {
+          throw new Error("Failed to fetch category requests");
+        }
 
-                            <div className="flex items-center gap-2 mb-2">
-                                <FaTag className="text-[#de929f]" />
-                                <span className="bg-[#E07385] text-xs text-[#f5f1f1] px-2 py-1 rounded-full font-semibold">
-                                    {req.category}
-                                </span>
-                            </div>
+        const data = await response.json();
+        setRequests(data.requestedCategories);
+      } catch (error) {
+        console.error("Error fetching category requests:", error.message);
+      }
+    };
 
-                            <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                                <span className="font-medium text-[#4B2E2E]">Reason:</span> {req.reason}
-                            </p>
-                        </div>
-                    ))}
-                </div>
+    fetchRequests();
+  }, []);
+
+  return (
+    <div className="bg-[#FAF9F6] w-4/5 ml-6 mt-10">
+      <div className="bg-[#F6EEEE] p-6 rounded-2xl border border-black shadow-sm">
+        <h2 className="text-2xl font-bold text-[#4B2E2E] mb-6">Requested Categories</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {requests.map((req, index) => (
+            <div
+              key={index}
+              className="bg-white border rounded-xl shadow-md p-5 transition-transform hover:scale-[1.02] hover:shadow-lg"
+            >
+
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-[#E07385] text-xl font-bold">#</span>
+                <button
+                  className="bg-[#E07385] text-white font-semibold px-4 py-2 rounded-full text-sm"
+                  disabled
+                >
+                  {req.name}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 text-gray-700 mt-2">
+                <FaChartBar className="text-[#de929f]" />
+                <span className="text-sm font-medium text-[#4B2E2E]">Number of Requests:</span>
+                <span className=" text-black text-sm font-bold">
+                  {req.counter}
+                </span>
+              </div>
+
             </div>
+          ))}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default AdminCategory;
