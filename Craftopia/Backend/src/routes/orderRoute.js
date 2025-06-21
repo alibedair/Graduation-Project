@@ -2,7 +2,7 @@ const router = require('express').Router();
 const orderController = require('../controllers/orderController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 
 
 router.post('/placeOrder',
@@ -21,6 +21,15 @@ router.get('/myOrders',
     authMiddleware,
     roleMiddleware('customer'),
     orderController.getmyOrders
+);
+
+router.patch('/cancel/:orderId',
+    authMiddleware,
+    roleMiddleware('customer'),
+    [
+        param('orderId').isInt().withMessage('Order ID must be an integer')
+    ],
+    orderController.cancelOrder
 );
 
 module.exports = router;

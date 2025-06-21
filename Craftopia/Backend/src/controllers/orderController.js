@@ -75,3 +75,40 @@ exports.getmyOrders = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
+
+exports.cancelOrder = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { orderId } = req.params;
+
+        const customer = await Customer.findOne({ where: { userId } });
+        if (!customer) {
+            return res.status(403).json({ message: 'Customer not found' });
+        }
+
+        const order = await Order.findOne({
+            where: { 
+                orderId: orderId,
+                customerId: customer.customerId 
+            }
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }        
+        if (order.status === 'Pending') {
+            await order.update({ status: 'Cancelled' });
+
+            return res.status(200).json({
+                message: 'Order cancelled successfully',
+                order
+            });
+        } else {
+            return res.status(400).json({ message: 'Order cannot be cancelled' });
+        }
+
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
