@@ -21,7 +21,7 @@ router.post('/create',
     productController.createProduct
 );
 
-router.get('/get', authMiddleware, productController.getProducts);
+router.get('/get', productController.getProducts);
 
 router.post('/update/:productId', 
     authMiddleware, 

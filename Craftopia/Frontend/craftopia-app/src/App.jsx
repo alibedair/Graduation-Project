@@ -17,6 +17,7 @@ import WishlistPage        from './pages/WishlistPage';
 import AdminPage           from './pages/AdminPage';
 import Register from './Components/Register';
 import ProtectedRoute from './Components/ProtectedRoute';
+import ProductDetails from './pages/ProductDetails';
 
 
 function LoginRoute() {
@@ -87,6 +88,7 @@ function AppContent() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/login" element={<LoginRoute />} />
+           <Route path="/product/:id" element={<ProductDetails />} />
       </Routes>
     </>
   );

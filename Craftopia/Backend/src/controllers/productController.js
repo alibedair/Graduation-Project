@@ -65,28 +65,20 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const artist = await Artist.findOne({where:{userId}});
-        if(artist) {
-            const products = await Product.findAll({
-                where: {artistId: artist.artistId},
-                include: [
-                    {
-                        model: Category,
-                        attributes: ['name']
-                    },
-                    {
-                        model: Artist,
-                        attributes: ['name']
-                    }
-                ]
-            });
-            return res.status(200).json({products});
-        }
+        const products = await Product.findAll({
+            include: [
+                { model: Category, attributes: ['name'] },
+                { model: Artist, attributes: ['name'] }
+            ],
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material']
+        });
+
+        res.status(200).json({ products });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
-}
+};
+
 
 exports.updateProduct = async (req, res) => {
     try {
