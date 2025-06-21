@@ -9,28 +9,28 @@ const GetProfile = ({ setActiveTab }) => {
   const [activeSection, setActiveSection] = useState("gallery");
 
   useEffect(() => {
-  const fetchProfile = async () => {
-    try {
-      const artistId = localStorage.getItem("artistId");
-      const response = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+    const fetchProfile = async () => {
+      try {
+        const artistId = localStorage.getItem("artistId");
+        const response = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-      if (!response.ok) throw new Error("Failed to fetch profile");
+        if (!response.ok) throw new Error("Failed to fetch profile");
 
-      const data = await response.json();
-      setProfile(data.artist);
-    } catch (err) {
-      setMessage("Please complete your profile.");
-    }
-  };
+        const data = await response.json();
+        setProfile(data.artist);
+      } catch (err) {
+        setMessage("Please complete your profile.");
+      }
+    };
 
-  fetchProfile();
-}, []);
+    fetchProfile();
+  }, []);
 
 
   useEffect(() => {
@@ -149,13 +149,14 @@ const GetProfile = ({ setActiveTab }) => {
                   key={product.productId}
                   className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  <div className=" aspect-square relative overflow-hidden">
+                  <div className="relative overflow-hidden h-48 sm:h-56 md:h-60 lg:h-64 rounded-t-xl bg-white flex items-center justify-center">
                     <img
-                      src={product.image?.[0] || "https://via.placeholder.com/500"}
+                      src={product.image?.[0] || "https://via.placeholder.com/300"}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 group-hover:opacity-75"
+                      className="max-h-full max-w-full object-contain transition-all duration-500 group-hover:scale-105 group-hover:opacity-75"
                     />
                   </div>
+
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
                     <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                       <h3 className="text-xl font-bold text-[#921A40]">{product.name}</h3>

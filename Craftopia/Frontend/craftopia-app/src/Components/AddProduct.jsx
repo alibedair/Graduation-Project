@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Upload } from "lucide-react";
+import AllProducts from "../Components/AllProducts";
 
 const AddProduct = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ const AddProduct = () => {
   const [categoriesList, setCategoriesList] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [categoriesError, setCategoriesError] = useState(null);
-
+  const [showAllProducts, setShowAllProducts] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,7 +82,6 @@ const AddProduct = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -107,7 +107,22 @@ const AddProduct = () => {
 
   return (
     <div className="p-2 sm:p-6 md:p-10 bg-cream min-h-screen">
-      <h2 className="text-3xl font-bold mb-8 text-[black] ">Add New Product</h2>
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={() => setShowAllProducts(!showAllProducts)}
+          className="bg-[#7a162e] text-white py-2 px-6 rounded-lg font-medium hover:bg-[#E07385] transition"
+        >
+          {showAllProducts ? "Add New Product" : "My Products"}
+        </button>
+      </div>
+
+      {showAllProducts ? (
+        <AllProducts />
+      ) : (
+        <>
+          <h2 className="text-3xl font-bold mb-8 text-[black]">
+            Add New Product
+          </h2>
 
       {message && (
         <p
@@ -316,6 +331,8 @@ const AddProduct = () => {
           </button>
         </div>
       </form>
+        </>
+      )}
     </div>
 
   );
