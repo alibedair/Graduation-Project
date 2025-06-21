@@ -9,30 +9,28 @@ const GetProfile = ({ setActiveTab }) => {
   const [activeSection, setActiveSection] = useState("gallery");
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const artistId = localStorage.getItem("artistId");
-        const response = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/artist/myprofile", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-        if (!response.ok) throw new Error("Failed to fetch profile");
+      if (!response.ok) throw new Error("Failed to fetch profile");
 
-        const data = await response.json();
-        setProfile(data.artist);
-      } catch (err) {
-        setMessage("Please complete your profile.");
-      }
-    };
+      const data = await response.json();
+      setProfile(data.ArtistProfile);
+    } catch (err) {
+      console.error(err);
+      setMessage("Please complete your profile.");
+    }
+  };
 
-    fetchProfile();
-  }, []);
-
-
+  fetchProfile();
+}, []);
   useEffect(() => {
     if (!profile) return;
 

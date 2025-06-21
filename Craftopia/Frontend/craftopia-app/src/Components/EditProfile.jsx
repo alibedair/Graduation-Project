@@ -14,34 +14,35 @@ const EditProfile = () => {
     const videoInputRef = useRef(null);
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const artistId = localStorage.getItem("artistId"); 
-      const response = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                });
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/artist/myprofile", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-                if (!response.ok) throw new Error("Failed to fetch profile");
+      if (!response.ok) throw new Error("Failed to fetch profile");
 
-                const data = await response.json();
-                const artist = data.artist;
-                setName(artist.name || "");
-                setUsername(artist.username || "");
-                setPhone(artist.phone || "");
-                setBiography(artist.biography || "");
-                setProfilePicturePreview(artist.profilePicture || "");
-                setProfileVideoPreview(artist.profileVideo || "");
-            } catch (err) {
-                setMessage("Failed to load profile.");
-            }
-        };
+      const data = await response.json();
+      const artist = data.ArtistProfile;
 
-        fetchProfile();
-    }, []);
+      setName(artist.name || "");
+      setUsername(artist.username || "");
+      setPhone(artist.phone || "");
+      setBiography(artist.biography || "");
+      setProfilePicturePreview(artist.profilePicture || "");
+      setProfileVideoPreview(artist.profileVideo || "");
+    } catch (err) {
+      console.error(err);
+      setMessage("Failed to load profile.");
+    }
+  };
+
+  fetchProfile();
+}, []);
 
     const handleSubmit = async (e) => {
     e.preventDefault();
