@@ -16,8 +16,8 @@ const Order = sequelize.define('order', {
         allowNull: false
     },
     status: {
-        type: DataTypes.ENUM('Pending', 'Completed', 'Cancelled'),
-        defaultValue: 'Pending'
+        type: DataTypes.STRING,
+        allowNull: false
     },
     customerId: {
         type: DataTypes.INTEGER,
@@ -25,18 +25,10 @@ const Order = sequelize.define('order', {
             model: Customer,
             key: 'customerId'
         }
-    },    
+    },
     trackingInfo: {
-        type: DataTypes.ENUM("shipped", "delivered", "in transit"),
-        allowNull: true
-    },
-    PaymentStatus: {
-        type: DataTypes.ENUM('Payment_Held', 'Paid', 'Failed', 'Refunded'),
-        allowNull: true
-    },
-    paymentIntentId: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     }
 });
 
