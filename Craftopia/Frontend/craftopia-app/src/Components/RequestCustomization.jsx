@@ -27,8 +27,12 @@ const RequestCustomization = () => {
                 });
                 if (!res.ok) throw new Error("Failed to fetch replies.");
                 const data = await res.json();
-                setReplies(data);
-                const grouped = data.reduce((acc, reply) => {
+                if (!data.responses || !Array.isArray(data.responses)) {
+                    throw new Error("Invalid response format from server");
+                }
+
+                setReplies(data.responses);
+                const grouped = data.responses.reduce((acc, reply) => {
                     const requestId = reply.requestId;
                     if (!acc[requestId]) {
                         acc[requestId] = [];
@@ -36,9 +40,11 @@ const RequestCustomization = () => {
                     acc[requestId].push(reply);
                     return acc;
                 }, {});
+
                 setGroupedReplies(grouped);
             } catch (error) {
                 console.error("Error fetching replies:", error);
+                setGroupedReplies({});
             }
         };
 
@@ -131,8 +137,8 @@ const RequestCustomization = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            setReplies(data);
-            const grouped = data.reduce((acc, reply) => {
+            setReplies(data.responses || []);
+            const grouped = (data.responses || []).reduce((acc, reply) => {
                 const requestId = reply.requestId;
                 if (!acc[requestId]) {
                     acc[requestId] = [];
@@ -141,6 +147,7 @@ const RequestCustomization = () => {
                 return acc;
             }, {});
             setGroupedReplies(grouped);
+
         } catch (error) {
             console.error(error);
             alert("Error accepting offer: " + error.message);
@@ -169,8 +176,8 @@ const RequestCustomization = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            setReplies(data);
-            const grouped = data.reduce((acc, reply) => {
+            setReplies(data.responses || []);
+            const grouped = (data.responses || []).reduce((acc, reply) => {
                 const requestId = reply.requestId;
                 if (!acc[requestId]) {
                     acc[requestId] = [];
@@ -179,6 +186,7 @@ const RequestCustomization = () => {
                 return acc;
             }, {});
             setGroupedReplies(grouped);
+
         } catch (error) {
             console.error(error);
             alert("Error declining offer: " + error.message);
@@ -455,15 +463,6 @@ const RequestCustomization = () => {
                                 <span>Upload Your Design</span>
                             </div>
 
-                            {preview && (
-                                <div className="flex justify-center mt-4">
-                                    <img
-                                        src={preview}
-                                        alt="Preview"
-                                        className="w-40 h-40 object-contain rounded-lg shadow"
-                                    />
-                                </div>
-                            )}
                             {preview && (
                                 <div className="flex justify-center mt-4">
                                     <img
