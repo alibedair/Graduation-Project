@@ -30,10 +30,11 @@ const CustomizationRequest = sequelize.define('customizationrequest', {
     image: {
         type: DataTypes.STRING,
         allowNull: true
-    },
+    },    
     status: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.ENUM('OPEN', 'CLOSED'),
+        defaultValue: 'OPEN',
+        allowNull: false    
     },
 });
 

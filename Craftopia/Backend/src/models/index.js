@@ -92,7 +92,7 @@ Customer.hasMany(CustomizationRequest, { foreignKey: 'customerId' });
 CustomizationRequest.belongsTo(Customer, { foreignKey: 'customerId' });
 
 //artist & CustomizationResponse Relationship
-Artist.hasOne(CustomizationResponse, { foreignKey: 'artistId' });
+Artist.hasMany(CustomizationResponse, { foreignKey: 'artistId' });
 CustomizationResponse.belongsTo(Artist, { foreignKey: 'artistId' });
 
 

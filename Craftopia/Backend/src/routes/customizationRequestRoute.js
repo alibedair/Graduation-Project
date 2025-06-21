@@ -2,7 +2,8 @@ const router = require('express').Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 const customizationRequestController = require('../controllers/customizationRequestController');
 const upload = require('../middlewares/upload');
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
 router.post('/request', 
     authMiddleware,
@@ -16,5 +17,16 @@ router.post('/request',
 );
 
 router.get('/requests', authMiddleware, customizationRequestController.getOpenCustomizationRequests);
+
+router.get('/customer/requests', authMiddleware, roleMiddleware('customer'), customizationRequestController.getCustomerCustomizationRequests);
+
+router.put('/close/:requestId',
+    authMiddleware,
+    roleMiddleware('customer'),
+    [
+        param('requestId').isInt().withMessage('Request ID must be an integer')
+    ],
+    customizationRequestController.closeCustomizationRequest
+);
 
 module.exports = router;
