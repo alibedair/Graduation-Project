@@ -39,7 +39,6 @@ router.post('/update/:productId',
 );
 
 router.get('/get/:artistId',
-    authMiddleware,
     [
         param('productId').isInt().withMessage('Product ID must be an integer')
     ],
