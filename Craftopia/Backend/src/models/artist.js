@@ -55,6 +55,10 @@ const Artist = sequelize.define('artist', {
     totalRatings: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    sales:{
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
     }
 });
 

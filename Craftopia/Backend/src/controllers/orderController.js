@@ -37,7 +37,6 @@ exports.placeOrder = async (req, res) => {
         const order = await Order.create({
             orderDate: new Date(),
             totalAmount,
-            status: 'Pending',
             customerId: customer.customerId
         });
 

@@ -16,8 +16,8 @@ const Order = sequelize.define('order', {
         allowNull: false
     },
     status: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.ENUM('Pending', 'Completed', 'Cancelled'),
+        defaultValue: 'Pending'
     },
     customerId: {
         type: DataTypes.INTEGER,
@@ -27,8 +27,8 @@ const Order = sequelize.define('order', {
         }
     },
     trackingInfo: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.ENUM("shipped", "delivered", "in transit","no tracking info"),
+        defaultValue: "no tracking info"
     }
 });
 
