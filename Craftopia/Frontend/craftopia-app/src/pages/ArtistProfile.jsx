@@ -8,14 +8,15 @@ import Footer from "../Components/Footer";
 import ReviewRequests from "../Components/ReviewRequests";
 import { Gavel } from "lucide-react";
 import AuctionRequest from "../Components/AuctionRequest";
+import RequestCategory from "../Components/RequestCategory";
 const ArtistProfile = ({ setIsLoggedIn }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const navigate = useNavigate();
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setIsLoggedIn(false); 
+    setIsLoggedIn(false);
     navigate("/login");
   };
 
@@ -44,8 +45,8 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
               <li
                 onClick={() => setActiveTab("addproduct")}
                 className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "addproduct"
-                    ? "bg-gray-200 font-semibold"
-                    : ""
+                  ? "bg-gray-200 font-semibold"
+                  : ""
                   }`}
               >
                 <FaPlus className="text-black" />
@@ -67,6 +68,14 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
                 Auction Request
               </li>
               <li
+                onClick={() => setActiveTab("requestcategory")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "requestcategory" ? "bg-gray-200 font-semibold" : ""
+                  }`}
+              >
+                📩 Request Category
+              </li>
+
+              <li
                 onClick={handleLogout}
                 className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
               >
@@ -85,6 +94,7 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
             {activeTab === "addproduct" && <AddProduct />}
             {activeTab === "review" && <ReviewRequests />}
             {activeTab === "auction" && <AuctionRequest />}
+            {activeTab === "requestcategory" && <RequestCategory />}
 
           </div>
         </div>
