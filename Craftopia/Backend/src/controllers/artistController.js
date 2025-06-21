@@ -126,7 +126,7 @@ exports.getAllArtists = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
         
-        let artists = await Artist.findAll({
+        let artists = await Artist.findAll({            
             attributes: [
                 'artistId', 
                 'name', 
@@ -134,7 +134,16 @@ exports.getAllArtists = async (req, res) => {
                 'profilePicture',
                 'biography',
                 [Sequelize.fn('COUNT', Sequelize.col('products.productId')), 'numberOfProducts'],
-                [Sequelize.fn('COUNT', Sequelize.col('artistfollows.customerId')), 'followersCount']
+                [Sequelize.fn('COUNT', Sequelize.col('artistfollows.customerId')), 'numberOfFollowers'],
+                'averageRating',
+                [
+                    Sequelize.literal(`(
+                        SELECT COALESCE(MIN("products"."price"), 0)
+                        FROM "products" AS "products"
+                        WHERE "products"."artistId" = "artist"."artistId"
+                    )`),
+                    'lowestPrice'
+                ]
             ],
             include: [{
                 model: User,

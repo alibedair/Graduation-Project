@@ -44,6 +44,18 @@ const Artist = sequelize.define('artist', {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    averageRating: {
+        type: DataTypes.DECIMAL(3, 2),
+        defaultValue: 0.00,
+        validate: {
+            min: 0,
+            max: 5
+        }
+    },
+    totalRatings: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    }
 });
 
 

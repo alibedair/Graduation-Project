@@ -5,6 +5,8 @@ const Admin = require('../models/admin');
 const { validationResult } = require('express-validator');
 const { firebase_db } = require('../config/firebase');
 const Category = require('../models/category');
+const Product_Order = require('../models/Product_Order');
+const { Sequelize } = require('sequelize');
 
 exports.createAuctionRequest = async (req, res) => {
     try {
@@ -85,19 +87,35 @@ exports.getAllAuctionRequests = async (req, res) => {
         }
 
         const { status } = req.query;
-        const whereClause = status ? { status } : {};
-
+        const whereClause = status ? { status } : {};        
         const requests = await AuctionRequest.findAll({
             where: whereClause,
             include: [
                 {
                     model: Product,
-                    attributes: ['productId', 'name', 'image','dimensions',]
-                },
-                {
-                    // still need sales and rating
+                    attributes: [
+                        'productId', 
+                        'name', 
+                        'image',
+                        'dimensions',
+                        'material',                        
+                        [
+                            Sequelize.literal(`(
+                                SELECT COALESCE(SUM("productorder"."quantity"), 0)
+                                FROM "productorders" AS "productorder"
+                                WHERE "productorder"."productId" = "product"."productId"
+                            )`),
+                            'totalSales'
+                        ]
+                    ]
+                },                {
                     model: Artist,
-                    attributes: ['artistId', 'name', 'username']
+                    attributes: [
+                        'artistId', 
+                        'name', 
+                        'username',
+                        'averageRating',
+                    ]
                 }
             ],
             order: [['createdAt', 'DESC']]

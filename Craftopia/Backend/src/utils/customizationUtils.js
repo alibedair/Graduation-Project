@@ -14,8 +14,6 @@ const autoDeclinePendingResponses = async (requestId) => {
                 }
             }
         );
-        
-        console.log(`Auto-declined ${result[0]} pending responses for closed request ${requestId}`);
         return result[0];
     } catch (error) {
         console.error('Error auto-declining pending responses:', error);
@@ -61,8 +59,6 @@ const findAndDeclineOrphanedResponses = async (responses) => {
             { status: 'DECLINED' },
             { where: { responseId: responsesToUpdate } }
         );
-        
-        console.log(`Auto-declined ${responsesToUpdate.length} orphaned responses`);
     }
     
     return responsesToUpdate;
@@ -92,7 +88,6 @@ const getArtistResponsesEnhanced = async (artistId) => {
         let associationWorking = responses.length > 0 && !!responses[0].CustomizationRequest;
         let autoDeclinedCount = 0;
         if (responses.length > 0 && !associationWorking) {
-            console.log('Using fallback mechanism for CustomizationRequest data');
             responses = await enhanceResponsesWithRequestData(responses);
         }
         const orphanedResponseIds = await findAndDeclineOrphanedResponses(responses);
