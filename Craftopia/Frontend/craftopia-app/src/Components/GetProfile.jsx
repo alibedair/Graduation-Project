@@ -31,34 +31,35 @@ const GetProfile = ({ setActiveTab }) => {
 
   fetchProfile();
 }, []);
-  useEffect(() => {
-    if (!profile) return;
+ useEffect(() => {
+  if (!profile || !profile.artistId) return;
 
-    const fetchProducts = async () => {
-      setLoadingProducts(true);
-      try {
-        const response = await fetch("http://localhost:3000/product/get", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch(`http://localhost:3000/product/get/${profile.artistId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-        if (!response.ok) throw new Error("Failed to fetch products");
+      if (!res.ok) throw new Error("Failed to fetch products");
 
-        const data = await response.json();
-        setProducts(data.products || []);
-        setProductsError("");
-      } catch (err) {
-        setProductsError("Failed to load gallery products.");
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
+      const data = await res.json();
+      setProducts(data.products || []);
+      setProductsError("");
+    } catch (err) {
+      console.error(err);
+      setProductsError("Failed to load gallery products.");
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
-    fetchProducts();
-  }, [profile]);
+  fetchProducts();
+}, [profile]);
 
   if (message) {
     return (
@@ -110,7 +111,7 @@ const GetProfile = ({ setActiveTab }) => {
       </div>
 
       <div className="mt-15">
-        <div className="flex justify-start gap-30 mb-8 mr-50">
+        <div className="flex justify-start gap-45 mb-8 mr-50">
           <button
             onClick={() => setActiveSection("gallery")}
             className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
@@ -147,11 +148,11 @@ const GetProfile = ({ setActiveTab }) => {
                   key={product.productId}
                   className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  <div className="relative overflow-hidden h-48 sm:h-56 md:h-60 lg:h-64 rounded-t-xl bg-white flex items-center justify-center">
+                   <div className="aspect-square relative overflow-hidden">
                     <img
                       src={product.image?.[0] || "https://via.placeholder.com/300"}
                       alt={product.name}
-                      className="max-h-full max-w-full object-contain transition-all duration-500 group-hover:scale-105 group-hover:opacity-75"
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                   </div>
 
