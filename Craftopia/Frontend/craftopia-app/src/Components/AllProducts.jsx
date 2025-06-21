@@ -77,12 +77,6 @@ const AllProducts = () => {
 
   return (
     <div className="mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen">
-      <div className=" mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">My Products</h1>
-        <p className="text-lg text-gray-600 max-w-2xl ">
-          Click on any product to view and edit details
-        </p>
-      </div>
 
       {loadingProducts ? (
         <div className="flex justify-center items-center py-20">

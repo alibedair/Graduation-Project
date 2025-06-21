@@ -106,33 +106,32 @@ const AddProduct = () => {
   }, []);
 
   return (
-    <div className="p-2 sm:p-6 md:p-10 bg-cream min-h-screen">
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={() => setShowAllProducts(!showAllProducts)}
-          className="bg-[#7a162e] text-white py-2 px-6 rounded-lg font-medium hover:bg-[#E07385] transition"
-        >
-          {showAllProducts ? "Add New Product" : "My Products"}
-        </button>
-      </div>
+   <div className="p-2 sm:p-6 md:p-10 bg-cream min-h-screen">
+  <div className="flex justify-between items-center mb-8">
+    <h2 className="text-3xl font-bold text-[black]">
+      {showAllProducts ? "My Products" : "Add New Product"}
+    </h2>
+    <button
+      onClick={() => setShowAllProducts(!showAllProducts)}
+      className="bg-[#7a162e] text-white py-2 px-6 rounded-lg font-medium hover:bg-[#E07385] transition"
+    >
+      {showAllProducts ? "Add New Product" : "My Products"}
+    </button>
+  </div>
 
-      {showAllProducts ? (
-        <AllProducts />
-      ) : (
-        <>
-          <h2 className="text-3xl font-bold mb-8 text-[black]">
-            Add New Product
-          </h2>
-
+  {showAllProducts ? (
+    <AllProducts />
+  ) : (
+    <>
       {message && (
         <p
-          className={`mb-6 text-center text-lg font-semibold ${message.includes("success") ? "text-green-600" : "text-red-600"
-            }`}
+          className={`mb-6 text-center text-lg font-semibold ${
+            message.includes("success") ? "text-green-600" : "text-red-600"
+          }`}
         >
           {message}
         </p>
       )}
-
       <form
         onSubmit={handleSubmit}
         className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto bg-white p-8 rounded-2xl shadow-xl border border-[#f9d2d9]"
