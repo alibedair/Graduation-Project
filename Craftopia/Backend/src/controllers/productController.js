@@ -134,3 +134,22 @@ exports.updateProduct = async (req, res) => {
         res.status(500).json({message: error.message});
     }
 }
+
+exports.getArtistProducts = async (req, res) => {
+    try {
+        const artistId = req.params.artistId
+        const artist = await Artist.findOne({where:{artistId}});
+        if(!artist) {
+            return res.status(403).json({message: 'Artist not found'});
+        }
+        
+        const products = await Product.findAll({
+            where: {artistId: artist.artistId},
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material'],
+        });
+
+        res.status(200).json({products});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}

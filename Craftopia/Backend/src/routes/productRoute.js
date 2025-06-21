@@ -38,4 +38,12 @@ router.post('/update/:productId',
     productController.updateProduct
 );
 
+router.get('/get/:artistId',
+    authMiddleware,
+    [
+        param('productId').isInt().withMessage('Product ID must be an integer')
+    ],
+    productController.getArtistProducts
+);
+
 module.exports = router;
