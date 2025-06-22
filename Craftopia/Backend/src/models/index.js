@@ -23,6 +23,7 @@ const AuctionRequest = require('./auctionRequest');
 const categoryRequests = require('./categoriesRequests');
 const Rating = require('./rating');
 const Visitor = require('./visitor');
+const OTP = require('./otp');
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -150,6 +151,10 @@ Visitor.belongsTo(Artist, { foreignKey: 'artistId' });
 Customer.hasMany(Visitor, { foreignKey: 'customerId', as: 'visitRecords' });
 Visitor.belongsTo(Customer, { foreignKey: 'customerId' });
 
+// OTP & User Relationship
+User.hasMany(OTP, { foreignKey: 'userId' });
+OTP.belongsTo(User, { foreignKey: 'userId' });
+
 // Export all models and sequelize instance
 module.exports = {
   sequelize,
@@ -174,5 +179,6 @@ module.exports = {
   AuctionRequest,
   categoryRequests,
   Rating,
-  Visitor
+  Visitor,
+  OTP
 };

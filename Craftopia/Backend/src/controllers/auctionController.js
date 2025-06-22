@@ -114,3 +114,56 @@ exports.getAuctionDetails = async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+
+exports.getAuctionProduct = async (req, res) => {
+    try {
+        const { auctionId } = req.params;
+        
+        if (!auctionId) {
+            return res.status(400).json({ message: "Auction ID is required" });
+        }
+        
+        const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
+        const auctionSnapshot = await auctionRef.once("value");
+        const auctionData = auctionSnapshot.val();
+        
+        if (!auctionData) {
+            return res.status(404).json({ message: "Auction not found" });
+        }
+        
+        const product = await Product.findByPk(auctionData.productId);
+        
+        if (!product) {
+            return res.status(404).json({ message: "Product not found for this auction" });
+        }
+        let highestBid = null;
+        if (auctionData.bids) {
+            const bids = Object.entries(auctionData.bids).map(([id, bid]) => ({
+                id,
+                ...bid
+            }));
+                        
+            if (bids.length > 0) {
+                highestBid = bids.sort((a, b) => b.bidAmount - a.bidAmount)[0];
+            }
+        }
+        
+        return res.status(200).json({
+            product: {
+                id: product.productId,
+                name: product.name,
+                description: product.description,
+                image: product.image,
+                categoryId: product.categoryId,
+                artistId: product.artistId,
+                dimensions: product.dimensions,
+                material: product.material
+            },
+            highestBid: highestBid
+        });
+    } catch (error) {
+        console.error("Error fetching auction product:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+}

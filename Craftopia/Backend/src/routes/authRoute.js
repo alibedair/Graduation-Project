@@ -13,4 +13,13 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], authController.login);
 
+router.post('/verify-email', [
+  body('userId').isInt().withMessage('User ID must be an integer'),
+  body('otpCode').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
+], authController.verifyEmail);
+
+router.post('/resend-otp', [
+  body('userId').isInt().withMessage('User ID must be an integer')
+], authController.resendOTP);
+
 module.exports = router;

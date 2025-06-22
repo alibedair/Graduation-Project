@@ -116,14 +116,14 @@ exports.updateProduct = async (req, res) => {
         if(product.artistId !== artist.artistId) {
             return res.status(403).json({message: 'Forbidden'});
         }
-        const {name, description, price,  quantity,dimension,material} = req.body;
+        const {name, description, price,  quantity,dimensions,material} = req.body;
 
 
         product.name = name || product.name;
         product.description = description || product.description;
         product.price = price || product.price;
         product.quantity = quantity || product.quantity;
-        product.dimensions = dimension || product.dimensions;
+        product.dimensions = dimensions || product.dimensions;
         product.material = material || product.material;
         await product.save();
 

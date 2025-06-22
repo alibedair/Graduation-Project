@@ -31,6 +31,10 @@ const User = sequelize.define('user', {
                 fields: ['role']
             }
         ]
+    },
+    isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 }, {
     timestamps: true,
