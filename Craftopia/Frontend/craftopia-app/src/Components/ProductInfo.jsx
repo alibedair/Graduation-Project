@@ -12,10 +12,14 @@ const ProductInfo = ({ product }) => {
 
     const cartItem = cartItems.find((item) => item.id === product.id);
     const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
+    const [reviewsCount, setReviewsCount] = useState(product.totalReviews || 0);
 
     useEffect(() => {
         setQuantity(cartItem?.quantity || 0);
     }, [cartItem]);
+    useEffect(() => {
+        setReviewsCount(product.totalReviews || 0);
+    }, [product.totalReviews]);
 
     const handleAddToCart = () => {
         setQuantity(1);
@@ -43,6 +47,12 @@ const ProductInfo = ({ product }) => {
         ? product.image
         : [product.image || "/placeholder.jpg"];
 
+    const [selectedImage, setSelectedImage] = useState(productImages[0]);
+
+    useEffect(() => {
+        setSelectedImage(productImages[0]);
+    }, [product.image]);
+
     const renderStars = (rating) =>
         [...Array(5)].map((_, i) => (
             <Star
@@ -51,19 +61,27 @@ const ProductInfo = ({ product }) => {
             />
         ));
 
+
     return (
         <div className="grid md:grid-cols-2 gap-12">
             <div className="space-y-4">
                 <div className="aspect-square rounded-2xl overflow-hidden shadow-lg">
-                    <img src={productImages[0]} alt={product.name} className="w-full h-full object-cover" />
+                    <img
+                        src={selectedImage}
+                        alt={product.name}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
                 </div>
-                <div className="flex gap-3">
+
+                <div className="flex gap-3 mt-2">
                     {productImages.map((img, idx) => (
                         <img
                             key={idx}
                             src={img}
                             alt={`Thumbnail ${idx + 1}`}
-                            className="w-20 h-20 object-cover rounded-lg border"
+                            onClick={() => setSelectedImage(img)}
+                            className={`w-20 h-20 object-cover rounded-lg border cursor-pointer transition-transform duration-200 ${selectedImage === img ? "ring-2 ring-[#E07385]" : "hover:scale-105"
+                                }`}
                         />
                     ))}
                 </div>
@@ -77,7 +95,7 @@ const ProductInfo = ({ product }) => {
                     <p className="text-sm text-gray-500">
                         by{" "}
                         <span className="font-medium text-[#E07385]">
-                            {product.artistName || product.artist?.username || "Unknown Artist"}
+                            {product.artist?.username || product.artist || "Unknown Artist"}
                         </span>
                     </p>
                 </div>
@@ -85,7 +103,7 @@ const ProductInfo = ({ product }) => {
                 <div className="flex items-center gap-3">
                     {renderStars(product.rating || 0)}
                     <span className="font-medium text-gray-800 text-sm">
-                        {Number(product.rating || 0).toFixed(1)} ({product.totalReviews || 0} reviews)
+                        {Number(product.rating || 0).toFixed(1)} ({reviewsCount} {reviewsCount === 1 ? "review" : "reviews"})
                     </span>
 
                 </div>
@@ -98,9 +116,7 @@ const ProductInfo = ({ product }) => {
                         <span
                             className={`font-medium ${product.inStock ? "text-green-600" : "text-red-600"}`}
                         >
-                            {product.inStock
-                                ? `In Stock (${product.quantity ?? "N/A"})`
-                                : "Out of Stock"}
+                            {product.inStock ? `In Stock` : "Out of Stock"}
                         </span>
                     </div>
                 </div>
@@ -166,7 +182,6 @@ const ProductInfo = ({ product }) => {
                     )}
                 </div>
             </div>
-
         </div>
     );
 };

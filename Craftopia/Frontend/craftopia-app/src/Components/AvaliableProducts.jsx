@@ -38,41 +38,43 @@ const AvaliableProducts = () => {
     <div className="p-6 bg-[#FAF9F6] pl-30">
       <h2 className="text-xl font-bold mb-4">Shop our Available Products</h2>
       <div className="flex items-center space-x-4">
-       <div className="flex gap-6 overflow-x-auto pr-4">
-
+      
+        <div className="flex gap-6 overflow-x-auto pr-4 overflow-visible">
           {products.map((product) => {
             const isFavorite = wishlist.some(item => item.id === product.productId);
 
             return (
-              <ProductCard
+              <div
                 key={product.productId}
-                product={{
-                  id: product.productId,
-                  name: product.name,
-                  price: product.price,
-                  image: product.image[0],
-                  rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-                  description: product.description,
-                  dimensions: product.dimensions,
-                  material: product.material,
-                  category: product.category?.name || "Uncategorized",
-                  artist: product.artist?.name || "Unknown Artist",
-                  inStock: product.quantity > 0,
-                }}
-                isFavorite={isFavorite}
-                onToggleFavorite={() => toggleWishlist(product)}
-                onAddToCart={() =>
-                  addToCart({
+                className="w-[320px] flex-shrink-0 pt-2 pb-2"
+              >
+                <ProductCard
+                  product={{
                     id: product.productId,
                     name: product.name,
                     price: product.price,
                     image: product.image[0],
+                    rating: (Math.random() * (5 - 4) + 4).toFixed(1),
+                    description: product.description,
+                    dimensions: product.dimensions,
+                    material: product.material,
                     category: product.category?.name || "Uncategorized",
-                  })
-                }
-              />
-
-
+                    artist: product.artist?.name || "Unknown Artist",
+                    inStock: product.quantity > 0,
+                  }}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={() => toggleWishlist(product)}
+                  onAddToCart={() =>
+                    addToCart({
+                      id: product.productId,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image[0],
+                      category: product.category?.name || "Uncategorized",
+                    })
+                  }
+                />
+              </div>
             );
           })}
         </div>

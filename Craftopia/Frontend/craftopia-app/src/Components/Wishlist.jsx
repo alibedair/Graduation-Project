@@ -13,7 +13,7 @@ const Wishlist = () => {
           <p className="text-lg">You haven’t added any items to your wishlist yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {wishlist.map((item) => (
             <div
               key={item.id}
