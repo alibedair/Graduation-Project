@@ -2,6 +2,8 @@ const Product = require('../models/product');
 const Category = require('../models/category');
 const Artist = require('../models/artist');
 const uploadBuffer = require('../utils/cloudinaryUpload');
+const Review = require('../models/Review');
+const { Sequelize } = require('sequelize');
 
 exports.createProduct = async (req, res) => {
     try {
@@ -72,8 +74,27 @@ exports.getProducts = async (req, res) => {
             ],
             attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material']
         });
+        const productsWithStats = await Promise.all(
+            products.map(async (product) => {
+                const reviewStats = await Review.findOne({
+                    where: { productId: product.productId },
+                    attributes: [
+                        [Sequelize.fn('COUNT', Sequelize.col('reviewId')), 'totalReviews'],
+                        [Sequelize.fn('AVG', Sequelize.col('rating')), 'averageRating']
+                    ],
+                    raw: true
+                });
 
-        res.status(200).json({ products });
+                const productData = product.toJSON();
+                return {
+                    ...productData,
+                    totalReviews: parseInt(reviewStats?.totalReviews) || 0,
+                    averageRating: reviewStats?.averageRating ? parseFloat(reviewStats.averageRating).toFixed(2) : null
+                };
+            })
+        );
+
+        res.status(200).json({ products: productsWithStats });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -134,13 +155,31 @@ exports.getArtistProducts = async (req, res) => {
         if(!artist) {
             return res.status(403).json({message: 'Artist not found'});
         }
-        
         const products = await Product.findAll({
             where: {artistId: artist.artistId},
-            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material'],
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material']
         });
+        const productsWithStats = await Promise.all(
+            products.map(async (product) => {
+                const reviewStats = await Review.findOne({
+                    where: { productId: product.productId },
+                    attributes: [
+                        [Sequelize.fn('COUNT', Sequelize.col('reviewId')), 'totalReviews'],
+                        [Sequelize.fn('AVG', Sequelize.col('rating')), 'averageRating']
+                    ],
+                    raw: true
+                });
 
-        res.status(200).json({products});
+                const productData = product.toJSON();
+                return {
+                    ...productData,
+                    totalReviews: parseInt(reviewStats?.totalReviews) || 0,
+                    averageRating: reviewStats?.averageRating ? parseFloat(reviewStats.averageRating).toFixed(2) : null
+                };
+            })
+        );
+
+        res.status(200).json({products: productsWithStats});
     } catch (error) {
         res.status(500).json({message: error.message});
     }

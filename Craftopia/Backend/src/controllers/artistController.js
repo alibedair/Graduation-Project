@@ -8,6 +8,7 @@ const ArtistFollow = require('../models/artistFollow');
 const Customer = require('../models/customer');
 const Category = require('../models/category');
 const Visitor = require('../models/visitor');
+const Review = require('../models/Review');
 
 exports.updateArtist = async (req, res) => {
     try {
@@ -179,7 +180,7 @@ exports.getAllArtists = async (req, res) => {
             ],
             group: ['artist.artistId', 'user.userId'],
             order: [['artistId', 'DESC']]
-        });        
+        });
         const artistsWithFollowingStatus = await Promise.all(
             artists.map(async (artist) => {
                 const isFollowing = customer ? await ArtistFollow.findOne({
@@ -187,7 +188,7 @@ exports.getAllArtists = async (req, res) => {
                         artistId: artist.artistId,
                         customerId: customer.customerId
                     }
-                }) !== null : false;               
+                }) !== null : false;
                 const artistCategories = await Product.findAll({
                     where: { artistId: artist.artistId },
                     include: [{
@@ -202,11 +203,19 @@ exports.getAllArtists = async (req, res) => {
                 const categoryNames = artistCategories.map(product => 
                     product.category ? product.category.name : null
                 ).filter(name => name !== null);
+                const totalReviews = await Review.count({
+                    include: [{
+                        model: Product,
+                        where: { artistId: artist.artistId },
+                        attributes: []
+                    }]
+                });
 
                 return {
                     ...artist.toJSON(),
                     isFollowing,
-                    categories: categoryNames
+                    categories: categoryNames,
+                    totalReviews: totalReviews || 0
                 };
             })
         );

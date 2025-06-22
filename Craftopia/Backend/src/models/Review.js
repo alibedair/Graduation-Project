@@ -4,9 +4,14 @@ const product = require('./product');
 const customer = require('./customer');
 
 const Review = sequelize.define('review', {
-    customerId: {
+    reviewId: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement: true
+    },
+    customerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
             model: customer,
             key: 'customerId'
@@ -14,7 +19,7 @@ const Review = sequelize.define('review', {
     },
     productId: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
+        allowNull: false,
         references: {
             model: product,
             key: 'productId'
@@ -22,12 +27,24 @@ const Review = sequelize.define('review', {
     },
     rating: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            min: 1,
+            max: 5
+        }
     },
     review: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
     }
+}, {
+    indexes: [
+        {
+            unique: true,
+            fields: ['customerId', 'productId']
+        }
+    ],
+    timestamps: true
 });
 
 module.exports = Review;
