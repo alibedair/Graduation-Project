@@ -88,7 +88,7 @@ const Shop = () => {
                                         className={`relative z-10 px-4 py-1.5 sm:px-6 sm:py-2 rounded-full text-sm sm:text-base transition-all duration-300 ${
                                             isSelected
                                                 ? 'text-white font-medium'
-                                                : 'text-gray-600 hover:text-[#E07385]'
+                                                : 'text-gray-600 hover:text-[#E07385] font-medium'
                                         }`}
                                     >
                                         {isSelected && (

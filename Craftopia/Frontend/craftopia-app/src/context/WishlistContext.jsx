@@ -22,15 +22,11 @@ export const WishlistProvider = ({ children }) => {
 
   const addToWishlist = async (product) => {
     try {
-      // Prevent duplicate add on frontend
-      if (wishlist.find((item) => item.id === product.id)) return;
-
       await axios.post(`http://localhost:3000/wishlist/add/${product.id}`, null, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
       setWishlist((prev) => [...prev, product]);
     } catch (error) {
       if (error.response?.data?.message === "Product already in wishlist") {
@@ -41,9 +37,17 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
-  const removeFromWishlist = (id) => {
-    // Optional: implement backend removal if supported.
-    setWishlist((prev) => prev.filter((item) => item.id !== id));
+  const removeFromWishlist = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/wishlist/remove/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setWishlist((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Failed to remove from wishlist:", error);
+    }
   };
 
   useEffect(() => {

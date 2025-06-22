@@ -20,20 +20,21 @@ const Wishlist = () => {
               className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 relative"
             >
               <img
-                src={item.image}
-                alt={item.title}
+                src={Array.isArray(item.image) ? item.image[0] : item.image}
+                alt={item.name}
                 className="w-full h-48 object-cover"
               />
+
               <div className="p-4">
                 <h3 className="text-xl font-semibold text-[#921A40]">
-                  {item.title}
+                  {item.name}
                 </h3>
                 <p className="text-gray-600 mt-1">{item.price} LE</p>
               </div>
               <button
                 onClick={() => removeFromWishlist(item.id)}
                 className="absolute top-3 right-3 text-[#E07385] hover:text-[#921A40] transition text-2xl"
-                aria-label={`Remove ${item.title} from wishlist`}
+                aria-label={`Remove ${item.name} from wishlist`}
               >
                 <FaTrashAlt />
               </button>
