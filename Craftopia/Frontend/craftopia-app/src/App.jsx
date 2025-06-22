@@ -18,7 +18,8 @@ import AdminPage           from './pages/AdminPage';
 import Register from './Components/Register';
 import ProtectedRoute from './Components/ProtectedRoute';
 import ProductDetails from './pages/ProductDetails';
-
+import Artists from './pages/Artists';
+import ArtistsSection from './Components/ArtistsSection';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -52,6 +53,7 @@ function AppContent() {
               <HeroSection />
               <PopularProducts />
               <BestSellingProducts />
+              <ArtistsSection />
               <Footer />
             </>
           }
@@ -83,12 +85,15 @@ function AppContent() {
             />
           }
         />
+        <Route path="/artists" element={<Artists />}/>
         <Route path="/register" element={<Register/>}/>
         <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/login" element={<LoginRoute />} />
-           <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/artist/:id" element={<ArtistProfile />} />
+
       </Routes>
     </>
   );
