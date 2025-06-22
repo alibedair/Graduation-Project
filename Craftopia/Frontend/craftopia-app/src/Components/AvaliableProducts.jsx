@@ -5,7 +5,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import ProductCard from "./ProductCard";
 
-const PopularProducts = () => {
+const AvaliableProducts = () => {
   const [products, setProducts] = useState([]);
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -38,7 +38,8 @@ const PopularProducts = () => {
     <div className="p-6 bg-[#FAF9F6] pl-30">
       <h2 className="text-xl font-bold mb-4">Shop our Available Products</h2>
       <div className="flex items-center space-x-4">
-        <div className="flex space-x-4 overflow-x-auto">
+       <div className="flex gap-6 overflow-x-auto pr-4">
+
           {products.map((product) => {
             const isFavorite = wishlist.some(item => item.id === product.productId);
 
@@ -83,4 +84,4 @@ const PopularProducts = () => {
   );
 };
 
-export default PopularProducts;
+export default AvaliableProducts;

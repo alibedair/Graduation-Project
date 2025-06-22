@@ -93,6 +93,8 @@ const ProductDetails = () => {
                                 {product.inStock ? "In Stock" : "Sold Out"}
                             </span>
                         </div>
+
+
                         <ul className="space-y-4 text-sm text-gray-800">
                             <li className="flex items-center gap-2">
                                 <FaTag className="text-black" />

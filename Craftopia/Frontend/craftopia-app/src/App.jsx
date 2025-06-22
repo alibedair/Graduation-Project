@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 import Navbar from './Components/Navbar';
 import HeroSection from './Components/HeroSection';
-import PopularProducts     from './Components/PopularProducts';
+import PopularProducts     from './Components/AvaliableProducts';
 import BestSellingProducts from './Components/BestSellingProducts';
 import Footer              from './Components/Footer';
 import Login               from './Components/Login';
