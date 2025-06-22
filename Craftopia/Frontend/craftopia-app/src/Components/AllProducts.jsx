@@ -113,7 +113,8 @@ const AllProducts = () => {
 
     return (
         <div className="max-w-7xl mx-auto p-4">
-            <div className="mb-6 max-w-md mx-auto relative">
+          <div className="mb-10 max-w-md mx-auto relative">
+
                 <select
                     value={selectedProductName}
                     onChange={(e) => setSelectedProductName(e.target.value)}
