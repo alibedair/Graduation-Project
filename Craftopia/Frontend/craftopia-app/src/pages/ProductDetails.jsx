@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import ProductInfo from "../Components/ProductInfo";
 import ProductReview from "../Components/ProductReview";
+import Footer from "../Components/Footer";
 
 const ProductDetails = () => {
   const { state } = useLocation();
@@ -15,10 +16,13 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 space-y-16">
-      <ProductInfo product={{ ...product, totalReviews: product.totalReviews ?? 0 }} />
-      <ProductReview productId={product.id} />
-    </div>
+    <>
+      <div className="max-w-6xl mx-auto px-4 py-12 space-y-16">
+        <ProductInfo product={{ ...product, totalReviews: product.totalReviews ?? 0 }} />
+        <ProductReview productId={product.id} />
+      </div>
+      <Footer />
+    </>
   );
 };
 
