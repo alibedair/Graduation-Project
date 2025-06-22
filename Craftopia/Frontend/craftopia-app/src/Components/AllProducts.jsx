@@ -1,234 +1,231 @@
 import { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const AllProducts = () => {
-    const [products, setProducts] = useState([]);
-    const [loadingProducts, setLoadingProducts] = useState(false);
-    const [productError, setProductError] = useState(null);
-    const [artistId, setArtistId] = useState(null);
-    const [updatedProductData, setUpdatedProductData] = useState({});
-    const [selectedProductName, setSelectedProductName] = useState("");
-    const [expandedProductId, setExpandedProductId] = useState(null); // Track expanded card
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productError, setProductError] = useState(null);
+  const [artistId, setArtistId] = useState(null);
+  const [updatedProductData, setUpdatedProductData] = useState({});
+  const [selectedProductName, setSelectedProductName] = useState("");
+  const [expandedProductId, setExpandedProductId] = useState(null);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const res = await fetch("http://localhost:3000/artist/myprofile", {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                if (!res.ok) throw new Error("Failed to fetch artist profile");
-                const data = await res.json();
-                setArtistId(data.ArtistProfile?.artistId);
-            } catch (err) {
-                setProductError("Failed to load artist profile.");
-            }
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:3000/artist/myprofile", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch artist profile");
+        const data = await res.json();
+        setArtistId(data.ArtistProfile?.artistId);
+      } catch (err) {
+        setProductError("Failed to load artist profile.");
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const fetchProducts = async () => {
+    if (!artistId) return;
+    setLoadingProducts(true);
+    setProductError(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:3000/product/get/${artistId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch products.");
+      const data = await res.json();
+      setProducts(data.products || []);
+
+      const initialEditData = {};
+      data.products.forEach((p) => {
+        initialEditData[p.productId] = {
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          quantity: p.quantity,
+          dimensions: p.dimensions,
+          material: p.material,
         };
+      });
+      setUpdatedProductData(initialEditData);
+    } catch (err) {
+      setProductError(err.message);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
-        fetchProfile();
-    }, []);
+  useEffect(() => {
+    fetchProducts();
+  }, [artistId]);
 
-    const fetchProducts = async () => {
-        if (!artistId) return;
-        setLoadingProducts(true);
-        setProductError(null);
-        try {
-            const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:3000/product/get/${artistId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
+  const handleInputChange = (e, productId) => {
+    const { name, value } = e.target;
+    setUpdatedProductData((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [name]: value,
+      },
+    }));
+  };
 
-            if (!res.ok) throw new Error("Failed to fetch products.");
-            const data = await res.json();
-            setProducts(data.products || []);
+  const handleUpdateProduct = async (productId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:3000/product/update/${productId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedProductData[productId]),
+      });
 
-            const initialEditData = {};
-            data.products.forEach((p) => {
-                initialEditData[p.productId] = {
-                    name: p.name,
-                    description: p.description,
-                    price: p.price,
-                    quantity: p.quantity,
-                    dimensions: p.dimensions,
-                    material: p.material,
-                };
-            });
-            setUpdatedProductData(initialEditData);
-        } catch (err) {
-            setProductError(err.message);
-        } finally {
-            setLoadingProducts(false);
-        }
-    };
+      if (!response.ok) throw new Error("Update failed");
+      alert("Product updated successfully");
+      fetchProducts();
+      setExpandedProductId(null);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
-    useEffect(() => {
-        fetchProducts();
-    }, [artistId]);
+  const toggleExpand = (productId) => {
+    setExpandedProductId((prev) => (prev === productId ? null : productId));
+  };
 
-    const handleInputChange = (e, productId) => {
-        const { name, value } = e.target;
-        setUpdatedProductData((prev) => ({
-            ...prev,
-            [productId]: {
-                ...prev[productId],
-                [name]: value,
-            },
-        }));
-    };
+  const filteredProducts = selectedProductName
+    ? products.filter((p) => p.name === selectedProductName)
+    : products;
 
-    const handleUpdateProduct = async (productId) => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`http://localhost:3000/product/update/${productId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(updatedProductData[productId]),
-            });
-
-            if (!response.ok) throw new Error("Update failed");
-            alert("Product updated successfully");
-            fetchProducts();
-            setExpandedProductId(null); // Collapse after update
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const toggleExpand = (productId) => {
-        setExpandedProductId((prev) => (prev === productId ? null : productId));
-    };
-
-    const filteredProducts = selectedProductName
-        ? products.filter((p) => p.name === selectedProductName)
-        : products;
-
-    return (
-        <div className="max-w-7xl mx-auto p-4">
-          <div className="mb-10 max-w-md mx-auto relative">
-
-                <select
-                    value={selectedProductName}
-                    onChange={(e) => setSelectedProductName(e.target.value)}
-                    className="w-full appearance-none px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#921A40] pr-10"
-                >
-                    <option value="">All Products</option>
-                    {products.map((product) => (
-                        <option key={product.productId} value={product.name}>
-                            {product.name}
-                        </option>
-                    ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
-                    <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </div>
-
-
-            {loadingProducts && (
-                <p className="text-center text-lg text-gray-700">Loading products...</p>
-            )}
-            {productError && <p className="text-center text-red-600">{productError}</p>}
-            {!loadingProducts && filteredProducts.length === 0 && (
-                <p className="text-center text-gray-500">No products found.</p>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-                {filteredProducts.map((product) => {
-                    const isExpanded = expandedProductId === product.productId;
-
-                    return (
-                        <div
-                            key={product.productId}
-                            className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-auto"
-                        >
-                            <div className="relative w-full">
-                                <img
-                                    src={product.image?.[0] || "https://via.placeholder.com/300"}
-                                    alt={product.name}
-                                    className="w-full h-64 object-cover rounded-t-2xl transition-transform duration-300 hover:scale-105"
-                                />
-
-
-                                <span className="absolute top-4 right-4 bg-[#921A40] text-white px-3 py-1 rounded-full shadow text-sm font-semibold">
-                                    {product.price} EGP
-                                </span>
-                            </div>
-                            <div className="p-5 flex flex-col h-auto">
-                                {!isExpanded ? (
-                                    <>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                                        <p className="text-gray-700 text-sm mb-6 line-clamp-2">
-                                            {product.description || "No description available."}
-                                        </p>
-                                        <button
-                                            onClick={() => toggleExpand(product.productId)}
-                                            className="mt-auto flex items-center justify-center gap-2 bg-[#921A40] text-white rounded-md py-2 text-sm font-semibold hover:bg-[#7a1434] transition duration-200"
-                                        >
-                                            <FaEdit className="text-sm" />
-                                            Edit
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="flex flex-wrap -mx-2 gap-y-4">
-                                            {["name", "description", "price", "quantity", "dimensions", "material"].map(
-                                                (field) => (
-                                                    <div key={field} className="w-1/2 px-2">
-                                                        <label className="block text-xs font-medium text-gray-800 capitalize mb-1">
-                                                            {field}
-                                                        </label>
-                                                        <input
-                                                            name={field}
-                                                            type="text"
-                                                            value={updatedProductData[product.productId]?.[field] || ""}
-                                                            onChange={(e) => handleInputChange(e, product.productId)}
-                                                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#921A40]"
-                                                        />
-                                                    </div>
-                                                )
-                                            )}
-                                        </div>
-
-                                        <div className="mt-5 flex gap-3">
-                                            <button
-                                                onClick={() => handleUpdateProduct(product.productId)}
-                                                className="flex-1 flex items-center justify-center gap-2 bg-[#921A40] text-white rounded-md py-2 text-sm font-semibold hover:bg-[#7a1434] transition duration-200"
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                onClick={() => toggleExpand(null)}
-                                                className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded-md py-2 text-sm font-semibold hover:bg-gray-100 transition duration-200"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+  return (
+    <div className="max-w-7xl mx-auto p-4">
+      <div className="mb-10 max-w-md mx-auto relative">
+        <select
+          value={selectedProductName}
+          onChange={(e) => setSelectedProductName(e.target.value)}
+          className="w-full appearance-none px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#921A40] pr-10"
+        >
+          <option value="">All Products</option>
+          {products.map((product) => (
+            <option key={product.productId} value={product.name}>
+              {product.name}
+            </option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
-    );
+      </div>
+
+      {loadingProducts && <p className="text-center text-lg text-gray-700">Loading products...</p>}
+      {productError && <p className="text-center text-red-600">{productError}</p>}
+      {!loadingProducts && filteredProducts.length === 0 && (
+        <p className="text-center text-gray-500">No products found.</p>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+        {filteredProducts.map((product, index) => {
+          const isExpanded = expandedProductId === product.productId;
+
+          return (
+            <motion.div
+              key={product.productId}
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-auto"
+            >
+              <div className="relative w-full">
+                <img
+                  src={product.image?.[0] || "https://via.placeholder.com/300"}
+                  alt={product.name}
+                  className="w-full h-64 object-cover rounded-t-2xl transition-transform duration-300 hover:scale-105"
+                />
+
+                <span
+                  className={`absolute top-4 right-4 px-3 py-1 rounded-full shadow text-sm font-semibold ${
+                    product.quantity > 0 ? "bg-[#e07385] text-white" : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {product.quantity > 0 ? "In Stock" : "Out of Stock"}
+                </span>
+              </div>
+
+              <div className="p-5 flex flex-col h-auto">
+                {!isExpanded ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+                    <p className="text-gray-700 text-sm mb-6 line-clamp-2">
+                      {product.description || "No description available."}
+                    </p>
+                    <button
+                      onClick={() => toggleExpand(product.productId)}
+                      className="mt-auto flex items-center justify-center gap-2 bg-[#e07385] text-white rounded-md py-2 text-sm font-semibold hover:bg-[#7a1434] transition duration-200"
+                    >
+                      <FaEdit className="text-sm" />
+                      Edit
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap -mx-2 gap-y-4">
+                      {["name", "description", "price", "quantity", "dimensions", "material"].map((field) => (
+                        <div key={field} className="w-1/2 px-2">
+                          <label className="block text-xs font-medium text-gray-800 capitalize mb-1">
+                            {field}
+                          </label>
+                          <input
+                            name={field}
+                            type="text"
+                            value={updatedProductData[product.productId]?.[field] || ""}
+                            onChange={(e) => handleInputChange(e, product.productId)}
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#921A40]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-5 flex gap-3">
+                      <button
+                        onClick={() => handleUpdateProduct(product.productId)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#921A40] text-white rounded-md py-2 text-sm font-semibold hover:bg-[#7a1434] transition duration-200"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => toggleExpand(null)}
+                        className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded-md py-2 text-sm font-semibold hover:bg-gray-100 transition duration-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 export default AllProducts;
