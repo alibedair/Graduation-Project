@@ -70,7 +70,7 @@ const ProductInfo = ({ product }) => {
             </div>
             <div className="space-y-5">
                 <div className="space-y-1">
-                    <p className="text-sm font-semibold uppercase text-[#E07385] tracking-wide">
+                    <p className="text-sm font-semibold uppercase text-[#e07385] tracking-wide">
                         {product.category || "Handmade"}
                     </p>
                     <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
@@ -85,8 +85,9 @@ const ProductInfo = ({ product }) => {
                 <div className="flex items-center gap-3">
                     {renderStars(product.rating || 0)}
                     <span className="font-medium text-gray-800 text-sm">
-                        {(product.rating || 0).toFixed(1)} ({product.totalReviews || 0} reviews)
+                        {Number(product.rating || 0).toFixed(1)} ({product.totalReviews || 0} reviews)
                     </span>
+
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">

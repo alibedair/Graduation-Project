@@ -51,8 +51,8 @@ const ProductCard = ({
                 >
                     <Heart
                         className={`h-4 w-4 transition-colors duration-200 ${isFavorite
-                                ? "fill-[#E07385] text-[#E07385]"
-                                : "text-gray-400 hover:text-[#E07385]"
+                            ? "fill-[#E07385] text-[#E07385]"
+                            : "text-gray-400 hover:text-[#E07385]"
                             }`}
                     />
                 </button>
@@ -80,8 +80,9 @@ const ProductCard = ({
                     <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-[#E07385] text-[#E07385]" />
                         <span className="text-sm font-semibold text-gray-900">
-                            {product.rating?.toFixed(1) || "0.0"}
+                            {Number(product.rating || 0).toFixed(1)}
                         </span>
+
                     </div>
                     <span className="text-sm text-gray-500">
                         ({product.reviews || 0} reviews)
