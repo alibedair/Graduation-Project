@@ -10,6 +10,7 @@ const sequelize = require('../config/db');
 const Report = require('../models/report');
 const ArtistFollow = require('../models/artistFollow');
 const CustomizationResponse = require('../models/customizationResponse');
+const bcrypt = require('bcrypt');
 
 exports.getProfile = async (req, res) => {
     try {
@@ -279,6 +280,78 @@ exports.removeArtist = async (req, res) => {
         }
     } catch (error) {
         console.error("Error removing artist:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.addAdmin = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        const userId = req.user.id;
+        const admin = await Admin.findOne({ where: { userId } });
+        if(!admin){
+            return res.status(403).json({ message: "You are not authorized to add an admin" });
+        }
+        
+        const { name, email, password, username, phone } = req.body;
+        if (!name || !email || !password || !username || !phone) {
+            return res.status(400).json({
+                message: "Please fill all required fields",
+                required: ['name', 'email', 'password', 'username', 'phone']
+            });
+        }
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
+        
+        const existingAdmin = await Admin.findOne({ where: { username } });
+        if (existingAdmin) {
+            return res.status(400).json({ message: "Username already exists" });
+        }
+        const transaction = await sequelize.transaction();
+        
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            
+            const newUser = await User.create({
+                email,
+                password: hashedPassword,
+                role: 'admin'
+            }, { transaction });
+            
+            const newAdmin = await Admin.create({
+                name,
+                username,
+                phone,
+                userId: newUser.userId
+            }, { transaction });
+            
+            await transaction.commit();
+            const adminResponse = {
+                adminId: newAdmin.adminId,
+                name: newAdmin.name,
+                username: newAdmin.username,
+                phone: newAdmin.phone,
+                userId: newAdmin.userId
+            };
+            
+            return res.status(201).json({ 
+                message: "Admin created successfully",
+                admin: adminResponse 
+            });
+            
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+        
+    } catch (error) {
+        console.error("Error adding admin:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };

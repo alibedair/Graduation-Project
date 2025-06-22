@@ -33,4 +33,17 @@ router.delete('/artists/:artistId',
     adminController.removeArtist
 );
 
+router.post('/add-admin',
+    authMiddleware,
+    roleMiddleware('admin'),
+    [
+        body('name').notEmpty().withMessage('Name is required'),
+        body('username').notEmpty().withMessage('Username is required'),
+        body('email').isEmail().withMessage('Please provide a valid email address'),
+        body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+        body('phone').matches(/^\+?[0-9]{10,15}$/).withMessage('Please provide a valid phone number')
+    ],
+    adminController.addAdmin
+);
+
 module.exports = router;
