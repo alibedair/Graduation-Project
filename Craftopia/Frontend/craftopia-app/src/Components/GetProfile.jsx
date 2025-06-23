@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-
+import {
+  Star,
+  ChatCircleDots,
+  Coins
+} from "phosphor-react";
 const GetProfile = ({ setActiveTab }) => {
   const [profile, setProfile] = useState(null);
   const [message, setMessage] = useState("");
@@ -7,89 +11,90 @@ const GetProfile = ({ setActiveTab }) => {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [productsError, setProductsError] = useState("");
   const [activeSection, setActiveSection] = useState("gallery");
+  const [showFullBio, setShowFullBio] = useState(false);
 
   useEffect(() => {
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/artist/myprofile", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/artist/myprofile", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-      if (!response.ok) throw new Error("Failed to fetch profile");
+        if (!response.ok) throw new Error("Failed to fetch profile");
 
-      const data = await response.json();
-      setProfile(data.ArtistProfile);
-    } catch (err) {
-      console.error(err);
-      setMessage("Please complete your profile.");
-    }
-  };
+        const data = await response.json();
+        setProfile(data.ArtistProfile);
+      } catch (err) {
+        console.error(err);
+        setMessage("Please complete your profile.");
+      }
+    };
 
-  fetchProfile();
-}, []);
- useEffect(() => {
-  if (!profile || !profile.artistId) return;
+    fetchProfile();
+  }, []);
+  useEffect(() => {
+    if (!profile || !profile.artistId) return;
 
-  const fetchProducts = async () => {
-    setLoadingProducts(true);
-    try {
-      const res = await fetch(`http://localhost:3000/product/get/${profile.artistId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+    const fetchProducts = async () => {
+      setLoadingProducts(true);
+      try {
+        const res = await fetch(`http://localhost:3000/product/get/${profile.artistId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-      if (!res.ok) throw new Error("Failed to fetch products");
+        if (!res.ok) throw new Error("Failed to fetch products");
 
-      const data = await res.json();
-      setProducts(data.products || []);
-      setProductsError("");
-    } catch (err) {
-      console.error(err);
-      setProductsError("Failed to load gallery products.");
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
+        const data = await res.json();
+        setProducts(data.products || []);
+        setProductsError("");
+      } catch (err) {
+        console.error(err);
+        setProductsError("Failed to load gallery products.");
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
 
-  fetchProducts();
-}, [profile]);
+    fetchProducts();
+  }, [profile]);
 
- if (message) {
-  return (
-    <div className="flex flex-col items-center justify-center text-center p-10 rounded-[2rem] shadow-[0_8px_30px_rgba(224,115,133,0.2)] bg-[#F6EEEE] border border-[#E07385]/20 animate-fadeIn mt-2">
-      <div className="relative mb-6">
-        <div className="absolute -inset-1 blur-lg bg-[#E07385] opacity-10 rounded-full animate-pulse" />
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png"
-          alt="Incomplete Profile"
-          className="relative w-36 h-36 animate-bounce-slow z-10"
-        />
+  if (message) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-10 rounded-[2rem] shadow-[0_8px_30px_rgba(224,115,133,0.2)] bg-[#F6EEEE] border border-[#E07385]/20 animate-fadeIn mt-2">
+        <div className="relative mb-6">
+          <div className="absolute -inset-1 blur-lg bg-[#E07385] opacity-10 rounded-full animate-pulse" />
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png"
+            alt="Incomplete Profile"
+            className="relative w-36 h-36 animate-bounce-slow z-10"
+          />
+        </div>
+
+        <h2 className="text-2xl md:text-3xl font-extrabold text-[#921A40] mb-3 tracking-tight">
+          Profile Incomplete
+        </h2>
+
+        <p className="text-gray-700 max-w-2xl text-base md:text-lg leading-relaxed mb-6">
+          We noticed your artist profile is missing some key info. Completing it helps you gain visibility, connect with fans, and showcase your creative journey!
+        </p>
+
+        <button
+          onClick={() => setActiveTab("edit")}
+          className="px-8 py-3 bg-[#E07385] text-white font-semibold text-base md:text-lg rounded-full shadow-lg hover:bg-[#921A40] hover:scale-105 active:scale-95 transition-all duration-300"
+        >
+          ✨ Complete My Profile
+        </button>
       </div>
-
-      <h2 className="text-2xl md:text-3xl font-extrabold text-[#921A40] mb-3 tracking-tight">
-        Profile Incomplete
-      </h2>
-
-      <p className="text-gray-700 max-w-2xl text-base md:text-lg leading-relaxed mb-6">
-        We noticed your artist profile is missing some key info. Completing it helps you gain visibility, connect with fans, and showcase your creative journey!
-      </p>
-
-      <button
-        onClick={() => setActiveTab("edit")}
-        className="px-8 py-3 bg-[#E07385] text-white font-semibold text-base md:text-lg rounded-full shadow-lg hover:bg-[#921A40] hover:scale-105 active:scale-95 transition-all duration-300"
-      >
-        ✨ Complete My Profile
-      </button>
-    </div>
-  );
-}
+    );
+  }
 
   if (!profile) return <p className="text-gray-600">Loading profile...</p>;
 
@@ -104,16 +109,58 @@ const GetProfile = ({ setActiveTab }) => {
               className="w-24 h-24 rounded-full object-cover border-2 border-[#E07385] shadow-md"
             />
             <div className="mt-3">
-              <h1 className="text-2xl font-semibold text-gray-900">{profile.name || "Artist Name"}</h1>
+              <div className="flex justify-end">
+                <div className="flex flex-wrap items-center gap-4">
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    {profile.name || "Artist Name"}
+                  </h1>
+
+                  <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
+                    <div className="flex items-center gap-1 bg-[#F6EEEE] px-3 py-1 rounded-full shadow-sm text-[#921A40]">
+                      <Star size={16} weight="fill" className="mt-[2px]" />
+                      {Number(profile.averageRating || 0).toFixed(2)}
+                      <span className="text-xs text-gray-500">({profile.totalRatings || 0})</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-[#F6EEEE] px-3 py-1 rounded-full shadow-sm text-[#921A40]">
+                      <ChatCircleDots size={16} weight="fill" className="mt-[2px]" />
+                      {profile.totalRatings || 0} ratings
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-[#F6EEEE] px-3 py-1 rounded-full shadow-sm text-[#921A40]">
+                      <Coins size={16} weight="fill" className="mt-[2px]" />
+                      {Number(profile.sales || 0).toLocaleString()} LE
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
               <p className="text-base text-[#921A40]">@{profile.username || "username"}</p>
               <p className="text-sm text-gray-500 mt-1">{profile.visitors || 0} visitors during this week</p>
+
             </div>
           </div>
 
-          <p className="text-black bg-[#F6EEEE] p-6 rounded-lg shadow-md text-xl leading-relaxed mt-10">
-            {profile.biography ||
-              "Add your biography here. This is a placeholder text to give you an idea of how the biography section will look."}
-          </p>
+          <div className="bg-[#F6EEEE] p-6 rounded-lg shadow-md text-xl leading-relaxed mt-10 text-black">
+            {profile.biography && profile.biography.length > 250 ? (
+              <p className="whitespace-pre-line">
+                {showFullBio ? profile.biography : profile.biography.slice(0, 250)}
+                <button
+                  onClick={() => setShowFullBio(!showFullBio)}
+                  className="ml-2 text-[#921A40] hover:underline font-medium text-m inline"
+                >
+                  {showFullBio ? " Show Less" : "Read More..."}
+                </button>
+              </p>
+            ) : (
+              <p className="whitespace-pre-line">
+                {profile.biography ||
+                  "Add your biography here. This is a placeholder text to give you an idea of how the biography section will look."}
+              </p>
+            )}
+          </div>
+
         </div>
         {profile.profileVideo && (
           <div className="w-full md:w-1/3 p-2">
@@ -164,7 +211,7 @@ const GetProfile = ({ setActiveTab }) => {
                   key={product.productId}
                   className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
-                   <div className="aspect-square relative overflow-hidden">
+                  <div className="aspect-square relative overflow-hidden">
                     <img
                       src={product.image?.[0] || "https://via.placeholder.com/300"}
                       alt={product.name}
