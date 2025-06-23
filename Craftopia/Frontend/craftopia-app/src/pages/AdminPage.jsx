@@ -28,9 +28,9 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#FAF9F6] overflow-hidden">
+    <div className="flex min-h-screen bg-[#FAF9F6] overflow-hidden">
       <AdminSidebar selected={selected} setSelected={setSelected} />
-      <div className="flex flex-col items-stretch w-4/5 ml-20 overflow-y-auto h-screen">
+      <div className="flex flex-col items-stretch w-full ml-20 pr-10 overflow-auto h-screen">
         <AdminSearchbar />
         {renderContent()}
       </div>

@@ -123,7 +123,7 @@ const durationInDays = scheduledDuration
   const startDate = new Date(scheduledStartDate).toISOString().split("T")[0];
   const approvalBody = {
     startDate,
-     Duration: durationInDays * 24 * 60, 
+     Duration: durationInDays * 24, 
     adminNotes: adminNotes || "No notes provided.",
   };
 
@@ -180,7 +180,7 @@ const handleDeclineRequest = async () => {
 
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream m-5">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl md::text-4xl font-bold text-black mb-4">Auction Management</h1>
@@ -188,7 +188,7 @@ const handleDeclineRequest = async () => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white border border-coral/20 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -394,7 +394,7 @@ const handleDeclineRequest = async () => {
                 </div>
                 <div>
                   <label htmlFor={`declineReason-${request.requestId}`} className="block text-sm font-medium text-black mb-1">
-                    Decline Reason 
+                    Notes 
                   </label>
                     <textarea
                       id={`adminNotes-${request.requestId}`}

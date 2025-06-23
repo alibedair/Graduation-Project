@@ -114,7 +114,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex flex-col ml-6 w-full bg-[#FAF9F6]">
+    <div className="flex flex-col pl-6 w-full bg-[#FAF9F6]">
       <h2 className="text-2xl font-semibold mt-6">Dashboard</h2>
 
       <div className="bg-[#F6EEEE] w-4/5 p-6 mt-2 rounded-2xl border border-black">
