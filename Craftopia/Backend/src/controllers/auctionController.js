@@ -1,6 +1,6 @@
 const { firebase_db } = require("../config/firebase");
 const Product = require("../models/product");
-
+const artist = require("../models/artist");
 exports.getAuctions = async (req, res) => {
     try {
         const { status, category, artist, limit = 20, page = 1 } = req.query;
@@ -106,7 +106,15 @@ exports.getAuctionDetails = async (req, res) => {
                 bids,
                 product: productData,
                 timeRemaining: Math.max(0, endTime - now),
-                isEnded: now > endTime
+                isEnded: now > endTime,
+                include: [
+                    {
+                        model: artist,
+                        as: 'artist',
+                        attributes: ['name', 'username']
+                    }
+                ]
+
             }
         });
     } catch (error) {
