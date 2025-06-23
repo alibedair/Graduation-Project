@@ -30,7 +30,7 @@ const AdminPage = () => {
   return (
     <div className="flex h-screen bg-[#FAF9F6] overflow-hidden">
       <AdminSidebar selected={selected} setSelected={setSelected} />
-      <div className="flex flex-col items-stretch w-4/5 ml-20 overflow-hidden">
+      <div className="flex flex-col items-stretch w-4/5 ml-20 overflow-y-auto h-screen">
         <AdminSearchbar />
         {renderContent()}
       </div>
