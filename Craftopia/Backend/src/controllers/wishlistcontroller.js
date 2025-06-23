@@ -1,6 +1,8 @@
 const Customer = require('../models/customer');
 const Wishlist = require('../models/wishlist');
 const product = require('../models/product');
+const Artist = require('../models/artist');
+const category = require('../models/category');
 
 exports.addtoWishlist = async (req, res) => {
     try {
@@ -56,7 +58,22 @@ exports.getWishlist = async (req, res) => {
 
         const wishlistItems = await Wishlist.findAll({
             where: { customerId: customer.customerId },
-            include: [{ model: product, as: 'product' }]
+            include: [{
+                model: product,
+                as: 'product',
+                include: [
+                    {
+                        model: category,
+                        as: 'category',
+                        attributes: [ 'name']
+                    },
+                    {
+                        model: Artist,
+                        as: 'artist',
+                        attributes: ['name', 'username']
+                    }
+                ]
+            }]
         });
 
         return res.status(200).json({
