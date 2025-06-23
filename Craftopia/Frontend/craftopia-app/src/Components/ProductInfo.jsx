@@ -47,11 +47,11 @@ const ProductInfo = ({ product }) => {
 
 
     const productImages = useMemo(() => {
-    if (Array.isArray(product.image)) return product.image;
-    if (typeof product.image === "string" && product.image.trim() !== "")
-        return [product.image];
-    return ["/placeholder.jpg"];
-}, [product.image]);
+        if (Array.isArray(product.image)) return product.image;
+        if (typeof product.image === "string" && product.image.trim() !== "")
+            return [product.image];
+        return ["/placeholder.jpg"];
+    }, [product.image]);
 
     useEffect(() => {
         if (productImages.length) setSelectedImage(productImages[0]);
@@ -94,8 +94,12 @@ const ProductInfo = ({ product }) => {
             <div className="space-y-5">
                 <div className="space-y-1">
                     <p className="text-sm font-semibold uppercase text-[#e07385] tracking-wide">
-                        {product.category || "Handmade"}
+                        {typeof product.category === "string"
+                            ? product.category
+                            : product.category?.name || "Handmade"}
                     </p>
+
+
                     <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                     <p className="text-sm text-gray-500">
                         by{" "}

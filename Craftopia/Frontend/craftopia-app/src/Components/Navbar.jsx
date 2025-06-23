@@ -7,8 +7,6 @@ import { useAuth } from '../context/AuthContext';
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-
-  // where “My Account” should send you
   const getProfileLink = () => {
     if (!user) return '/login';
     if (user.role === 'artist') return '/artist-profile';
@@ -18,7 +16,6 @@ const Navbar = () => {
 
   return (
     <nav className="flex justify-between items-center px-6 py-3 bg-[#FAF9F6] shadow-md sticky top-0 z-50">
-      {/* Logo */}
       <Link
         to="/"
         className="text-3xl font-bold text-black"
@@ -26,8 +23,6 @@ const Navbar = () => {
       >
         Craftopia
       </Link>
-
-      {/* Search bar */}
       <div className="relative w-1/3">
         <input
           type="text"
@@ -36,16 +31,14 @@ const Navbar = () => {
         />
         <FaSearch className="absolute right-4 top-3 text-black text-lg" />
       </div>
-
-      {/* Icons & buttons */}
       <div className="flex items-center space-x-6 text-2xl text-black">
-        {/* Wishlist & Cart only for customers */}
         {user && user.role === 'customer' && (
           <>
-            <AiOutlineHeart
-              className="cursor-pointer"
-              onClick={() => navigate('/wishlist')}
-            />
+           <AiOutlineHeart
+  className="cursor-pointer"
+  onClick={() => navigate('/customer-profile', { state: { tab: 'wishlist' } })}
+/>
+
             <AiOutlineShoppingCart
               className="cursor-pointer"
               onClick={() => navigate('/cart')}
@@ -53,7 +46,6 @@ const Navbar = () => {
           </>
         )}
 
-        {/* Profile */}
         <div className="flex items-center space-x-2 cursor-pointer">
           <FaUser
             className="text-3xl"
@@ -66,8 +58,6 @@ const Navbar = () => {
             {user ? 'My Account' : 'Sign In'}
           </span>
         </div>
-
-        {/* Logout or Sign Up */}
         {user ? (
           <button
             onClick={() => {

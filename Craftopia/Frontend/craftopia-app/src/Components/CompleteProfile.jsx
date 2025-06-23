@@ -1,23 +1,38 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
   const [name, setName] = useState(initialProfile?.name || "");
   const [username, setUsername] = useState(initialProfile?.username || "");
   const [phone, setPhone] = useState(initialProfile?.phone || "");
   const [address, setAddress] = useState(initialProfile?.address || "");
+
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validateFields = () => {
+    const errors = {};
+    if (!name.trim()) errors.name = "Name is required.";
+    if (!username.trim()) errors.username = "Username is required.";
+    if (!phone.trim()) errors.phone = "Phone is required.";
+    if (!address.trim()) errors.address = "Address is required.";
+    return errors;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !username || !phone || !address) {
-      setError("Please fill in all fields.");
+    const errors = validateFields();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError("Please fill in all fields correctly.");
       setSuccessMessage("");
       return;
     }
 
     const profileData = { name, username, phone, address };
     const token = localStorage.getItem("token");
+
     fetch("http://localhost:3000/customer/createprofile", {
       method: "POST",
       headers: {
@@ -26,95 +41,124 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
       },
       body: JSON.stringify(profileData),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to update profile");
-        }
-        return response.json();
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to update profile");
+        return res.json();
       })
       .then((data) => {
         setSuccessMessage("Profile updated successfully!");
         setError("");
+        setFieldErrors({});
         onProfileComplete(data.customerProfile || data.existingCustomer);
         setTimeout(() => {
           onClose();
         }, 2000);
       })
-      .catch((error) => {
-        console.error("Error updating profile:", error);
+      .catch((err) => {
+        console.error(err);
         setError("Failed to update profile.");
         setSuccessMessage("");
       });
   };
 
   return (
-    <div className="w-full bg-[#F6EEEE] mt-5 p-4 rounded-lg shadow-md">
-      <div className="bg-[#F6EEEE] p-6 rounded-lg">
-        <h2 className="text-2xl font-bold mb-6 text-black">Complete Your Account</h2>
+   <div className="p-2 sm:p-4 md:p-6 bg-[#F6EEEE]">
+      <div className="grid md:grid-cols-2 gap-8 items-start bg-white p-8 rounded-2xl shadow-xl border border-[#f9d2d9] max-w-6xl mx-auto">
+        <div>
+          <h2 className="text-3xl font-bold text-black mb-6">
+            Complete Your Profile
+          </h2>
 
-        {successMessage && (
-          <p className="text-green-600 mb-4">{successMessage}</p>
-        )}
-        {error && (
-          <p className="text-red-500 mb-4">{error}</p>
-        )}
+          {successMessage && (
+            <p className="text-green-600 mb-4 font-semibold">{successMessage}</p>
+          )}
+          {error && (
+            <p className="text-red-500 mb-4 font-semibold">{error}</p>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-black font-semibold mb-1">Full Name</label>
+              <label className="block font-semibold text-sm text-[#7a162e] mb-2">
+                Full Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded"
-                required
+                className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E07385]"
               />
+              {fieldErrors.name && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.name}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-black font-semibold mb-1">Username</label>
+              <label className="block font-semibold text-sm text-[#7a162e] mb-2">
+                Username <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded"
-                required
+                className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E07385]"
               />
+              {fieldErrors.username && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.username}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-black font-semibold mb-1">Phone</label>
+              <label className="block font-semibold text-sm text-[#7a162e] mb-2">
+                Phone <span className="text-red-500">*</span>
+              </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded"
-                required
+                className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E07385]"
               />
+              {fieldErrors.phone && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-black font-semibold mb-1">Address</label>
+              <label className="block font-semibold text-sm text-[#7a162e] mb-2">
+                Address <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded"
-                required
+                className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E07385]"
               />
+              {fieldErrors.address && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.address}</p>
+              )}
             </div>
-          </div>
 
-          <div className="flex justify-between mt-6">
-            <button
-              type="submit"
-              className="bg-[#E07385] text-white px-5 py-2 rounded hover:bg-[#921A40] transition"
-            >
-              Save
-            </button>
-          </div>
-        </form>
+            <div className="flex justify-end mt-4">
+              <button
+                type="submit"
+                className="bg-[#E07385] text-white py-2 px-6 rounded-lg font-semibold hover:bg-[#7a162e] transition"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="hidden md:flex justify-center mt-10">
+          <motion.img
+           src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"//https://cdn-icons-png.flaticon.com/512/1077/1077114.png
+            alt="Profile Illustration"
+            className="w-full max-w-sm"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            whileHover={{ scale: 1.05 }}
+          />
+        </div>
       </div>
     </div>
   );

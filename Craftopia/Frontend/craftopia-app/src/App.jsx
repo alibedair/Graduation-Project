@@ -13,7 +13,6 @@ import ArtistProfile       from './pages/ArtistProfile';
 import CustomerProfile     from './pages/CustomerProfile';
 import CartPage            from './pages/CartPage';
 import Shop                from './pages/Shop';
-import WishlistPage        from './pages/WishlistPage';
 import AdminPage           from './pages/AdminPage';
 import Register from './Components/Register';
 import ProtectedRoute from './Components/ProtectedRoute';
@@ -89,7 +88,6 @@ function AppContent() {
         <Route path="/register" element={<Register/>}/>
         <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/artist/:id" element={<ArtistProfile />} />

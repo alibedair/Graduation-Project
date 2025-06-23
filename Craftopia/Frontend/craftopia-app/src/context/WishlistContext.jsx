@@ -5,20 +5,54 @@ const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
-  const fetchWishlist = async () => {
-    try {
-      const res = await axios.get("http://localhost:3000/wishlist/mywishlist", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const items = res.data.wishlistItems.map((item) => item.product);
-      setWishlist(items);
-    } catch (error) {
-      console.error("Failed to fetch wishlist:", error);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newToken = localStorage.getItem("token");
+      if (newToken !== token) {
+        setToken(newToken);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchWishlist(token);
+    } else {
+      setWishlist([]);
     }
-  };
+  }, [token]);
+
+  const fetchWishlist = async (authToken) => {
+  try {
+    const res = await axios.get("http://localhost:3000/wishlist/mywishlist", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    const items = res.data.wishlistItems.map((item) => {
+      const product = item.product;
+      return {
+        ...product,
+        id: product.productId,
+        category: product.category || { name: "Unknown" },
+        artist: product.artist || { name: "Unknown" },
+        inStock: product.quantity > 0,
+        averageRating: product.averageRating || 0,
+        totalReviews: product.totalReviews || 0,
+      };
+    });
+
+    setWishlist(items);
+  } catch (error) {
+    console.error("Failed to fetch wishlist:", error);
+  }
+};
+
 
   const addToWishlist = async (product) => {
     try {
@@ -50,12 +84,10 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
-
   return (
-    <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist }}>
+    <WishlistContext.Provider
+      value={{ wishlist, addToWishlist, removeFromWishlist }}
+    >
       {children}
     </WishlistContext.Provider>
   );
