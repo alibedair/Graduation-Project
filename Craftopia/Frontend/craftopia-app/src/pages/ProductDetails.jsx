@@ -1,10 +1,16 @@
 import { useLocation } from "react-router-dom";
+import { useState } from "react";
 import ProductInfo from "../Components/ProductInfo";
 import ProductReview from "../Components/ProductReview";
 import Footer from "../Components/Footer";
 
 const ProductDetails = () => {
   const { state } = useLocation();
+  const [reviewStats, setReviewStats] = useState({
+    averageRating: state?.product?.averageRating || 0,
+    totalReviews: state?.product?.totalReviews || 0,
+  });
+
   const product = state?.product;
 
   if (!product) {
@@ -18,8 +24,19 @@ const ProductDetails = () => {
   return (
     <>
       <div className="max-w-6xl mx-auto px-4 py-12 space-y-16">
-        <ProductInfo product={{ ...product, totalReviews: product.totalReviews ?? 0 }} />
-        <ProductReview productId={product.id} />
+        <ProductInfo
+          product={{
+            ...product,
+            rating: reviewStats.averageRating,
+            totalReviews: reviewStats.totalReviews,
+          }}
+        />
+        <ProductReview
+          productId={product.id}
+          onStatsUpdate={({ averageRating, totalReviews }) =>
+            setReviewStats({ averageRating, totalReviews })
+          }
+        />
       </div>
       <Footer />
     </>

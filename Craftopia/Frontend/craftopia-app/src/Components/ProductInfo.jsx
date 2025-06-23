@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Star, Package, Ruler, Palette } from "lucide-react";
 import { useCart } from "../context/CartContext";
-
+import { useMemo } from "react";
 const ProductInfo = ({ product }) => {
+    console.log("ProductInfo received:", product);
+
     const {
         cartItems,
         addToCart,
@@ -13,7 +15,7 @@ const ProductInfo = ({ product }) => {
     const cartItem = cartItems.find((item) => item.id === product.id);
     const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
     const [reviewsCount, setReviewsCount] = useState(product.totalReviews || 0);
-
+    const [selectedImage, setSelectedImage] = useState(null);
     useEffect(() => {
         setQuantity(cartItem?.quantity || 0);
     }, [cartItem]);
@@ -43,15 +45,18 @@ const ProductInfo = ({ product }) => {
         }
     };
 
-    const productImages = Array.isArray(product.image)
-        ? product.image
-        : [product.image || "/placeholder.jpg"];
 
-    const [selectedImage, setSelectedImage] = useState(productImages[0]);
+    const productImages = useMemo(() => {
+    if (Array.isArray(product.image)) return product.image;
+    if (typeof product.image === "string" && product.image.trim() !== "")
+        return [product.image];
+    return ["/placeholder.jpg"];
+}, [product.image]);
 
     useEffect(() => {
-        setSelectedImage(productImages[0]);
-    }, [product.image]);
+        if (productImages.length) setSelectedImage(productImages[0]);
+    }, [productImages]);
+
 
     const renderStars = (rating) =>
         [...Array(5)].map((_, i) => (

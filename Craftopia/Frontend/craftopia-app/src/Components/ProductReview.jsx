@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Star, CheckCircle, Calendar } from "lucide-react";
 import axios from "axios";
 
-const ProductReview = ({ productId }) => {
+const ProductReview = ({ productId, onStatsUpdate , canReview = false }) => {
   const [reviews, setReviews] = useState([]);
   const [newRating, setNewRating] = useState(0);
   const [newReview, setNewReview] = useState("");
@@ -13,11 +13,17 @@ const ProductReview = ({ productId }) => {
 
     axios
       .get(`http://localhost:3000/review/getreview/${productId}`)
-      .then(res => setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []))
-      .catch(err => console.error("Failed to fetch reviews", err));
+      .then((res) => {
+        const { reviews, averageRating, totalReviews } = res.data;
+        setReviews(Array.isArray(reviews) ? reviews : []);
+        if (typeof onStatsUpdate === "function") {
+          onStatsUpdate({ averageRating, totalReviews });
+        }
+      })
+      .catch(() => {});
   }, [productId]);
 
-  const renderStars = rating =>
+  const renderStars = (rating) =>
     Array.from({ length: 5 }).map((_, i) => (
       <Star
         key={i}
@@ -35,20 +41,29 @@ const ProductReview = ({ productId }) => {
     if (newReview.length < 10 || newReview.length > 500)
       return setError("Review must be between 10 and 500 characters.");
 
-    const payload = { productId, rating: Number(newRating), review: newReview };
-    console.log("Submitting review with payload:", payload);
+    const payload = {
+      productId,
+      rating: Number(newRating),
+      review: newReview,
+    };
 
     try {
       await axios.post("http://localhost:3000/review/create", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const res = await axios.get(`http://localhost:3000/review/getreview/${productId}`);
-      setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []);
+      const res = await axios.get(
+        `http://localhost:3000/review/getreview/${productId}`
+      );
+      const { reviews, totalReviews, averageRating } = res.data;
+      setReviews(Array.isArray(reviews) ? reviews : []);
+      if (typeof onStatsUpdate === "function") {
+        onStatsUpdate({ averageRating, totalReviews });
+      }
+
       setNewReview("");
       setNewRating(0);
     } catch (err) {
-      console.error("Failed to submit review", err);
       const message = err?.response?.data?.message;
       if (message === "You have already reviewed this product") {
         setError("You have already submitted a review for this product.");
@@ -90,11 +105,13 @@ const ProductReview = ({ productId }) => {
         <h3 className="text-xl font-bold mb-4">Leave a Review</h3>
         <div className="space-y-4">
           <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map(star => (
+            {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
                 onClick={() => setNewRating(star)}
-                className={`w-6 h-6 cursor-pointer ${star <= newRating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                className={`w-6 h-6 cursor-pointer ${
+                  star <= newRating ? "text-yellow-400 fill-current" : "text-gray-300"
+                }`}
               />
             ))}
           </div>
@@ -103,7 +120,7 @@ const ProductReview = ({ productId }) => {
             rows={4}
             placeholder="Write your review (10–500 characters)..."
             value={newReview}
-            onChange={e => setNewReview(e.target.value)}
+            onChange={(e) => setNewReview(e.target.value)}
           />
           <div className="text-sm text-gray-500 text-right">{newReview.length}/500 characters</div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
