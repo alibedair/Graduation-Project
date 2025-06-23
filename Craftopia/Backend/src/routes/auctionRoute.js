@@ -19,7 +19,7 @@ router.get('/:auctionId',
 );
 
 router.get('/product/:auctionId', 
-    param('productId').notEmpty().withMessage('Product ID is required'),
+    param('auctionId').notEmpty().withMessage('Auction ID is required'),
     auctionController.getAuctionProduct
 );
 
