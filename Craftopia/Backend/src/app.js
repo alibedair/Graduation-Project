@@ -82,6 +82,9 @@ app.use('/review', reviewRoute);
 const ratingRoute = require('./routes/ratingRoute');
 app.use('/rating', ratingRoute);
 
+const { startAuctionScheduler } = require('./services/auctionScheduler');
+startAuctionScheduler();
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
