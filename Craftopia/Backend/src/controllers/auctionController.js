@@ -113,11 +113,18 @@ exports.getAuctionDetails = async (req, res) => {
             }));
             bids.sort((a, b) => b.bidAmount - a.bidAmount);
         }
-        
-        let productData = auctionData.productDetails;
+          let productData = auctionData.productDetails;
         if (!productData) {
             const product = await Product.findByPk(auctionData.productId);
             productData = product || null;
+        }
+        
+        let artistData = null;
+        if (auctionData.artistId) {
+            const artist = await Artist.findByPk(auctionData.artistId, {
+                attributes: ['artistId', 'name', 'username']
+            });
+            artistData = artist;
         }
         
         return res.status(200).json({
@@ -126,16 +133,9 @@ exports.getAuctionDetails = async (req, res) => {
                 ...auctionData,
                 bids,
                 product: productData,
+                artist: artistData,
                 timeRemaining: Math.max(0, endTime - now),
-                isEnded: now > endTime,
-                include: [
-                    {
-                        model: artist,
-                        as: 'artist',
-                        attributes: ['name', 'username']
-                    }
-                ]
-
+                isEnded: now > endTime
             }
         });
     } catch (error) {
@@ -160,12 +160,20 @@ exports.getAuctionProduct = async (req, res) => {
         if (!auctionData) {
             return res.status(404).json({ message: "Auction not found" });
         }
-        
-        const product = await Product.findByPk(auctionData.productId);
+          const product = await Product.findByPk(auctionData.productId, {
+            include: [
+                {
+                    model: Artist,
+                    as: 'artist',
+                    attributes: ['artistId', 'name', 'username']
+                }
+            ]
+        });
         
         if (!product) {
             return res.status(404).json({ message: "Product not found for this auction" });
         }
+        
         let highestBid = null;
         if (auctionData.bids) {
             const bids = Object.entries(auctionData.bids).map(([id, bid]) => ({
@@ -179,16 +187,7 @@ exports.getAuctionProduct = async (req, res) => {
         }
         
         return res.status(200).json({
-            product: {
-                id: product.productId,
-                name: product.name,
-                description: product.description,
-                image: product.image,
-                categoryId: product.categoryId,
-                artistId: product.artistId,
-                dimensions: product.dimensions,
-                material: product.material
-            },
+            product,
             highestBid: highestBid
         });
     } catch (error) {
