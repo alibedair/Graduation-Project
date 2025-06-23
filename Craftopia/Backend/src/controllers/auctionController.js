@@ -1,6 +1,7 @@
 const { firebase_db } = require("../config/firebase");
 const Product = require("../models/product");
-const artist = require("../models/artist");
+const Artist = require("../models/artist"); 
+
 exports.getAuctions = async (req, res) => {
     try {
         const { status, category, artist, limit = 20, page = 1 } = req.query;
@@ -12,7 +13,7 @@ exports.getAuctions = async (req, res) => {
             id,
             ...data
         }));
-          const now = new Date();
+        const now = new Date();
         auctions = auctions.map(auction => {
             if (auction.status === 'scheduled' && new Date(auction.startDate) <= now) {
                 firebase_db.ref(`auctions/${auction.id}`).update({ status: 'active' });
@@ -38,6 +39,26 @@ exports.getAuctions = async (req, res) => {
         if (artist) {
             auctions = auctions.filter(auction => auction.artistId.toString() === artist);
         }
+        
+        const artistIds = [...new Set(auctions.map(auction => auction.artistId))]; 
+        const artists = await Artist.findAll({
+            where: { artistId: artistIds },
+            attributes: ['artistId', 'name', 'username']
+        });
+        
+        const artistMap = {};
+        artists.forEach(artist => {
+            artistMap[artist.artistId] = {
+                name: artist.name,
+                username: artist.username
+            };
+        });
+        
+        auctions = auctions.map(auction => ({
+            ...auction,
+            artistName: artistMap[auction.artistId]?.name,
+            artistUsername: artistMap[auction.artistId]?.username 
+        }));
         
         auctions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
