@@ -10,74 +10,84 @@ const EditProfile = () => {
     const [profilePictureFile, setProfilePictureFile] = useState(null);
     const [profileVideoFile, setProfileVideoFile] = useState(null);
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
     const pictureInputRef = useRef(null);
     const videoInputRef = useRef(null);
 
     useEffect(() => {
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/artist/myprofile", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch("http://localhost:3000/artist/myprofile", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
 
-      if (!response.ok) throw new Error("Failed to fetch profile");
+                if (!response.ok) throw new Error("Failed to fetch profile");
 
-      const data = await response.json();
-      const artist = data.ArtistProfile;
+                const data = await response.json();
+                const artist = data.ArtistProfile;
 
-      setName(artist.name || "");
-      setUsername(artist.username || "");
-      setPhone(artist.phone || "");
-      setBiography(artist.biography || "");
-      setProfilePicturePreview(artist.profilePicture || "");
-      setProfileVideoPreview(artist.profileVideo || "");
-    } catch (err) {
-      console.error(err);
-      setMessage("Failed to load profile.");
-    }
-  };
+                setName(artist.name || "");
+                setUsername(artist.username || "");
+                setPhone(artist.phone || "");
+                setBiography(artist.biography || "");
+                setProfilePicturePreview(artist.profilePicture || "");
+                setProfileVideoPreview(artist.profileVideo || "");
+            } catch (err) {
+                console.error(err);
+            }
 
-  fetchProfile();
-}, []);
+        };
+
+        fetchProfile();
+    }, []);
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-
-    formData.append("name", name);
-    formData.append("username", username);
-    formData.append("phone", phone);
-    formData.append("biography", biography);
-
-    if (profilePictureFile) formData.append("profilePicture", profilePictureFile);
-    if (profileVideoFile) formData.append("profileVideo", profileVideoFile);
-
-    try {
-        const response = await fetch("http://localhost:3000/artist/update", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: formData,
-        });
-
-        if (!response.ok) throw new Error("Update failed");
-
-        const data = await response.json();
-        if (data.artist && data.artist.artistId) {
-            localStorage.setItem("artistId", data.artist.artistId);
+        e.preventDefault();
+        if (!profileVideoFile && !profileVideoPreview) {
+            setMessage("Please upload a profile video showing your handmade items.");
+            return;
         }
 
-        setMessage("Profile updated successfully.");
-    } catch (err) {
-        console.error(err);
-        setMessage("Failed to update profile.");
-    }
-};
+        setLoading(true);
+        setMessage("");
+
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("username", username);
+        formData.append("phone", phone);
+        formData.append("biography", biography);
+        if (profilePictureFile) formData.append("profilePicture", profilePictureFile);
+        if (profileVideoFile) formData.append("profileVideo", profileVideoFile);
+
+        try {
+            const response = await fetch("http://localhost:3000/artist/update", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error("Update failed");
+
+            const data = await response.json();
+            if (data.artist && data.artist.artistId) {
+                localStorage.setItem("artistId", data.artist.artistId);
+            }
+
+            setMessage("Profile updated successfully.");
+        } catch (err) {
+            console.error(err);
+            setMessage("Failed to update profile.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const handleFileChange = (e, type) => {
         const file = e.target.files[0];
@@ -91,6 +101,7 @@ const EditProfile = () => {
             setProfileVideoPreview(URL.createObjectURL(file));
         }
     };
+
     return (
         <form onSubmit={handleSubmit} className="max-w-5xl mx-auto">
             <div className="flex flex-col md:flex-row gap-8">
@@ -135,7 +146,9 @@ const EditProfile = () => {
                             </div>
                             <div className="w-full space-y-4">
                                 <div>
-                                    <label className="block mb-1 font-semibold text-black">Name</label>
+                                    <label className="block mb-1 font-semibold text-black">
+                                        Name <span className="text-red-600">*</span>
+                                    </label>
                                     <input
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
@@ -145,41 +158,62 @@ const EditProfile = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block mb-1 font-semibold text-black">Username</label>
+                                    <label className="block mb-1 font-semibold text-black">
+                                        Username <span className="text-red-600">*</span>
+                                    </label>
                                     <input
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded"
+                                        required
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="w-full md:w-2/3 space-y-4">
                     <div className="bg-[#F6EEEE] p-6 rounded-lg shadow-md">
                         <div className="space-y-4">
                             <div>
-                                <label className="block mb-1 font-semibold text-black">Phone</label>
+                                <label className="block mb-1 font-semibold text-black">
+                                    Phone <span className="text-red-600">*</span>
+                                </label>
                                 <input
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded"
+                                    required
                                 />
                             </div>
 
                             <div>
-                                <label className="block mb-1 font-semibold text-black">Biography</label>
+                                <label className="block mb-1 font-semibold text-black">
+                                    Biography <span className="text-red-600">*</span>
+                                </label>
                                 <textarea
                                     value={biography}
                                     onChange={(e) => setBiography(e.target.value)}
                                     rows={4}
+                                    maxLength={400}
                                     className="w-full px-3 py-2 border border-gray-300 rounded"
+                                    required
                                 />
+                                <p className="text-sm text-gray-500 mt-1 text-right">
+                                    {biography.length}/400 characters
+                                </p>
                             </div>
 
+
                             <div>
-                                <label className="block font-semibold text-black mb-1">Profile Video</label>
+                                <label className="block font-semibold text-black mb-1">
+                                    Profile Video <span className="text-red-500">*</span>
+                                </label>
+                                <p className="text-sm text-gray-500 mb-2">
+                                    Please upload a short video showing <span className="font-medium text-[#921A40]">handmade items</span> you've created.
+                                </p>
+
                                 <div className="flex items-center gap-4">
                                     <label
                                         onClick={() => videoInputRef.current.click()}
@@ -203,28 +237,29 @@ const EditProfile = () => {
                                         className="w-64 h-36 mt-4 rounded-lg border border-gray-300 object-contain"
                                     />
                                 )}
-
-
-
                             </div>
                         </div>
                     </div>
 
                     {message && (
-                        <p
-                            className={`text-sm ${message.includes("success") ? "text-green-600" : "text-red-600"
-                                }`}
-                        >
-                            {message}
-                        </p>
+                        <div className={`p-3 rounded-lg ${message.includes("success")
+                            ? "bg-green-50 text-green-600"
+                            : "bg-red-50 text-red-600"}`}>
+                            <p className="text-sm font-medium">{message}</p>
+                        </div>
                     )}
-
                     <button
                         type="submit"
-                        className="bg-[#E07385] text-white px-5 py-2 rounded hover:bg-[#921A40] transition"
+                        disabled={loading}
+                        className={`px-6 py-2 rounded-full font-semibold text-white shadow-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E07385]
+    ${loading
+                                ? "bg-[#921A40] cursor-not-allowed"
+                                : "bg-[#E07385] hover:bg-[#921A40] active:scale-95"}
+  `}
                     >
-                        Save Changes
+                        {loading ? "Uploading..." : "Save Changes"}
                     </button>
+
                 </div>
             </div>
         </form>

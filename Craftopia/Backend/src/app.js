@@ -82,9 +82,8 @@ app.use('/review', reviewRoute);
 const ratingRoute = require('./routes/ratingRoute');
 app.use('/rating', ratingRoute);
 
-
-const messageRoute = require('./routes/messageRoute');
-app.use('/msgs', messageRoute);
+const { startAuctionScheduler } = require('./services/auctionScheduler');
+startAuctionScheduler();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

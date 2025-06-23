@@ -1,4 +1,4 @@
-const {DataTypes} = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const User = require('./user');
 
@@ -8,9 +8,9 @@ const Artist = sequelize.define('artist', {
         primaryKey: true,
         autoIncrement: true
     },
-    userId : {
+    userId: {
         type: DataTypes.INTEGER,
-        references:{
+        references: {
             model: User,
             key: 'userId'
         }
@@ -37,9 +37,10 @@ const Artist = sequelize.define('artist', {
         allowNull: false
     },
     biography: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(500),
         allowNull: false
-    },
+    }
+    ,
     visitors: {
         type: DataTypes.INTEGER,
         defaultValue: 0
@@ -56,7 +57,7 @@ const Artist = sequelize.define('artist', {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
-    sales:{
+    sales: {
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0
     }

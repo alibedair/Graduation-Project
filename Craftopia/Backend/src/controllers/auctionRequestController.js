@@ -212,7 +212,7 @@ exports.approveAndScheduleAuction = async (req, res) => {
             scheduledEndDate: endDateTime,
             auctionId: newAuctionRef.key,
             adminNotes: adminNotes || null
-        });        
+        });
         return res.status(201).json({
             message: 'Auction request approved and auction scheduled successfully',
             auctionId: newAuctionRef.key,
@@ -220,7 +220,9 @@ exports.approveAndScheduleAuction = async (req, res) => {
             scheduledStartDate: startDateTime.toISOString(),
             scheduledEndDate: endDateTime.toISOString(),
             durationUsed: Duration ? 'admin-specified' : 'artist-suggested',
-            durationHours: durationHours
+            durationHours: durationHours,
+            automatedStatusUpdates: true,
+            note: 'Auction status will automatically update from scheduled to active when start time arrives'
         });
     } catch (error) {
         console.error('Error approving auction request:', error);
