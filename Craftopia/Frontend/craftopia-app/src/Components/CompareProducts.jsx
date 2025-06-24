@@ -1,4 +1,4 @@
-import{ useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -128,12 +128,13 @@ const CompareProducts = () => {
                         transition={{ duration: 0.5 }}
                         className="bg-white rounded-2xl shadow-lg overflow-x-auto"
                     >
-                        <div className="p-6 bg-[#921A40] text-white">
+                        <div className="p-6 bg-[rgba(146,26,64,0.80)] text-white">
+
                             <h3 className="text-xl font-bold text-center">Product Comparison</h3>
                         </div>
                         <table className="min-w-full text-sm text-gray-700">
                             <thead>
-                                <tr className="bg-[#F6EEEE] text-[#921A40] text-base border-b border-[#EBD9D5]">
+                                <tr className="bg-[#FAF9F6] text-[#921A40] text-base border-b border-[#EBD9D5]">
                                     <th className="p-5 text-left font-semibold"></th>
                                     {compareList.map((product) => (
                                         <th
@@ -144,7 +145,7 @@ const CompareProducts = () => {
                                                 onClick={() =>
                                                     setCompareList(compareList.filter((p) => p.productId !== product.productId))
                                                 }
-                                                className="absolute top-2 right-2 bg-[#921A40] text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#7a1535] shadow-md transition-all duration-300"
+                                                className="absolute top-2 right-2 bg-[rgba(146,26,64,0.80)] text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#7a1535] shadow-md transition-all duration-300"
                                                 title="Remove"
                                             >
                                                 <X size={18} strokeWidth={2} />
@@ -193,8 +194,8 @@ const CompareProducts = () => {
                                                         key={i}
                                                         size={14}
                                                         className={`${i < Math.floor(p.averageRating || 0)
-                                                                ? "text-[#E07385] fill-current"
-                                                                : "text-gray-300"
+                                                            ? "text-[#E07385] fill-current"
+                                                            : "text-gray-300"
                                                             }`}
                                                     />
                                                 ))}
@@ -202,28 +203,6 @@ const CompareProducts = () => {
                                                     ({p.totalReviews || 0})
                                                 </span>
                                             </div>
-                                        ),
-                                    },
-                                    {
-                                        icon: "",
-                                        label: "Stock Status",
-                                        accessor: (p) => {
-                                            const inStock = Number(p.quantity ?? 0) > 0;
-                                            return (
-                                                <span
-                                                    className={`font-medium ${inStock ? "text-green-600" : "text-red-500"
-                                                        }`}
-                                                >
-                                                    {inStock ? "In Stock" : "Out of Stock"}
-                                                </span>
-                                            );
-                                        },
-                                    },
-                                    {
-                                        icon: "",
-                                        label: "Quantity",
-                                        accessor: (p) => (
-                                            <span className="text-gray-800">{p.quantity ?? 0}</span>
                                         ),
                                     },
                                     {
@@ -238,7 +217,7 @@ const CompareProducts = () => {
                                 ].map(({ icon, label, accessor }, rowIndex) => (
                                     <tr
                                         key={label}
-                                        className={`${rowIndex % 2 === 0 ? "bg-[#FAF9F6]" : "bg-[#F6EEEE]"
+                                        className={`${rowIndex % 2 === 0 ? "bg-[#F6EEEE]" : "bg-[#FAF9F6]"
                                             } transition-colors`}
                                     >
                                         <td className="p-4 flex items-center gap-2 font-medium text-[black] whitespace-nowrap">
