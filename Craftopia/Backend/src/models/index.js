@@ -25,6 +25,7 @@ const Rating = require('./rating');
 const Visitor = require('./visitor');
 const OTP = require('./otp');
 const Message = require('./message');
+const Cart = require('./cart');
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -52,6 +53,16 @@ Order.belongsTo(Customer, { foreignKey: 'customerId' });
 Order.belongsToMany(Product, { through: Product_Order, foreignKey: 'orderId' });
 Product.belongsToMany(Order, { through: Product_Order, foreignKey: 'productId' });
 
+// Many-to-Many Customer & Product Relationship (Through Cart)
+Customer.belongsToMany(Product, { through: Cart, foreignKey: 'customerId' });
+Product.belongsToMany(Customer, { through: Cart, foreignKey: 'productId' });
+
+// Direct associations for Cart junction table
+Customer.hasMany(Cart, { foreignKey: 'customerId' });
+Cart.belongsTo(Customer, { foreignKey: 'customerId' });
+
+Product.hasMany(Cart, { foreignKey: 'productId' });
+Cart.belongsTo(Product, { foreignKey: 'productId' });
 
 // report & customer Relationship
 Report.belongsTo(Customer, { foreignKey: 'ReporterID' });
@@ -186,5 +197,6 @@ module.exports = {
   Rating,
   Visitor,
   OTP,
-  Message
+  Message,
+  Cart
 };
