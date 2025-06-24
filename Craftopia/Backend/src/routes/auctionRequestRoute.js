@@ -24,7 +24,7 @@ router.get('/my-requests',
 
 router.get('/all', 
     authMiddleware,
-    roleMiddleware('admin'),
+    // roleMiddleware('admin'),
     [
         query('status').optional().isIn(['pending', 'rejected', 'scheduled']).withMessage('Status must be pending, rejected, or scheduled')
     ],

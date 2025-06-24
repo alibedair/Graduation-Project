@@ -142,8 +142,8 @@ exports.getAllArtists = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }        
-        const userId = req.user.id;
-        const customer = await Customer.findOne({ where: { userId } });
+        const userId = req.user?.id;
+        const customer = userId ? await Customer.findOne({ where: { userId } }) : null;
         let artists = await Artist.findAll({            
             attributes: [
                 'artistId', 
