@@ -19,6 +19,7 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import ProductDetails from './pages/ProductDetails';
 import Artists from './pages/Artists';
 import ArtistsSection from './Components/ArtistsSection';
+import Auctions from './pages/Auctions';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -84,6 +85,8 @@ function AppContent() {
             />
           }
         />
+        
+        <Route path="/auctions" element={<Auctions />}/>
         <Route path="/artists" element={<Artists />}/>
         <Route path="/register" element={<Register/>}/>
         <Route path="/cart" element={<CartPage />} />
