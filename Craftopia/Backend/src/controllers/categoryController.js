@@ -1,6 +1,7 @@
 const Category = require('../models/category');
 const categoryRequests = require('../models/categoriesRequests');
 const Artist = require('../models/artist');
+const Product = require('../models/product');
 
 exports.createCategory = async (req, res) => {
     try {
@@ -19,7 +20,21 @@ exports.createCategory = async (req, res) => {
 
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await Category.findAll();
+        const categories = await Category.findAll({
+            include: [{
+                model: Product,
+                attributes: [],
+                required: false 
+            }],
+            attributes: [
+                'categoryId',
+                'name',
+                [require('sequelize').fn('COUNT', require('sequelize').col('products.productId')), 'productCount']
+            ],
+            group: ['category.categoryId', 'category.name'],
+            raw: true
+        });
+        
         res.status(200).json({categories});
     } catch (error) {
         console.error('Error fetching categories:', error);
