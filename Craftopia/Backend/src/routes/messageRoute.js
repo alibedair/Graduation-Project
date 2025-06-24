@@ -19,11 +19,6 @@ router.post('/send/:responseId',
     messageController.sendMessage
 );
 
-router.get('/conversations',
-    authMiddleware,
-    roleMiddleware(['customer', 'artist']),
-    messageController.getConversations
-);
 
 router.get('/unread',
     authMiddleware,
@@ -32,14 +27,7 @@ router.get('/unread',
 );
 
 
-router.get('/response/:responseId',
-    authMiddleware,
-    roleMiddleware(['customer', 'artist']),
-    [
-        param('responseId').isInt().withMessage('Response ID must be an integer')
-    ],
-    messageController.getMessagesByResponse
-);
+
 
 
 
