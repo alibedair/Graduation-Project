@@ -4,7 +4,7 @@ import CartOverview from '../Components/CartOverview';
 import Footer from '../Components/Footer';
 
 const CartPage = () => {
-  const { cartItems, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, removeFromCart, clearCart } = useCart();
   const isCartEmpty = cartItems.length === 0;
 
   return (
@@ -23,13 +23,22 @@ const CartPage = () => {
         ) : (
           <>
             <div className="lg:w-[60%]">
-              <h1 className="text-2xl font-bold text-gray-800 mb-6">Cart Items</h1>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Cart Items</h1>
+                <button
+                  onClick={clearCart}
+                  className="text-sm text-red-800 hover:text-red-900 font-medium bg-red-100 hover:bg-red-200 px-4 py-1.5 rounded-md transition"
+                >
+                  Clear Cart
+                </button>
+              </div>
+
               <div className="space-y-4">
                 {cartItems.map(item => (
                   <CartItem
                     key={item.id}
                     item={item}
-                    onQuantityChange={updateQuantity}
+                    onQuantityChange={() => {}}
                     onRemove={removeFromCart}
                   />
                 ))}
