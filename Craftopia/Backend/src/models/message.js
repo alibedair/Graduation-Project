@@ -7,7 +7,7 @@ const Message = sequelize.define('message', {
         primaryKey: true,
         autoIncrement: true
     },
-    requestId: {
+    responseId: {
         type: DataTypes.INTEGER,
         allowNull: false
     },

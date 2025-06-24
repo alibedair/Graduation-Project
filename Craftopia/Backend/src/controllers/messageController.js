@@ -109,7 +109,7 @@ exports.sendMessage = async (req, res) => {
         }
 
         const message = await Message.create({
-            requestId,
+            responseId,
             senderId,
             senderType,
             receiverId,
@@ -189,4 +189,68 @@ exports.getUnreadMessages = async (req, res) => {
     }
 };
 
+exports.getMessagesByRespondId = async (req, res) => {
+    try {
+        const { responseId } = req.params;
+        const userId = req.user.id;
+        const user = await User.findByPk(userId);
 
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!responseId) {
+            return res.status(400).json({ message: 'Response ID is required' });
+        }
+
+      
+        let userRecord;
+        let userType;
+        let userIdField;
+
+        if (user.role === 'customer') {
+            userRecord = await Customer.findOne({ where: { userId } });
+            userType = 'customer';
+            userIdField = 'customerId';
+        } else if (user.role === 'artist') {
+            userRecord = await Artist.findOne({ where: { userId } });
+            userType = 'artist';
+            userIdField = 'artistId';
+        } else {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        if (!userRecord) {
+            return res.status(404).json({ message: 'User profile not found' });
+        }
+
+        const messages = await Message.findAll({
+            where: {
+                responseId: responseId,
+                [Op.or]: [
+                    { 
+                        senderId: userRecord[userIdField],
+                        senderType: userType
+                    },
+                    { 
+                        receiverId: userRecord[userIdField],
+                        receiverType: userType
+                    }
+                ]
+            },
+            order: [['createdAt', 'ASC']]
+        });
+
+        return res.status(200).json({
+            message: 'Messages retrieved successfully',
+            data: {
+                messages,
+                messageCount: messages.length
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting messages by response ID:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};

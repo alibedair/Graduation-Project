@@ -26,9 +26,13 @@ router.get('/unread',
     messageController.getUnreadMessages
 );
 
-
-
-
-
+router.get('/conversation/:responseId',
+    authMiddleware,
+    roleMiddleware(['customer', 'artist']),
+    [
+        param('responseId').isInt().withMessage('Response ID must be an integer')
+    ],
+    messageController.getMessagesByRespondId
+);
 
 module.exports = router;
