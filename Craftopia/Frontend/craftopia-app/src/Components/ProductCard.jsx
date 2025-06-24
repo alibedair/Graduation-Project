@@ -117,8 +117,6 @@ const ProductCard = ({
                             </span>
                         )}
                     </div>
-
-                    {/* ADD TO CART INTERACTION */}
                     {product.inStock ? (
                         isInCart ? (
                             showControls ? (

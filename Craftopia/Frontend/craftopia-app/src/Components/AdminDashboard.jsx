@@ -1,6 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaUser,
+  FaPaintBrush,
+  FaBoxOpen,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import {
   BarChart,
   Bar,
@@ -17,35 +23,61 @@ const AdminDashboard = () => {
   const [overview, setOverview] = useState({
     customers: 0,
     artists: 0,
-    sales: 0,
+    products: 0,
   });
   const [popularProducts, setPopularProducts] = useState([]);
+  const [overviewFilter, setOverviewFilter] = useState("All Time");
+  const [salesFilter, setSalesFilter] = useState("All Time");
+
+  const [overviewDropdownVisible, setOverviewDropdownVisible] = useState(false);
+  const [salesDropdownVisible, setSalesDropdownVisible] = useState(false);
+
+  const overviewDropdownRef = useRef(null);
+  const salesDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        overviewDropdownRef.current &&
+        !overviewDropdownRef.current.contains(event.target)
+      ) {
+        setOverviewDropdownVisible(false);
+      }
+      if (
+        salesDropdownRef.current &&
+        !salesDropdownRef.current.contains(event.target)
+      ) {
+        setSalesDropdownVisible(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchOverviewData = async () => {
       try {
-        const usersResponse = await axios.get("https://dummyjson.com/users");
-        const totalCustomers = (usersResponse.data.total).toLocaleString();
-        const totalArtists = Math.floor(usersResponse.data.total).toLocaleString();
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/admin/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        const salesResponse = await axios.get("https://dummyjson.com/carts");
-        const totalSales = salesResponse.data.carts.reduce(
-          (sum, cart) => sum + cart.total,
-          0
-        );
+        const { totalArtists, totalCustomers, totalProducts } = response.data.stats;
 
         setOverview({
-          customers: totalCustomers,
-          artists: totalArtists,
-          sales: totalSales,
+          customers: totalCustomers.toLocaleString(),
+          artists: totalArtists.toLocaleString(),
+          products: totalProducts.toLocaleString(),
         });
       } catch (error) {
-        console.error("Error fetching overview data:", error);
+        console.error("Error fetching dashboard overview:", error);
       }
     };
 
     fetchOverviewData();
-  }, []);
+  }, [overviewFilter]);
 
   useEffect(() => {
     const fetchSalesData = async () => {
@@ -78,7 +110,7 @@ const AdminDashboard = () => {
     };
 
     fetchSalesData();
-  }, []);
+  }, [salesFilter]);
 
   useEffect(() => {
     const fetchPopularProducts = async () => {
@@ -109,94 +141,136 @@ const AdminDashboard = () => {
     setStartIndex((prev) => (prev - 1 + popularProducts.length) % popularProducts.length);
   };
 
-  const getVisibleProducts = () => {
-    return [...popularProducts, ...popularProducts].slice(startIndex, startIndex + 4);
-  };
+  const visibleProduct = popularProducts[startIndex];
 
   return (
-    <div className="flex flex-col pl-6 w-full bg-[#FAF9F6]">
+    <div className="flex flex-col pl-6 w-full bg-[#FAF9F6] mt-5">
       <h2 className="text-2xl font-semibold mt-6">Dashboard</h2>
 
+      {/* Overview Section */}
       <div className="bg-[#F6EEEE] w-4/5 p-6 mt-2 rounded-2xl border border-black">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Overview</h2>
-          <button className="bg-[#E07385] text-white px-4 py-1 rounded-md">All Time ▼</button>
+          <div className="relative inline-block text-left" ref={overviewDropdownRef}>
+            <button
+              onClick={() => setOverviewDropdownVisible(prev => !prev)}
+              className="bg-[#E07385] text-white px-4 py-1 rounded-md"
+            >
+              {overviewFilter} ▼
+            </button>
+            {overviewDropdownVisible && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
+                {["Today", "This Week", "This Month", "This Year", "All Time"].map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setOverviewFilter(option);
+                      setOverviewDropdownVisible(false);
+                    }}
+                    className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#FDECEC] ${
+                      option === overviewFilter ? "bg-[#F6EEEE] font-medium" : ""
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mt-3 border rounded-lg p-4 bg-[#ffffff]">
-          <div className="text-center">
+        <div className="grid grid-cols-3 gap-4 mt-3 border rounded-lg p-4 bg-white">
+          <div className="flex flex-col items-center justify-center">
+            <FaUser className="text-[#E07385] text-2xl mb-1" />
             <h3 className="text-sm text-gray-600">Customers</h3>
             <p className="text-lg font-bold">{overview.customers}</p>
           </div>
-          <div className="text-center border-x px-4">
+          <div className="flex flex-col items-center justify-center border-x px-4">
+            <FaPaintBrush className="text-[#E07385] text-2xl mb-1" />
             <h3 className="text-sm text-gray-600">Artists</h3>
             <p className="text-lg font-bold">{overview.artists}</p>
           </div>
-          <div className="text-center">
-            <h3 className="text-sm text-gray-600">Sales</h3>
-            <p className="text-lg font-bold">${overview.sales.toLocaleString()}</p>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <h3 className="text-md font-semibold mb-3">Popular Products</h3>
-          <div className="relative flex items-center">
-            <button className="absolute left-0 bg-white p-2 rounded-full shadow-md" onClick={handlePrev}>
-              <FaChevronLeft />
-            </button>
-
-            <div className="flex gap-4 overflow-hidden w-full px-10">
-              {getVisibleProducts().map((product, index) => (
-                <ProductCard key={index} title={product.title} image={product.image} />
-              ))}
-            </div>
-
-            <button className="absolute right-0 bg-white p-2 rounded-full shadow-md" onClick={handleNext}>
-              <FaChevronRight />
-            </button>
+          <div className="flex flex-col items-center justify-center">
+            <FaBoxOpen className="text-[#E07385] text-2xl mb-1" />
+            <h3 className="text-sm text-gray-600">Products</h3>
+            <p className="text-lg font-bold">{overview.products}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-[#F6EEEE] w-3/5 p-6 mt-4 rounded-2xl border border-black h-60">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Summary Sales</h2>
-          <button className="bg-[#E07385] text-white px-4 py-1 rounded-md">All Time ▼</button>
-        </div>
+      {/* Sales and Popular Products Section */}
+      <div className="flex w-4/5 gap-4 mt-4">
+        {/* Sales */}
+        <div className="flex-1 bg-[#F6EEEE] p-6 rounded-2xl border border-black">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">Summary Sales</h2>
+            <div className="relative inline-block text-left" ref={salesDropdownRef}>
+              <button
+                onClick={() => setSalesDropdownVisible(prev => !prev)}
+                className="bg-[#E07385] text-white px-4 py-1 rounded-md"
+              >
+                {salesFilter} ▼
+              </button>
+              {salesDropdownVisible && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
+                  {["Today", "This Week", "This Month", "This Year", "All Time"].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setSalesFilter(option);
+                        setSalesDropdownVisible(false);
+                      }}
+                      className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#FDECEC] ${
+                        option === salesFilter ? "bg-[#F6EEEE] font-medium" : ""
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
-        <div className="flex justify-center mt-2">
-          <ResponsiveContainer width="90%" height={170}>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={salesData} barCategoryGap={20}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis tickFormatter={(value) => `${value}`} />
               <Tooltip formatter={(value) => `${value}`} />
-              <Bar
-                dataKey="sales"
-                fill="#E07385"
-                barSize={25}
-                radius={[10, 10, 0, 0]}
-              />
+              <Bar dataKey="sales" fill="#E07385" barSize={25} radius={[10, 10, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+
+        {/* Popular Products */}
+        <div className="w-64 bg-[#F6EEEE] border border-black rounded-2xl p-4 flex flex-col items-center justify-between">
+          <div className="flex justify-between w-full mb-3">
+            <button onClick={handlePrev} className="text-[#E07385]">
+              <FaChevronLeft />
+            </button>
+            <h3 className="font-semibold text-sm text-gray-800">Popular Products</h3>
+            <button onClick={handleNext} className="text-[#E07385]">
+              <FaChevronRight />
+            </button>
+          </div>
+          {visibleProduct && (
+            <>
+              <div className="bg-white rounded-xl shadow-md p-2 w-32 h-32 flex items-center justify-center">
+                <img
+                  src={visibleProduct.image}
+                  alt={visibleProduct.title}
+                  className="w-full h-full object-contain rounded"
+                />
+              </div>
+              <p className="text-xs mt-2 text-center font-medium line-clamp-2 px-1">{visibleProduct.title}</p>
+              <p className="text-sm font-semibold text-[#E07385] mt-1">${visibleProduct.price}</p>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-const ProductCard = ({ title, image }) => (
-  <div className="bg-white border p-2 rounded-lg shadow-sm w-48 h-28 flex flex-col items-center">
-    <div className="w-full h-15">
-      <img
-        src={image}
-        alt={title}
-        className="w-full h-full object-contain rounded-md"
-      />
-    </div>
-    <p className="text-xs mt-1 text-center leading-tight line-clamp-2">{title}</p>
-  </div>
-);
-
 
 export default AdminDashboard;

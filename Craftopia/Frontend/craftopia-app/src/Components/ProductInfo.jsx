@@ -3,8 +3,6 @@ import { Star, Package, Ruler, Palette } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useMemo } from "react";
 const ProductInfo = ({ product }) => {
-    console.log("ProductInfo received:", product);
-
     const {
         cartItems,
         addToCart,
