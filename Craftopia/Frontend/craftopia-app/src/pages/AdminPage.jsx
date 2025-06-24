@@ -8,7 +8,14 @@ import AddCategory from "../Components/AddCategory";
 import AdminAuctionManagement from "./AdminAuctionManagement";
 
 const AdminPage = () => {
-  const [selected, setSelected] = useState("Home");
+  const [selected, setSelected] = useState(() => {
+  return localStorage.getItem("adminSelectedTab") || "Home";
+});
+const handleSetSelected = (tab) => {
+  setSelected(tab);
+  localStorage.setItem("adminSelectedTab", tab);
+};
+
 
   const renderContent = () => {
     switch (selected) {
@@ -29,7 +36,7 @@ const AdminPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#FAF9F6] overflow-hidden">
-      <AdminSidebar selected={selected} setSelected={setSelected} />
+      <AdminSidebar selected={selected} setSelected={handleSetSelected} />
       <div className="flex flex-col items-stretch w-full ml-20 pr-10 overflow-auto h-screen">
         <AdminSearchbar />
         {renderContent()}

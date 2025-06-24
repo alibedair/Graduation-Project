@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductInfo from "../Components/ProductInfo";
 import ProductReview from "../Components/ProductReview";
 import Footer from "../Components/Footer";
@@ -12,6 +12,9 @@ const ProductDetails = () => {
   });
 
   const product = state?.product;
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (!product) {
     return (
