@@ -1,74 +1,143 @@
-import { useState, useEffect } from "react";
-import { FaStar, FaHeart } from "react-icons/fa";
-import { FiChevronRight } from "react-icons/fi";
-import { useCart } from "../context/CartContext";
-
+import { useEffect, useRef, useState } from "react";
+import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import axios from "axios";
+import ProductCard from "./ProductCard";
+import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
 const BestSellingProducts = () => {
   const [products, setProducts] = useState([]);
-  const { addToCart } = useCart();
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const scrollRef = useRef(null);
+
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
   useEffect(() => {
     axios
-      .get("https://dummyjson.com/products/category/home-decoration?limit=10")
-      .then((res) => setProducts(res.data.products))
-      .catch((err) => console.error(err));
+      .get("http://localhost:3000/product/get", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        const products = res.data.products || [];
+        const formatted = products.map((p) => ({
+          id: p.productId,
+          name: p.name,
+          price: p.price,
+          image: p.image?.[0],
+          category: p.category?.name || "Uncategorized",
+          artist: p.artist?.name || "Unknown",
+          rating: (Math.random() * (5 - 4) + 4).toFixed(1),
+          reviews: Math.floor(Math.random() * 50 + 5),
+          inStock: p.quantity > 0,
+        }));
+        setProducts(formatted);
+      })
+      .catch((err) => console.error("Failed to fetch products:", err));
   }, []);
 
+  const toggleWishlist = (product) => {
+    const exists = wishlist.find((item) => item.id === product.id);
+    exists ? removeFromWishlist(product.id) : addToWishlist(product);
+  };
+
+  const updateScrollButtons = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+  };
+
+  const handleScroll = (direction) => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const cardWidth = container.firstChild?.offsetWidth || 270;
+    container.scrollBy({
+      left: direction === "right" ? cardWidth + 24 : -cardWidth - 24,
+      behavior: "smooth",
+    });
+    setTimeout(updateScrollButtons, 300);
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    const container = scrollRef.current;
+    container?.addEventListener("scroll", updateScrollButtons);
+    return () => container?.removeEventListener("scroll", updateScrollButtons);
+  }, [products]);
+
   return (
-    <div className="p-6 bg-[#FAF9F6] pl-30 mt-12">
-      <h2 className="text-xl font-bold mb-4">Shop our Best Selling Handmade Products</h2>
-      <div className="flex items-center space-x-4">
-        <div className="flex space-x-4 overflow-x-auto">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-[#F6EEEE] rounded-lg shadow-lg p-3 w-60 flex flex-col justify-between"
+    <section className="bg-[#FAF9F6] py-12">
+      <div className="max-w-7xl mx-auto px-4 relative">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <h2 className="text-2xl font-bold text-gray-800">
+            Shop our Best Selling Handmade Products
+          </h2>
+        </motion.div>
+
+        <div className="relative">
+          {canScrollLeft && (
+            <button
+              onClick={() => handleScroll("left")}
+              className="absolute -left-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
             >
-              <div className="relative group">
-                <img
-                  src={product.thumbnail}
-                  alt={product.title}
-                  className="rounded-md w-full h-40 object-cover"
-                />
-                <FaHeart className="absolute top-2 left-2 text-[#921A40] text-3xl rounded-full p-1" />
+              <FiChevronLeft className="text-[#921A40] text-2xl" />
+            </button>
+          )}
 
-                {/* Add to Cart Button (At the Bottom) */}
-                <button
-                  onClick={() =>
-                    addToCart({
-                      id: product.id,
-                      name: product.title,
-                      price: product.price,
-                      image: product.thumbnail,
-                      category: product.category,
-                    })
-                  }
+          {canScrollRight && (
+            <button
+              onClick={() => handleScroll("right")}
+              className="absolute -right-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
+            >
+              <FiChevronRight className="text-[#921A40] text-2xl" />
+            </button>
+          )}
 
-                  className="absolute bottom-0 left-0 w-full bg-[#E07385] text-white text-sm font-bold py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          <div
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 pr-1"
+            style={{ scrollBehavior: "smooth" }}
+          >
+            {products.map((product) => {
+              const isFavorite = wishlist.some((item) => item.id === product.id);
+              const inCart = cartItems.find((item) => item.id === product.id);
+              const quantity = inCart?.quantity || 0;
+
+              return (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-[270px] flex-shrink-0"
                 >
-                  Add to cart
-                </button>
-
-              </div>
-
-              <h3 className="font-bold mt-2 text-sm h-8 truncate">{product.title}</h3>
-              <div className="flex justify-between items-center">
-                <p className="text-gray-700 text-sm">{product.price} LE</p>
-                <div className="flex items-center">
-                  <span className="text-sm font-bold">{product.rating.toFixed(1)}</span>
-                  <FaStar className="text-yellow-500 ml-1 text-sm" />
-                </div>
-              </div>
-            </div>
-          ))}
+                  <ProductCard
+                    product={product}
+                    isFavorite={isFavorite}
+                    onToggleFavorite={() => toggleWishlist(product)}
+                    isInCart={!!inCart}
+                    quantity={quantity}
+                    onAddToCart={() => addToCart(product)}
+                    onIncrement={() => incrementQuantity(product.id)}
+                    onDecrement={() => decrementQuantity(product.id)}
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
-        <button className="border-2 border-[#E07385] p-3 rounded-lg">
-          <FiChevronRight className="text-[#921A40] text-xl" />
-        </button>
       </div>
-    </div>
+    </section>
   );
 };
 

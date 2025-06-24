@@ -12,30 +12,44 @@ const AvaliableProducts = () => {
   const scrollRef = useRef(null);
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const {
+    cartItems,
+    addToCart,
+    incrementQuantity,
+    decrementQuantity,
+  } = useCart();
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/product/get")
+      .get("http://localhost:3000/product/get", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
       .then((res) => {
-        setProducts(res.data.products);
+        const fetched = res.data.products || [];
+        const formatted = fetched.map((p) => ({
+          id: p.productId,
+          name: p.name,
+          price: p.price,
+          image: p.image?.[0],
+          rating: (Math.random() * (5 - 4) + 4).toFixed(1),
+          reviews: Math.floor(Math.random() * 50 + 5),
+          description: p.description,
+          dimensions: p.dimensions,
+          material: p.material,
+          category: p.category?.name || "Uncategorized",
+          artist: p.artist?.name || "Unknown Artist",
+          inStock: p.quantity > 0,
+        }));
+        setProducts(formatted);
       })
       .catch((err) => console.error(err));
   }, []);
 
   const toggleWishlist = (product) => {
-    const isWishlisted = wishlist.find(item => item.id === product.productId);
-    if (isWishlisted) {
-      removeFromWishlist(product.productId);
-    } else {
-      addToWishlist({
-        id: product.productId,
-        name: product.name,
-        price: product.price,
-        image: product.image[0],
-        category: product.category?.name || "Uncategorized",
-      });
-    }
+    const exists = wishlist.find((item) => item.id === product.id);
+    exists ? removeFromWishlist(product.id) : addToWishlist(product);
   };
 
   const updateScrollButtons = () => {
@@ -50,13 +64,10 @@ const AvaliableProducts = () => {
     const container = scrollRef.current;
     if (!container) return;
     const cardWidth = container.firstChild?.offsetWidth || 270;
-    const scrollAmount = cardWidth + 24;
-
     container.scrollBy({
-      left: direction === "right" ? scrollAmount : -scrollAmount,
+      left: direction === "right" ? cardWidth + 24 : -cardWidth - 24,
       behavior: "smooth",
     });
-
     setTimeout(updateScrollButtons, 300);
   };
 
@@ -70,12 +81,18 @@ const AvaliableProducts = () => {
   return (
     <section className="bg-[#FAF9F6] py-12">
       <div className="max-w-7xl mx-auto px-4 relative">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">
-          Shop our Available Products
-        </h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <h2 className="text-2xl font-bold text-gray-800">
+            Shop our Available Products
+          </h2>
+        </motion.div>
 
         <div className="relative">
-        
           {canScrollLeft && (
             <button
               onClick={() => handleScroll("left")}
@@ -85,7 +102,6 @@ const AvaliableProducts = () => {
             </button>
           )}
 
-          
           {canScrollRight && (
             <button
               onClick={() => handleScroll("right")}
@@ -95,7 +111,6 @@ const AvaliableProducts = () => {
             </button>
           )}
 
-          
           <div
             ref={scrollRef}
             className="flex gap-6 overflow-x-auto pb-4 pr-1 scrollbar-hide"
@@ -108,39 +123,29 @@ const AvaliableProducts = () => {
             }}
           >
             {products.map((product) => {
-              const isFavorite = wishlist.some(item => item.id === product.productId);
+              const isFavorite = wishlist.some((item) => item.id === product.id);
+              const inCart = cartItems.find((item) => item.id === product.id);
+              const quantity = inCart?.quantity || 0;
+
               return (
-                <div
-                  key={product.productId}
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                   className="w-[270px] flex-shrink-0"
                 >
                   <ProductCard
-                    product={{
-                      id: product.productId,
-                      name: product.name,
-                      price: product.price,
-                      image: product.image[0],
-                      rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-                      description: product.description,
-                      dimensions: product.dimensions,
-                      material: product.material,
-                      category: product.category?.name || "Uncategorized",
-                      artist: product.artist?.name || "Unknown Artist",
-                      inStock: product.quantity > 0,
-                    }}
+                    product={product}
                     isFavorite={isFavorite}
                     onToggleFavorite={() => toggleWishlist(product)}
-                    onAddToCart={() =>
-                      addToCart({
-                        id: product.productId,
-                        name: product.name,
-                        price: product.price,
-                        image: product.image[0],
-                        category: product.category?.name || "Uncategorized",
-                      })
-                    }
+                    isInCart={!!inCart}
+                    quantity={quantity}
+                    onAddToCart={() => addToCart(product)}
+                    onIncrement={() => incrementQuantity(product.id)}
+                    onDecrement={() => decrementQuantity(product.id)}
                   />
-                </div>
+                </motion.div>
               );
             })}
           </div>

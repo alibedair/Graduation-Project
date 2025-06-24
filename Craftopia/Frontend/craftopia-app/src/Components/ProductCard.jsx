@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Heart, Star, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +13,8 @@ const ProductCard = ({
     onDecrement,
 }) => {
     const navigate = useNavigate();
+    const [showControls, setShowControls] = useState(false);
+    const [timerId, setTimerId] = useState(null);
 
     const mainImage = Array.isArray(product.image)
         ? product.image[0]
@@ -19,6 +22,21 @@ const ProductCard = ({
 
     const handleCardClick = () => {
         navigate(`/product/${product.id}`, { state: { product } });
+    };
+
+    useEffect(() => {
+        if (isInCart && quantity > 0) {
+            setShowControls(true);
+            const id = setTimeout(() => setShowControls(false), 3000);
+            setTimerId(id);
+            return () => clearTimeout(id);
+        }
+    }, [isInCart, quantity]);
+
+    const handleBadgeClick = (e) => {
+        e.stopPropagation();
+        clearTimeout(timerId);
+        setShowControls(true);
     };
 
     return (
@@ -40,6 +58,7 @@ const ProductCard = ({
                         Sold Out
                     </div>
                 )}
+
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -81,12 +100,12 @@ const ProductCard = ({
                         <span className="text-sm font-semibold text-gray-900">
                             {Number(product.rating || 0).toFixed(1)}
                         </span>
-
                     </div>
                     <span className="text-sm text-gray-500">
                         ({product.reviews || 0} reviews)
                     </span>
                 </div>
+
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className="text-xl font-bold text-gray-900">
@@ -99,34 +118,43 @@ const ProductCard = ({
                         )}
                     </div>
 
+                    {/* ADD TO CART INTERACTION */}
                     {product.inStock ? (
                         isInCart ? (
-                            <div
-                                className="flex items-center gap-2"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <button
-                                    onClick={() => onDecrement?.(product)}
-                                    className="p-1 rounded-full border border-gray-300 hover:bg-gray-100"
+                            showControls ? (
+                                <div
+                                    className="flex items-center gap-2"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
-                                    <Minus className="w-4 h-4" />
-                                </button>
-                                <span className="text-sm font-semibold">{quantity}</span>
+                                    <button
+                                        onClick={() => onDecrement?.(product)}
+                                        className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                                    >
+                                        <Minus className="w-4 h-4 text-gray-600" />
+                                    </button>
+                                    <span className="text-sm font-semibold text-gray-800">{quantity}</span>
+                                    <button
+                                        onClick={() => onIncrement?.(product)}
+                                        className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                                    >
+                                        <Plus className="w-4 h-4 text-gray-600" />
+                                    </button>
+                                </div>
+                            ) : (
                                 <button
-                                    onClick={() => onIncrement?.(product)}
-                                    className="p-1 rounded-full border border-gray-300 hover:bg-gray-100"
+                                    onClick={handleBadgeClick}
+                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-[#E07385] text-white font-semibold text-sm transition hover:scale-105"
                                 >
-                                    <Plus className="w-4 h-4" />
+                                    {quantity}
                                 </button>
-                            </div>
+                            )
                         ) : (
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onAddToCart?.(product);
                                 }}
-                                className="text-sm font-medium rounded-full px-4 py-1 transition text-white"
-                                style={{ backgroundColor: "#E07385" }}
+                                className="text-sm font-medium rounded-full px-4 py-1 bg-[#E07385] text-white hover:bg-[#d15e72] transition"
                             >
                                 Add to Cart
                             </button>
