@@ -15,6 +15,10 @@ router.get('/mywishlist',
     roleMiddleware('customer'),
     wishlistController.getWishlist
 );
-
+router.delete('/remove/:productId',
+    authMiddleware,
+    roleMiddleware('customer'),
+    wishlistController.removeFromWishlist
+);
 
 module.exports = router;
