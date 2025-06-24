@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import axios from "axios";
+import { motion } from "framer-motion";
 import ProductCard from "./ProductCard";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
