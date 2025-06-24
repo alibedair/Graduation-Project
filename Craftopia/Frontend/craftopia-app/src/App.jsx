@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { WishlistProvider } from './context/WishlistContext';
 import { CartProvider }     from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-
+import AuctionsSection from './Components/AuctionsSection';
 import Navbar from './Components/Navbar';
 import HeroSection from './Components/HeroSection';
 import PopularProducts     from './Components/AvaliableProducts';
@@ -56,6 +56,7 @@ function AppContent() {
               <PopularProducts />
               <BestSellingProducts />
               <ArtistsSection />
+              <AuctionsSection />
               <Footer />
             </>
           }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Award, Star, Palette, Users } from 'lucide-react';
+import { Award, Star, Palette, Users,ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const ArtistsSection = () => {
   const [artists, setArtists] = useState([]);
@@ -135,14 +136,25 @@ const ArtistsSection = () => {
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-        <motion.button
+        {/* <motion.button
           whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(114,47,55,0.3)" }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/artists')}
-          className="bg-burgundy hover:bg-burgundy/90 text-cream px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
+          className="bg-coral hover:bg-burgundy/90 text-cream px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
         >
           Discover All Artists
-        </motion.button>
+        </motion.button> */}
+
+        <Link to="/artists">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-coral hover:bg-burgundy text-white px-12 py-4 rounded-full font-medium text-lg transition-all duration-300 shadow-lg hover:shadow-xl inline-flex items-center gap-3"
+            >
+              Discover All Artists
+              <ArrowRight className="h-5 w-5" />
+            </motion.button>
+          </Link>
 
         </motion.div>
       </div>

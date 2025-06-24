@@ -144,7 +144,7 @@ const AvaliableProducts = () => {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ scale: 1.05, rotateY: 5 }}
                 viewport={{ once: true }}
-                className="group cursor-pointer snap-center min-w-[270px] max-w-[270px] flex-shrink-0"
+                className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
               >
                 <ProductCard
                   product={product}
