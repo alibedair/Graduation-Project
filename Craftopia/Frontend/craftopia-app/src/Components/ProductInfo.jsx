@@ -16,6 +16,12 @@ const ProductInfo = ({ product }) => {
     const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
     const [reviewsCount, setReviewsCount] = useState(product.totalReviews || 0);
     const [selectedImage, setSelectedImage] = useState(null);
+    const isAvailable =
+        typeof product.inStock === "boolean"
+            ? product.inStock
+            : Number(product.quantity ?? 0) > 0;
+
+
     useEffect(() => {
         setQuantity(cartItem?.quantity || 0);
     }, [cartItem]);
@@ -94,7 +100,7 @@ const ProductInfo = ({ product }) => {
             <div className="space-y-5">
                 <div className="space-y-1">
                     <p className="text-sm font-semibold uppercase text-[#e07385] tracking-wide">
-                        {typeof product.category === "string"
+                         {typeof product.category === "string"
                             ? product.category
                             : product.category?.name || "Handmade"}
                     </p>
@@ -104,8 +110,11 @@ const ProductInfo = ({ product }) => {
                     <p className="text-sm text-gray-500">
                         by{" "}
                         <span className="font-medium text-[#E07385]">
-                            {product.artist?.username || product.artist || "Unknown Artist"}
+                            {product.artist?.username ||
+                                (typeof product.artist === "string" ? product.artist : product.artist?.name) ||
+                                "Unknown Artist"}
                         </span>
+
                     </p>
                 </div>
 
@@ -121,13 +130,13 @@ const ProductInfo = ({ product }) => {
                     <span className="text-3xl font-bold text-[#E07385]">{product.price} LE</span>
 
                     <div className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-green-600" />
-                        <span
-                            className={`font-medium ${product.inStock ? "text-green-600" : "text-red-600"}`}
-                        >
-                            {product.inStock ? `In Stock` : "Out of Stock"}
+                        <Package className={`w-5 h-5 ${isAvailable ? "text-green-600" : "text-red-600"}`} />
+                        <span className={`font-medium ${isAvailable ? "text-green-600" : "text-red-600"}`}>
+                            {isAvailable ? "In Stock" : "Out of Stock"}
                         </span>
                     </div>
+
+
                 </div>
 
                 <div className="bg-[#f3e1e4] rounded-xl p-6">
