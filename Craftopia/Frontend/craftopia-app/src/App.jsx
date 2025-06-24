@@ -20,6 +20,7 @@ import ProductDetails from './pages/ProductDetails';
 import Artists from './pages/Artists';
 import ArtistsSection from './Components/ArtistsSection';
 import Auctions from './pages/Auctions';
+import ShopByCategory from './Components/ShopByCategory';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -51,6 +52,7 @@ function AppContent() {
           element={
             <>
               <HeroSection />
+              <ShopByCategory />
               <PopularProducts />
               <BestSellingProducts />
               <ArtistsSection />
