@@ -80,77 +80,86 @@ const AvaliableProducts = () => {
   }, [products]);
 
   return (
-    <section className="bg-[#FAF9F6] py-12">
-      <div className="max-w-7xl mx-auto px-4 relative">
+    <section className="py-20 bg-cream overflow-hidden">
+      <div className="container mx-auto px-4 relative">
+        {/* Header with motion */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
         >
-          <h2 className="text-2xl font-bold text-gray-800">
-            Shop our Available Products
+          <h2 className="text-4xl md:text-5xl font-bold text-black/90 mb-4">
+            Shop Our Available Products
           </h2>
+          <p className="text-xl text-burgundy/80 max-w-2xl mx-auto">
+            Browse unique, handmade items crafted by talented artists
+          </p>
         </motion.div>
 
-        <div className="relative">
-          {canScrollLeft && (
-            <button
-              onClick={() => handleScroll("left")}
-              className="absolute -left-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
-            >
-              <FiChevronLeft className="text-[#921A40] text-2xl" />
-            </button>
-          )}
-
-          {canScrollRight && (
-            <button
-              onClick={() => handleScroll("right")}
-              className="absolute -right-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
-            >
-              <FiChevronRight className="text-[#921A40] text-2xl" />
-            </button>
-          )}
-
-          <div
-            ref={scrollRef}
-            className="flex gap-6 overflow-x-auto pb-4 pr-1 scrollbar-hide"
-            style={{
-              scrollBehavior: "smooth",
-              paddingBottom: "1.5rem",
-              marginBottom: "-1.5rem",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
+        {/* Arrows */}
+        {canScrollLeft && (
+          <button
+            onClick={() => handleScroll("left")}
+            className="absolute -left-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
           >
-            {products.map((product) => {
-              const isFavorite = wishlist.some((item) => item.id === product.id);
-              const inCart = cartItems.find((item) => item.id === product.id);
-              const quantity = inCart?.quantity || 0;
+            <FiChevronLeft className="text-[#921A40] text-2xl" />
+          </button>
+        )}
+        {canScrollRight && (
+          <button
+            onClick={() => handleScroll("right")}
+            className="absolute -right-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
+          >
+            <FiChevronRight className="text-[#921A40] text-2xl" />
+          </button>
+        )}
 
-              return (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-[270px] flex-shrink-0"
-                >
-                  <ProductCard
-                    product={product}
-                    isFavorite={isFavorite}
-                    onToggleFavorite={() => toggleWishlist(product)}
-                    isInCart={!!inCart}
-                    quantity={quantity}
-                    onAddToCart={() => addToCart(product)}
-                    onIncrement={() => incrementQuantity(product.id)}
-                    onDecrement={() => decrementQuantity(product.id)}
-                  />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
+        {/* Horizontal Scroll Container */}
+        <motion.div
+          ref={scrollRef}
+          className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"
+          style={{
+            scrollBehavior: "smooth",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          {products.map((product, index) => {
+            const isFavorite = wishlist.some((item) => item.id === product.id);
+            const inCart = cartItems.find((item) => item.id === product.id);
+            const quantity = inCart?.quantity || 0;
+
+            return (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                viewport={{ once: true }}
+                className="group cursor-pointer snap-center min-w-[270px] max-w-[270px] flex-shrink-0"
+              >
+                <ProductCard
+                  product={product}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={() => toggleWishlist(product)}
+                  isInCart={!!inCart}
+                  quantity={quantity}
+                  onAddToCart={() => addToCart(product)}
+                  onIncrement={() => incrementQuantity(product.id)}
+                  onDecrement={() => decrementQuantity(product.id)}
+                />
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </div>
     </section>
   );

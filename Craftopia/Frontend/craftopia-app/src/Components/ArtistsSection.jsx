@@ -47,10 +47,10 @@ const ArtistsSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-coral/90 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-black/90 mb-4">
             Meet Our Artists
           </h2>
-          <p className="text-xl text-black/80 max-w-2xl mx-auto">
+          <p className="text-xl text-burgundy/80 max-w-2xl mx-auto">
             Discover the talented creators behind our beautiful handcrafted pieces
           </p>
         </motion.div>

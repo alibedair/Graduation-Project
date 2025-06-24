@@ -45,7 +45,7 @@ const ShopByCategory = () => {
 
   return (
     <section className="py-20 bg-cream">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 ">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ const ShopByCategory = () => {
 
         {/* ✅ Horizontal scrolling on all screen sizes */}
         <motion.div
-          className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory px-1 py-2 scrollbar-hide"
+          className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-5 py-5 scrollbar-hide "
           style={{ WebkitOverflowScrolling: 'touch' }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -80,7 +80,7 @@ const ShopByCategory = () => {
               viewport={{ once: true }}
               className="group cursor-pointer snap-center min-w-[280px] max-w-[280px] flex-shrink-0"
             >
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-coral/10">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-coral/10">
                 <div
                   className={`w-16 h-16 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300`}
                 >
