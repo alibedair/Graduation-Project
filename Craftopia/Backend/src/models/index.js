@@ -24,6 +24,7 @@ const categoryRequests = require('./categoriesRequests');
 const Rating = require('./rating');
 const Visitor = require('./visitor');
 const OTP = require('./otp');
+const Message = require('./message');
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -155,6 +156,10 @@ Visitor.belongsTo(Customer, { foreignKey: 'customerId' });
 User.hasMany(OTP, { foreignKey: 'userId' });
 OTP.belongsTo(User, { foreignKey: 'userId' });
 
+// Message & CustomizationRequest Relationship
+CustomizationRequest.hasMany(Message, { foreignKey: 'requestId' });
+Message.belongsTo(CustomizationRequest, { foreignKey: 'requestId' });
+
 // Export all models and sequelize instance
 module.exports = {
   sequelize,
@@ -180,5 +185,6 @@ module.exports = {
   categoryRequests,
   Rating,
   Visitor,
-  OTP
+  OTP,
+  Message
 };

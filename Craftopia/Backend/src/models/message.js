@@ -1,8 +1,5 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
-const CustomizationRequest = require('./customizationRequest');
-const Customer = require('./customer');
-const Artist = require('./artist');
 
 const Message = sequelize.define('message', {
     messageId: {
@@ -12,11 +9,7 @@ const Message = sequelize.define('message', {
     },
     requestId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: CustomizationRequest,
-            key: 'requestId'
-        }
+        allowNull: false
     },
     senderId: {
         type: DataTypes.INTEGER,

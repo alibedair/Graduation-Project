@@ -5,15 +5,16 @@ const roleMiddleware = require('../middlewares/roleMiddleware');
 const upload = require('../middlewares/upload');
 const { body, param } = require('express-validator');
 
-router.post('/send',
+router.post('/send/:responseId',
     authMiddleware,
     roleMiddleware(['customer', 'artist']),
     upload.fields([
         { name: 'attachment', maxCount: 1 }
     ]),
     [
-        body('responseId').isInt().withMessage('Response ID must be an integer'),
-        body('messageContent').optional().isString().withMessage('Message content must be a string')
+        param('responseId').isInt().withMessage('Response ID must be an integer'),
+        body('messageContent').notEmpty().trim().withMessage('Message content is required'),
+        body('attachment').optional().isString().withMessage('Attachment must be a string')
     ],
     messageController.sendMessage
 );

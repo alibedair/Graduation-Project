@@ -58,14 +58,25 @@ const validateMessageContent = (content) => {
 
 exports.sendMessage = async (req, res) => {
     try {
-        const { responseId, messageContent} = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+        const { responseId} = req.params;
+        const {messageContent, attachment} = req.body;
+        if (!messageContent || messageContent.trim() === '') {
+            return res.status(400).json({ message: 'Message content is required' });
+        }
         const userId = req.user.id;        
         const customizationResponse = await CustomizationResponse.findByPk(responseId);
         if (!customizationResponse) {
             return res.status(404).json({ message: 'Customization response not found' });
         }
 
-        if (customizationResponse.status !== 'accepted') {
+        if (customizationResponse.status !== 'ACCEPTED') {
             return res.status(403).json({ message: 'Messages can only be sent for accepted customization responses' });
         }
 
@@ -100,9 +111,9 @@ exports.sendMessage = async (req, res) => {
                 message: 'Message content not allowed',
                 reason: contentValidation.reason 
             });
-        }      
-        let attachmentUrl = '';
+        }
         const uploadPromises = [];
+        let attachmentUrl = attachment || '';
         if (req.files) {
             if (req.files.attachment && req.files.attachment[0]) {
                 const attachmentFile = req.files.attachment[0];
@@ -113,7 +124,7 @@ exports.sendMessage = async (req, res) => {
                             resource_type: 'image',
                             public_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                         }).then(result => {
-                            attachmentUrl = result.secure_url;
+                            attachmentUrl = result.secure_url || '';
                         })
                     );
                 } else if (attachmentFile.mimetype.startsWith('video/')) {
@@ -123,7 +134,7 @@ exports.sendMessage = async (req, res) => {
                             resource_type: 'video',
                             public_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                         }).then(result => {
-                            attachmentUrl = result.secure_url;
+                            attachmentUrl = result.secure_url || '';
                         })
                     );
                 } else {
@@ -150,7 +161,7 @@ exports.sendMessage = async (req, res) => {
             receiverId,
             receiverType,
             messageContent,
-            attachmentUrl: attachmentUrl 
+            attachmentUrl: attachmentUrl || ''
         });
 
         return res.status(201).json({
