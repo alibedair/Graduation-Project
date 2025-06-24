@@ -26,6 +26,7 @@ const Visitor = require('./visitor');
 const OTP = require('./otp');
 const Message = require('./message');
 const Cart = require('./cart');
+const customizationResponse = require('./customizationResponse');
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -168,8 +169,12 @@ User.hasMany(OTP, { foreignKey: 'userId' });
 OTP.belongsTo(User, { foreignKey: 'userId' });
 
 // Message & CustomizationRequest Relationship
-CustomizationRequest.hasMany(Message, { foreignKey: 'requestId' });
-Message.belongsTo(CustomizationRequest, { foreignKey: 'requestId' });
+CustomizationResponse.hasMany(Message, { foreignKey: 'responseId' });
+Message.belongsTo(customizationResponse, { foreignKey: 'responseId' });
+
+// Message & user Relationship
+User.hasMany(Message, { foreignKey: 'senderId' });
+Message.belongsTo(User, { foreignKey: 'senderId' });
 
 // Export all models and sequelize instance
 module.exports = {

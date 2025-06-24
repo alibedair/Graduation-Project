@@ -1,5 +1,7 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/db');
+const User = require('./user');
+const customizationResponse = require('./customizationResponse');
 
 const Message = sequelize.define('message', {
     messageId: {
@@ -9,11 +11,19 @@ const Message = sequelize.define('message', {
     },
     responseId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references:{
+            model: customizationResponse,
+            key: 'responseId'
+        }
     },
     senderId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: User,
+            key: 'userId'
+        }
     },
     senderType: {
         type: DataTypes.ENUM('customer', 'artist'),
@@ -21,7 +31,11 @@ const Message = sequelize.define('message', {
     },
     receiverId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'userId'
+        }
     },
     receiverType: {
         type: DataTypes.ENUM('customer', 'artist'),
@@ -48,7 +62,7 @@ const Message = sequelize.define('message', {
     timestamps: true, 
     indexes: [
         {
-            fields: ['requestId']
+            fields: ['responseId']
         },
         {
             fields: ['senderId', 'senderType']

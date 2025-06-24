@@ -10,6 +10,7 @@ const { validationResult } = require('express-validator');
 
 
 const { validateMessageContent } = require('../utils/validateMsg');
+const customizationResponse = require('../models/customizationResponse');
 exports.sendMessage = async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -159,8 +160,8 @@ exports.getUnreadMessages = async (req, res) => {
                 isRead: false
             },
             include: [{
-                model: CustomizationRequest,
-                attributes: ['requestId', 'title', 'requestDescription', 'status']
+                model: CustomizationResponse,
+                attributes: []
             }],
             order: [['createdAt', 'DESC']]
         });
