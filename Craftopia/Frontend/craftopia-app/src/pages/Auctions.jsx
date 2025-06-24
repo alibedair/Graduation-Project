@@ -242,96 +242,73 @@ const AuctionCard = ({ auction }) => {
 
 
 
-
 const Auctions = () => {
   const [auctions, setAuctions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('ending-soon');
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
-    const fetchAuctions = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:3000/auction', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setAuctions(data.auctions || []);
+        const [auctionRes, categoryRes] = await Promise.all([
+          fetch('http://localhost:3000/auction', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          }),
+          fetch('http://localhost:3000/category/all'),
+        ]);
+        const [auctionData, categoryData] = await Promise.all([
+          auctionRes.json(),
+          categoryRes.json(),
+        ]);
+        setAuctions(auctionData.auctions || []);
+        setCategories(categoryData.categories || []);
       } catch (e) {
-        console.error('Failed to fetch auctions', e);
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
-
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('http://localhost:3000/category/all');
-        const data = await res.json();
-        setCategories(data.categories || []);
-      } catch (e) {
-        console.error('Failed to fetch categories', e);
-      }
-    };
-
-    fetchAuctions();
-    fetchCategories();
+    fetchData();
   }, []);
 
-const formatTimeLeft = (auction) => {
-  const now = new Date();
-  const target = new Date(
-    auction.status === 'scheduled' ? auction.startDate : auction.endDate
-  );
-
-  const diffMs = target - now;
-  if (diffMs <= 0) return { timeLeft: 'Ended', isEndingSoon: false };
-
-  const totalMinutes = Math.floor(diffMs / (1000 * 60));
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const minutes = totalMinutes % 60;
-
-  const isEndingSoon = days < 1;
-  return {
-    timeLeft: `${days}d ${hours}h ${minutes}m`,
-    isEndingSoon,
+  const formatTimeLeft = (auction) => {
+    const now = new Date();
+    const target = new Date(auction.status === 'scheduled' ? auction.startDate : auction.endDate);
+    const diffMs = target - now;
+    if (diffMs <= 0) return { timeLeft: 'Ended', isEndingSoon: false };
+    const totalMinutes = Math.floor(diffMs / 60000);
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    return { timeLeft: `${days}d ${hours}h ${minutes}m`, isEndingSoon: days < 1 };
   };
-};
-
-
 
   const filtered = auctions
     .filter((a) =>
       (a.status === 'active' || a.status === 'scheduled') &&
       (filter === 'all' || a.productDetails?.category?.toLowerCase() === filter)
     )
-.map((a) => {
-  const { timeLeft, isEndingSoon } = formatTimeLeft(a);
-  return {
-    id: a.id,
-    title: a.productDetails?.name || 'Untitled',
-    artist: a.artistName || `Artist ID: ${a.artistId}`,
-    image: a.productDetails?.image?.[0] || '/fallback.jpg',
-    currentBid: a.currentPrice,
-    startingBid: a.startingPrice,
-    bidCount: a.bidCount,
-    timeLeft,
-    isEndingSoon,
-    endTime: a.endDate, 
-    description: a.productDetails?.description || '',
-    category: a.productDetails?.category || '',
-    rating: a.productDetails?.rating || 0,
-    status: a.status,
-  };
-});
-
-
-
+    .map((a) => {
+      const { timeLeft, isEndingSoon } = formatTimeLeft(a);
+      return {
+        id: a.id,
+        title: a.productDetails?.name || 'Untitled',
+        artist: a.artistName || `Artist ID: ${a.artistId}`,
+        image: a.productDetails?.image?.[0] || '/fallback.jpg',
+        currentBid: a.currentPrice,
+        startingBid: a.startingPrice,
+        bidCount: a.bidCount,
+        timeLeft,
+        isEndingSoon,
+        endTime: a.endDate,
+        description: a.productDetails?.description || '',
+        status: a.status,
+      };
+    });
 
   const sorted = [...filtered].sort((a, b) => {
     switch (sortBy) {
@@ -349,15 +326,29 @@ const formatTimeLeft = (auction) => {
   });
 
   return (
-    <div className="min-h-screen bg-cream">
+
+      <motion.div
+    initial={{ opacity: 0, scale: 0.97 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5, ease: "easeInOut" }}
+    className="min-h-screen bg-cream"
+  >
       <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-black/90 mb-4">Live Auctions</h1>
           <p className="text-lg text-black/70">Bid on unique handcrafted items from talented artisans</p>
         </div>
 
         {/* Filters */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <motion.div
+  initial={{ opacity: 0, y: -20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6 }}
+  viewport={{ once: true }}
+  className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between"
+>
+
           <div className="flex flex-wrap gap-4">
             <div className="relative">
               <select
@@ -382,7 +373,6 @@ const formatTimeLeft = (auction) => {
                 className="appearance-none bg-white border border-coral/30 rounded-md px-4 py-2 pr-8 text-black focus:outline-none focus:ring-2 focus:ring-coral"
               >
                 <option value="ending-soon">Ending Soon</option>
-                <option value="newest">Newest</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
                 <option value="most-bids">Most Bids</option>
@@ -391,18 +381,47 @@ const formatTimeLeft = (auction) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-burgundy/70">
-            <span>{sorted.length} auctions found</span>
+          <div className="text-burgundy/70 text-sm">
+            Showing {Math.min(visibleCount, sorted.length)} of {sorted.length} auctions
           </div>
-        </div>
+        </motion.div>
 
         {/* Auction Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sorted.map((auction) => (
+          {sorted.slice(0, visibleCount).map((auction) => (
             <AuctionCard key={auction.id} auction={auction} />
           ))}
         </div>
- <motion.div 
+
+        {/* Load More */}
+
+        {visibleCount < sorted.length && (
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 6)}
+              className="border border-burgundy/20 text-burgundy hover:bg-burgundy hover:text-cream font-medium px-8 py-3 rounded-md transition duration-300"
+            >
+              View More Auctions
+            </button>
+          </motion.div>
+        )}
+
+
+        {/* No auctions */}
+        {!loading && sorted.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-burgundy/60 text-lg">No auctions found matching your criteria.</p>
+          </div>
+        )}
+
+        {/* How It Works Section */}
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -442,18 +461,13 @@ const formatTimeLeft = (auction) => {
             </div>
           </div>
         </motion.div>
-
-
-        {!loading && sorted.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-burgundy/60 text-lg">No auctions found matching your criteria.</p>
-          </div>
-        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
+
 export default Auctions;
+
 
 
 

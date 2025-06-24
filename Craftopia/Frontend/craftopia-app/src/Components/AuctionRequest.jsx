@@ -1,67 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, ChevronDown, Settings, Upload, Edit, Trash2, Package, DollarSign, Users, Star, Clock, Plus, Menu, ShoppingCart, User, Heart, Search, Gavel, AlertCircle, Loader2 } from 'lucide-react';
 
-// Embedded Header Component (kept as is)
-const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  return (
-    <header className="bg-cream border-b border-coral/20 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-8">
-            <div className="text-2xl font-bold text-burgundy">CraftMarket</div>
-            <nav className="hidden md:flex space-x-6">
-              <a href="/" className="text-burgundy hover:text-coral transition-colors">Home</a>
-              <a href="/categories" className="text-burgundy hover:text-coral transition-colors">Categories</a>
-              <a href="/artists" className="text-burgundy hover:text-coral transition-colors">Artists</a>
-              <a href="/auctions" className="text-burgundy hover:text-coral transition-colors">Auctions</a>
-              <a href="/custom-requests" className="text-burgundy hover:text-coral transition-colors">Custom Requests</a>
-            </nav>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-burgundy/60 h-4 w-4" />
-              <input 
-                placeholder="Search..." 
-                className="pl-10 w-64 bg-blush border border-coral/30 focus:border-coral rounded-md px-3 py-2 text-sm"
-              />
-            </div>
-            <button className="p-2 hover:bg-burgundy/10 rounded-md">
-              <Heart className="h-5 w-5 text-burgundy" />
-            </button>
-            <button className="p-2 hover:bg-burgundy/10 rounded-md">
-              <ShoppingCart className="h-5 w-5 text-burgundy" />
-            </button>
-            <button className="p-2 hover:bg-burgundy/10 rounded-md">
-              <User className="h-5 w-5 text-burgundy" />
-            </button>
-          </div>
-
-          <button 
-            className="md:hidden p-2 hover:bg-burgundy/10 rounded-md"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <Menu className="h-6 w-6 text-burgundy" />
-          </button>
-        </div>
-
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-coral/20">
-            <nav className="flex flex-col space-y-2">
-              <a href="/" className="text-burgundy hover:text-coral transition-colors py-2">Home</a>
-              <a href="/categories" className="text-burgundy hover:text-coral transition-colors py-2">Categories</a>
-              <a href="/artists" className="text-burgundy hover:text-coral transition-colors py-2">Artists</a>
-              <a href="/auctions" className="text-burgundy hover:text-coral transition-colors py-2">Auctions</a>
-              <a href="/custom-requests" className="text-burgundy hover:text-coral transition-colors py-2">Custom Requests</a>
-            </nav>
-          </div>
-        )}
-        </div>
-  </header>
-  );
-};
 
 
 const AuctionRequest = () => {
@@ -322,25 +261,25 @@ const AuctionRequest = () => {
                       {showAuctionRequestForm && (
                         <div className="bg-white border border-coral/20 rounded-lg shadow-sm p-6">
                           <h3 className="text-xl font-semibold text-black mb-6">Request New Auction</h3>
-                          <form onSubmit={handleAuctionRequestSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <form onSubmit={handleAuctionRequestSubmit} className="space-y-6 bg-white p-6 rounded-2xl shadow-xl border border-[#f9d2d9]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div>
-                                <label htmlFor="title" className="block text-sm font-medium text-burgundy mb-2">Item Title</label>
+                                <label htmlFor="title" className="block font-semibold text-sm text-[#7a162e] mb-2">Item Title</label>
                                 <input
                                   id="title"
                                   name="title"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   placeholder="Auction item name"
                                   value={auctionFormData.title}
                                   onChange={handleInputChange}
                                 />
                               </div>
                               <div>
-                                <label htmlFor="category" className="block text-sm font-medium text-burgundy mb-2">Category</label>
+                                <label htmlFor="category" className="block font-semibold text-sm text-[#7a162e] mb-2">Category</label>
                                 <select
                                   id="category"
                                   name="category"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg bg-white shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   value={auctionFormData.category}
                                   onChange={handleInputChange}
                                   disabled={loadingCategories}
@@ -358,17 +297,17 @@ const AuctionRequest = () => {
                                   ))}
                                 </select>
                                 {categoriesError && (
-                                  <p className="text-red-500 text-xs mt-1">{categoriesError}</p>
+                                  <p className="text-sm text-red-500 mt-1">{categoriesError}</p>
                                 )}
                               </div>
                             </div>
 
                             <div>
-                              <label htmlFor="description" className="block text-sm font-medium text-burgundy mb-2">Description</label>
+                              <label htmlFor="description" className="block font-semibold text-sm text-[#7a162e] mb-2">Description</label>
                               <textarea
                                 id="description"
                                 name="description"
-                                className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                 rows={4}
                                 placeholder="Detailed description of your item, including craftsmanship details..."
                                 value={auctionFormData.description}
@@ -376,14 +315,14 @@ const AuctionRequest = () => {
                               />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                               <div>
-                                <label htmlFor="startingBid" className="block text-sm font-medium text-burgundy mb-2">Starting Bid (L.E)</label>
+                                <label htmlFor="startingBid" className="block font-semibold text-sm text-[#7a162e] mb-2">Starting Bid (L.E)</label>
                                 <input
                                   id="startingBid"
                                   name="startingBid"
                                   type="number"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   placeholder="0.00"
                                   value={auctionFormData.startingBid}
                                   onChange={handleInputChange}
@@ -391,11 +330,11 @@ const AuctionRequest = () => {
                               </div>
 
                               <div>
-                                <label htmlFor="duration" className="block text-sm font-medium text-burgundy mb-2">Auction Duration</label>
+                                <label htmlFor="duration" className="block font-semibold text-sm text-[#7a162e] mb-2">Auction Duration</label>
                                 <select
                                   id="duration"
                                   name="duration"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   value={auctionFormData.duration}
                                   onChange={handleInputChange}
                                 >
@@ -406,12 +345,12 @@ const AuctionRequest = () => {
                               </div>
 
                               <div>
-                                <label htmlFor="notes" className="block text-sm font-medium text-burgundy mb-2">Notes</label>
+                                <label htmlFor="notes" className="block font-semibold text-sm text-[#7a162e] mb-2">Notes</label>
                                 <input
                                   id="notes"
                                   name="notes"
                                   type="text"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   placeholder="Enter your notes..."
                                   value={auctionFormData.notes}
                                   onChange={handleInputChange}
@@ -419,24 +358,24 @@ const AuctionRequest = () => {
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div>
-                                <label htmlFor="materials" className="block text-sm font-medium text-burgundy mb-2">Materials</label>
+                                <label htmlFor="materials" className="block font-semibold text-sm text-[#7a162e] mb-2">Materials</label>
                                 <input
                                   id="materials"
                                   name="materials"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   placeholder="e.g., Clay, Natural glaze, Gold leaf"
                                   value={auctionFormData.materials}
                                   onChange={handleInputChange}
                                 />
                               </div>
                               <div>
-                                <label htmlFor="dimensions" className="block text-sm font-medium text-burgundy mb-2">Dimensions</label>
+                                <label htmlFor="dimensions" className="block font-semibold text-sm text-[#7a162e] mb-2">Dimensions</label>
                                 <input
                                   id="dimensions"
                                   name="dimensions"
-                                  className="w-full p-3 border border-coral rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
+                                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                   placeholder="e.g., 8 x 6 x 4 inches"
                                   value={auctionFormData.dimensions}
                                   onChange={handleInputChange}
@@ -445,39 +384,39 @@ const AuctionRequest = () => {
                             </div>
 
                             <div>
-                              <label className="block text-sm font-medium text-burgundy mb-2">Upload Images</label>
+                              <label className="block font-semibold text-sm text-[#7a162e] mb-2">Upload Images</label>
                               <div
-                                className="border-2 border-dashed border-coral rounded-lg p-6 text-center cursor-pointer hover:border-burgundy transition-colors"
+                                className="relative border-4 border-dashed border-[#E07385] rounded-xl p-6 text-center bg-[#fff0f3] hover:bg-[#ffe6eb] transition cursor-pointer"
                                 onClick={() => fileInputRef.current.click()}
                               >
-                                <Upload className="h-8 w-8 text-burgundy/60 mx-auto mb-2" />
-                                <p className="text-black/60 mb-2">Click to upload or drag and drop</p>
-                                <p className="text-xs text-black/40">PNG, JPG up to 10MB (minimum 1 image, maximum 5 images)</p>
+                                <Upload className="h-8 w-8 text-[#7a162e]/60 mx-auto mb-2" />
+                                <p className="text-[#7a162e] font-medium">Click to upload or drag and drop</p>
+                                <p className="text-sm text-gray-500">PNG, JPG up to 10MB (minimum 1 image, maximum 5 images)</p>
                                 <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    className="hidden"
-                                    ref={fileInputRef}
-                                    onChange={handleImageChange}
+                                  type="file"
+                                  multiple
+                                  accept="image/*"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                  ref={fileInputRef}
+                                  onChange={handleImageChange}
                                 />
                               </div>
                               {auctionFormData.images.length > 0 && (
-                                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                   {auctionFormData.images.map((file, index) => (
-                                    <div key={index} className="relative group overflow-hidden rounded-md border border-coral/30">
+                                    <div key={index} className="relative group overflow-hidden rounded-xl border-2 border-[#E07385] shadow-md bg-white hover:scale-105 transition">
                                       <img
                                         src={URL.createObjectURL(file)}
                                         alt={`Uploaded ${index}`}
-                                        className="w-full h-24 object-cover"
+                                        className="w-full h-32 object-contain"
                                       />
                                       <button
                                         type="button"
                                         onClick={() => handleRemoveImage(index)}
-                                        className="absolute top-1 right-1 bg-red-500/80 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        aria-label="Remove image"
+                                        className="absolute top-2 right-2 bg-white text-[#E07385] border border-[#E07385] rounded-full px-2 py-0.5 text-xs font-bold hover:bg-[#E07385] hover:text-white transition"
+                                        title="Remove"
                                       >
-                                        <Trash2 className="h-4 w-4" />
+                                        ✕
                                       </button>
                                     </div>
                                   ))}
@@ -485,71 +424,79 @@ const AuctionRequest = () => {
                               )}
                             </div>
 
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 justify-end pt-4">
                               <button
                                 type="submit"
-                                className="bg-burgundy hover:bg-burgundy/90 text-cream px-6 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
+                                className="bg-[#E07385] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#7a162e] transition disabled:opacity-50"
                                 disabled={loading || loadingCategories}
                               >
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {loading ? <Loader2 className="inline-block mr-2 h-4 w-4 animate-spin" /> : null}
                                 Submit Request
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setShowAuctionRequestForm(false)}
-                                className="bg-burgundy/10 hover:bg-burgundy/20 text-burgundy px-6 py-2 rounded-md font-medium transition-colors"
+                                className="bg-[#fbe4e9] text-[#7a162e] px-6 py-3 rounded-lg font-semibold hover:bg-[#f5ccd4] transition disabled:opacity-50"
                                 disabled={loading || loadingCategories}
                               >
                                 Cancel
                               </button>
-                            </div  >
+                            </div>
                           </form>
+
                         </div>
                       )}
 
                       {/* Auction Requests List */}
-                      <div className="bg-white border border-coral/20 rounded-lg shadow-sm">
-                        <div className="p-6 border-b border-coral/20">
-                          <h3 className="text-lg font-semibold text-black">Your Auction Requests</h3>
-                        </div>
-                        {loading && (
-                            <div className="p-6 text-center text-burgundy">
-                                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                                Fetching auction requests...
+                        {!showAuctionRequestForm && (
+                          <div className="bg-white border border-coral/20 rounded-lg shadow-sm">
+                            <div className="p-6 border-b border-coral/20">
+                              <h3 className="text-lg font-semibold text-black">Your Auction Requests</h3>
                             </div>
-                        )}
-                        {!loading && auctionRequests.length === 0 && (
-                            <div className="p-6 text-center text-burgundy/60">
-                                No auction requests found.
-                            </div>
-                        )}
-                        {!loading && auctionRequests.length > 0 && (
-                            <div className="divide-y divide-coral/20">
-                            {auctionRequests.map((request) => (
-                                <div key={request.requestId} className="p-6 flex items-center justify-between">
-                                <div className="flex-1">
-                                    <h4 className="font-medium text-burgundy">{request.product.name || 'Product Title'}</h4>
-                                    <p className="text-sm text-burgundy/60">{request.product.categoryName || 'Category'} • Starting bid: ${request.startingPrice}</p>
-                                    <p className="text-xs text-burgundy/40">Submitted: {new Date(request.createdAt).toLocaleDateString()}</p>
-                                    {request.status === 'declined' && request.reason && (
-                                    <p className="text-xs text-red-600 mt-1">Reason: {request.reason}</p>
-                                    )}
+                            {loading && (
+                                <div className="p-6 text-center text-burgundy">
+                                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                                    Fetching auction requests...
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusClasses(request.status)}`}>
-                                    {request.status && request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                    </span>
-                                    {request.status === 'declined' && (
-                                    <button className="text-burgundy hover:text-coral text-sm font-medium">
-                                        Resubmit
-                                    </button>
-                                    )}
+                            )}
+                            {!loading && auctionRequests.length === 0 && (
+                                <div className="p-6 text-center text-burgundy/60">
+                                    No auction requests found.
                                 </div>
+                            )}
+                            {!loading && auctionRequests.length > 0 && (
+                                <div className="divide-y divide-coral/20">
+                                  {auctionRequests.map((request) => (
+                                      <div key={request.requestId} className="p-6 flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <h4 className="font-medium text-burgundy">{request.product.name || 'Product Title'}</h4>
+                                          <p className="text-sm text-burgundy/60">
+                                            {request.product.categoryName || 'Category'} • Starting bid: ${request.startingPrice}
+                                          </p>
+                                          <p className="text-xs text-burgundy/40">
+                                            Submitted: {new Date(request.createdAt).toLocaleDateString()}
+                                          </p>
+                                          {request.status === 'declined' && request.reason && (
+                                            <p className="text-xs text-red-600 mt-1">Reason: {request.reason}</p>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusClasses(request.status)}`}>
+                                            {request.status && request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                          </span>
+                                          {request.status === 'declined' && (
+                                            <button className="text-burgundy hover:text-coral text-sm font-medium">
+                                              Resubmit
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                  ))}
                                 </div>
-                            ))}
-                            </div>
+                            )}
+                          </div>
                         )}
-                      </div>
+
                     </div>
                     </>
     );
