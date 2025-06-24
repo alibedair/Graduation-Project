@@ -5,7 +5,7 @@ const Customer = require('../models/customer');
 const Artist = require('../models/artist');
 const User = require('../models/user');
 const uploadBuffer = require('../utils/cloudinaryUpload');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const { validationResult } = require('express-validator');
 
 
@@ -241,12 +241,29 @@ exports.getMessagesByRespondId = async (req, res) => {
             },
             order: [['createdAt', 'ASC']]
         });
+        const messagesWithSenderName = await Promise.all(messages.map(async (message) => {
+            const messageData = message.toJSON();
+            
+            if (message.senderType === 'customer') {
+                const customer = await Customer.findByPk(message.senderId, {
+                    attributes: ['name']
+                });
+                messageData.senderName = customer ? customer.name : 'Unknown Customer';
+            } else if (message.senderType === 'artist') {
+                const artist = await Artist.findByPk(message.senderId, {
+                    attributes: ['name']
+                });
+                messageData.senderName = artist ? artist.name : 'Unknown Artist';
+            }
+            
+            return messageData;
+        }));
 
         return res.status(200).json({
             message: 'Messages retrieved successfully',
             data: {
-                messages,
-                messageCount: messages.length
+                messages: messagesWithSenderName,
+                messageCount: messagesWithSenderName.length
             }
         });
 
