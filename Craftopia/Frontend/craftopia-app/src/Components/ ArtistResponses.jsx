@@ -1,26 +1,41 @@
 import { useEffect, useState } from "react";
+import { EnvelopeIcon } from "@heroicons/react/24/solid";
+import { motion } from "framer-motion";
+import Messages from "./Messages";
 
 const ArtistResponses = () => {
     const [responses, setResponses] = useState([]);
     const [statistics, setStatistics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [activeMessageId, setActiveMessageId] = useState(null);
+    const [unreadMessages, setUnreadMessages] = useState([]);
+    const [newMessageNotification, setNewMessageNotification] = useState(null);
+
+    const getUnreadCount = (responseId) => {
+        return unreadMessages.filter(msg => msg.responseId === responseId).length;
+    };
 
     useEffect(() => {
-        const fetchResponses = async () => {
+        const fetchData = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await fetch("http://localhost:3000/customizationResponse/artist/responses", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                const responsesRes = await fetch("http://localhost:3000/customizationResponse/artist/responses", {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
 
-                if (!response.ok) throw new Error("Failed to fetch responses.");
-
-                const data = await response.json();
+                if (!responsesRes.ok) throw new Error("Failed to fetch responses.");
+                const data = await responsesRes.json();
                 setResponses(data.responses);
                 setStatistics(data.statistics);
+                const messagesRes = await fetch("http://localhost:3000/msg/unread", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (!messagesRes.ok) throw new Error("Failed to fetch unread messages.");
+                const messagesData = await messagesRes.json();
+                setUnreadMessages(messagesData.data.unreadMessages || []);
+
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -28,15 +43,125 @@ const ArtistResponses = () => {
             }
         };
 
-        fetchResponses();
+        fetchData();
+        const interval = setInterval(fetchData, 30000);
+        return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (unreadMessages.length > 0) {
+            const latestMessage = unreadMessages[unreadMessages.length - 1];
+            const response = responses.find(r => r.responseId === latestMessage.responseId);
+
+            if (response) {
+                setNewMessageNotification({
+                    customer: response.customizationrequest.customer.username,
+                    request: response.customizationrequest.title,
+                    responseId: response.responseId
+                });
+
+                const timer = setTimeout(() => {
+                    setNewMessageNotification(null);
+                }, 5000);
+
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [unreadMessages, responses]);
 
     if (loading) return <div className="text-center py-8">Loading responses...</div>;
     if (error) return <div className="text-center text-red-600 py-8">{error}</div>;
 
     return (
         <div className="max-w-5xl mx-auto px-6 py-8 bg-[#FAF9F6]">
-            
+            {newMessageNotification && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="fixed bottom-6 right-6 z-50"
+                    onClick={() => {
+                        setActiveMessageId(newMessageNotification.responseId);
+                        setNewMessageNotification(null);
+                    }}
+                >
+                    <div className="relative w-80 bg-gradient-to-br from-[#FFF5F7] to-white rounded-xl shadow-2xl overflow-hidden border border-[#f8d7dd]">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#E07385] to-[#921A40]"></div>
+                        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-[#f8d7dd] opacity-20"></div>
+
+                        <div className="p-5">
+                            <div className="flex items-start gap-4">
+                                <motion.div
+                                    animate={{
+                                        rotate: [0, 15, -15, 0],
+                                        transition: { duration: 0.7 }
+                                    }}
+                                    className="shrink-0"
+                                >
+                                    <div className="relative">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-[#E07385] to-[#921A40] rounded-xl flex items-center justify-center shadow-md">
+                                            <EnvelopeIcon className="h-7 w-7 text-white" />
+                                        </div>
+                                        <motion.div
+                                            className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm border-2 border-[#E07385]"
+                                            animate={{
+                                                scale: [1, 1.2, 1],
+                                                transition: { repeat: Infinity, duration: 1.5 }
+                                            }}
+                                        >
+                                            <span className="text-xs font-bold text-[#E07385]">
+                                                {getUnreadCount(newMessageNotification.responseId)}
+                                            </span>
+                                        </motion.div>
+                                    </div>
+                                </motion.div>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-bold text-[#921A40]">New Message!</h3>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setNewMessageNotification(null);
+                                            }}
+                                            className="text-gray-400 hover:text-[#E07385] transition p-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <p className="text-gray-700 mt-2">
+                                        <span className="font-semibold text-[#E07385]">@{newMessageNotification.customer}</span> sent you a message
+                                    </p>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        Regarding: <span className="font-medium">"{newMessageNotification.request}"</span>
+                                    </p>
+
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full mt-4 bg-gradient-to-r from-[#E07385] to-[#921A40] text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 shadow-md"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+                                        </svg>
+                                        Open Conversation
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </div>
+                        <motion.div
+                            initial={{ scaleX: 1 }}
+                            animate={{ scaleX: 0 }}
+                            transition={{ duration: 5, ease: "linear" }}
+                            className="h-1.5 bg-[#f8d7dd]"
+                        >
+                            <div className="h-full bg-gradient-to-r from-[#E07385] to-[#921A40] origin-left"></div>
+                        </motion.div>
+                    </div>
+                </motion.div>
+            )}
 
             {statistics && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -60,7 +185,40 @@ const ArtistResponses = () => {
             ) : (
                 <div className="space-y-6">
                     {responses.map((response) => (
-                        <div key={response.responseId} className="bg-[#F6EEEE] p-6 rounded-lg shadow-md">
+                        <div key={response.responseId} className="bg-[#F6EEEE] p-6 rounded-lg shadow-md relative">
+                            {response.status === "ACCEPTED" && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => setActiveMessageId(response.responseId)}
+                                    className="absolute -top-4 -right-4 bg-[#921A40] p-3 rounded-full shadow-lg cursor-pointer group"
+                                    title="Message customer"
+                                >
+                                    <div className="relative">
+                                        <EnvelopeIcon className="h-6 w-6 text-white" />
+                                        {getUnreadCount(response.responseId) > 0 && (
+                                            <motion.span
+                                                className="absolute -top-1 -right-1 h-5 w-5 bg-white text-[#E07385] text-xs font-bold rounded-full flex items-center justify-center border-2 border-white"
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                            >
+                                                {getUnreadCount(response.responseId)}
+                                            </motion.span>
+                                        )}
+                                    </div>
+                                    <motion.span
+                                        className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        {getUnreadCount(response.responseId) > 0
+                                            ? `${getUnreadCount(response.responseId)} new messages`
+                                            : "Message customer"}
+                                    </motion.span>
+                                </motion.div>
+                            )}
+
                             <div className="flex flex-col md:flex-row gap-6">
                                 {response.customizationrequest.image && (
                                     <div className="md:w-1/4">
@@ -72,7 +230,7 @@ const ArtistResponses = () => {
                                     </div>
                                 )}
                                 <div className="flex-1">
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex justify-between items-start flex-wrap gap-4">
                                         <div>
                                             <h3 className="text-xl font-semibold text-black">
                                                 {response.customizationrequest.title}
@@ -81,11 +239,10 @@ const ArtistResponses = () => {
                                                 Request by: @{response.customizationrequest.customer.username}
                                             </p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                            response.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                            response.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${response.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                                response.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                                                    'bg-red-100 text-red-800'
+                                            }`}>
                                             {response.status}
                                         </span>
                                     </div>
@@ -119,6 +276,14 @@ const ArtistResponses = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+            {activeMessageId && (
+                <div className="mt-10">
+                    <Messages
+                        responseId={activeMessageId}
+                        onClose={() => setActiveMessageId(null)}
+                    />
                 </div>
             )}
         </div>
