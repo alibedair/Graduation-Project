@@ -37,7 +37,7 @@ exports.placeBid = async (req, res) => {
         }
         
         const incrementPercentage = auction.incrementPercentage || 10;
-        const minBidIncrement = (auction.currentPrice * incrementPercentage) / 100;
+        const minBidIncrement = (auction.StartingPrice * incrementPercentage) / 100;
         const minimumBid = auction.currentPrice + minBidIncrement;
         
         if (parseFloat(bidAmount) < minimumBid) {
