@@ -1,6 +1,7 @@
 const Customer = require('../models/customer');
 const Order = require('../models/order');
 const product = require('../models/product');
+const Product_Order = require('../models/Product_Order');
 
 exports.placeOrder = async (req, res) => {
     try {
@@ -32,6 +33,7 @@ exports.placeOrder = async (req, res) => {
                 return res.status(400).json({ message: `Insufficient stock for product ${prod.name}` });
             }
             totalAmount += prod.price * productQuantity;
+            await prod.update({ quantity: prod.quantity - productQuantity });
         }
 
         const order = await Order.create({
@@ -39,6 +41,17 @@ exports.placeOrder = async (req, res) => {
             totalAmount,
             customerId: customer.customerId
         });
+
+        const productOrderData = [];
+        for (let i = 0; i < products.length; i++) {
+            productOrderData.push({
+                orderId: order.orderId,
+                productId: products[i].productId,
+                quantity: quantity[i]
+            });
+        }
+        
+        await Product_Order.bulkCreate(productOrderData);
 
         return res.status(201).json({
             message: 'Order placed successfully',
@@ -62,12 +75,19 @@ exports.getmyOrders = async (req, res) => {
 
         const orders = await Order.findAll({
             where: { customerId: customer.customerId },
-            include: [{ model: product, as: 'products' }]
+            include: [{ 
+                model: product,
+                attributes: ['productId', 'name', 'price', 'description', 'image'],
+                through: { 
+                    attributes: ['quantity']
+                }
+            }]
         });
 
         return res.status(200).json({
             message: 'Orders retrieved successfully',
             orders
+
         });
 
     } catch (error) {

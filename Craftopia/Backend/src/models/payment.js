@@ -41,8 +41,7 @@ const Payment = sequelize.define('payment', {
         allowNull: false
     },
     status: {
-        type: DataTypes.ENUM('pending', 'held_in_escrow', 'completed', 'failed', 'refunded'),
-        defaultValue: 'pending',
+        type: DataTypes.ENUM('held_in_escrow', 'completed', 'failed', 'refunded'),
         allowNull: false
     },
     transactionType: {

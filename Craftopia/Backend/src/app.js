@@ -85,6 +85,9 @@ app.use('/rating', ratingRoute);
 const msg = require('./routes/messageRoute');
 app.use('/msg', msg);
 
+const paymentRoute = require('./routes/paymentRoute');
+app.use('/payment', paymentRoute);
+
 const { startAuctionScheduler } = require('./services/auctionScheduler');
 startAuctionScheduler();
 

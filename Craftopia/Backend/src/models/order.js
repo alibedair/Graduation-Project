@@ -30,9 +30,9 @@ const Order = sequelize.define('order', {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
     },
-    finishedAt: {
+    updatedAt: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        allowNull : true
     }
 });
 
