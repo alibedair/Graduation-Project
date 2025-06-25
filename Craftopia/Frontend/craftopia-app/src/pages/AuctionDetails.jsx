@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Share2, Eye, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Footer from '../Components/Footer';
 
 const CountdownTimer = ({ endTime }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: '00', minutes: '00', seconds: '00' });
@@ -336,6 +337,7 @@ const handleFollowClick = async () => {
 
 
   return (
+    <>
     <div className="min-h-screen bg-cream mt-5">
 
 
@@ -463,19 +465,19 @@ const handleFollowClick = async () => {
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Artist Info */}
             {artist && (
-<ArtistInfo
-  artist={{
-    name: artist.name,
-    avatar: artist.profilePicture || 'https://placehold.co/150x150?text=No+Image',
-    username: artist.username,
-    rating: artist.averageRating,
-    reviews: artist.totalRatings,
-    bio: artist.biography,
-    artistId: artist.artistId,
-  }}
-  handleFollow={handleFollowClick}
-  isFollowed={following}
-/>
+              <ArtistInfo
+                artist={{
+                  name: artist.name,
+                  avatar: artist.profilePicture || 'https://placehold.co/150x150?text=No+Image',
+                  username: artist.username,
+                  rating: artist.averageRating,
+                  reviews: artist.totalRatings,
+                  bio: artist.biography,
+                  artistId: artist.artistId,
+                }}
+                handleFollow={handleFollowClick}
+                isFollowed={following}
+              />
 
 
             )}
@@ -491,11 +493,11 @@ const handleFollowClick = async () => {
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <div className="text-sm text-gray-600">Material</div>
-                  {/* <div className="font-medium">{auction.product.material}</div> */}
+                  <div className="font-medium">{auction.product.material}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Dimensions</div>
-                  {/* <div className="font-medium">{auction.product.dimensions}</div> */}
+                  <div className="font-medium">{auction.product.dimensions}</div>
                 </div>
 
               <div><div className="text-sm text-gray-600">Started On</div><div className="font-medium">{new Date(auction.createdAt).toLocaleDateString()}</div></div>
@@ -506,6 +508,8 @@ const handleFollowClick = async () => {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 

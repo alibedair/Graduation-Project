@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Package } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 const ShopByCategory = () => {
   const [categories, setCategories] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -89,14 +93,16 @@ const ShopByCategory = () => {
                 <h3 className="text-xl font-semibold text-burgundy mb-2 group-hover:text-coral transition-colors">
                   {category.name}
                 </h3>
-                <p className="text-burgundy/60 mb-4">{category.count}</p>
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  className="flex items-center text-coral font-medium"
-                >
-                  Browse Collection
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </motion.div>
+                <p className="text-burgundy/60 mb-4">{category.productCount} items</p>
+<motion.div
+  whileHover={{ x: 5 }}
+  className="flex items-center text-coral font-medium cursor-pointer"
+  onClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
+>
+  Browse Collection
+  <ArrowRight className="h-4 w-4 ml-2" />
+</motion.div>
+
               </div>
             </motion.div>
           ))}

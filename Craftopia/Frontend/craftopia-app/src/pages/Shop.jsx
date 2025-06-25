@@ -4,15 +4,26 @@ import ProductCard from '../Components/ProductCard';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import Footer from '../Components/Footer';
+import { useSearchParams } from 'react-router-dom';
+
 
 const Shop = () => {
+    const [searchParams] = useSearchParams();
+    const initialCategory = searchParams.get('category') || 'All';
+    const [selected, setSelected] = useState(initialCategory);
+
     const [categories, setCategories] = useState([]);
-    const [selected, setSelected] = useState('All');
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
 
     const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
     const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
+
+    useEffect(() => {
+        const category = searchParams.get('category') || 'All';
+        setSelected(category);
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchProducts = async () => {
