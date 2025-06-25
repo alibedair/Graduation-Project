@@ -1,11 +1,12 @@
 const { firebase_db } = require("../config/firebase");
 const Product = require("../models/product");
 const Artist = require("../models/artist");
-const ArtistFollow = require("../models/artistFollow"); 
+const ArtistFollow = require("../models/artistFollow");
+const Category = require("../models/category"); 
 
 exports.getAuctions = async (req, res) => {
     try {
-        const { status, category, artist, limit = 20, page = 1 } = req.query;
+        const { status, category, artist } = req.query;
         
         const auctionsSnapshot = await firebase_db.ref("auctions").once("value");
         const auctionsData = auctionsSnapshot.val() || {};
@@ -49,7 +50,14 @@ exports.getAuctions = async (req, res) => {
         });
         
         const products = await Product.findAll({
-            where: { productId: productIds }
+            where: { productId: productIds },
+            include: [
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['categoryId', 'name']
+                }
+            ]
         });
         
         const artistMap = {};
@@ -74,15 +82,8 @@ exports.getAuctions = async (req, res) => {
         
         auctions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-        const paginatedAuctions = auctions.slice(startIndex, endIndex);
-        
         return res.status(200).json({ 
-            auctions: paginatedAuctions,
-            totalCount: auctions.length,
-            page: parseInt(page),
-            totalPages: Math.ceil(auctions.length / limit)
+            auctions: auctions
         });
     } catch (error) {
         console.error("Error fetching auctions:", error);
@@ -125,7 +126,15 @@ exports.getAuctionDetails = async (req, res) => {
             }));
             bids.sort((a, b) => b.bidAmount - a.bidAmount);
         }
-        const product = await Product.findByPk(auctionData.productId);
+        const product = await Product.findByPk(auctionData.productId, {
+            include: [
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['categoryId', 'name']
+                }
+            ]
+        });
         let productData = product;
         
         let artistData = null;
