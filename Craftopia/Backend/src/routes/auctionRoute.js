@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const authMiddleware = require('../middlewares/authMiddleware');
 const auctionController = require('../controllers/auctionController');
 const { param, query } = require('express-validator');
 
@@ -13,7 +14,8 @@ router.get('/',
     auctionController.getAuctions
 );
 
-router.get('/:auctionId', 
+router.get('/:auctionId',
+    authMiddleware,
     param('auctionId').notEmpty().withMessage('Auction ID is required'),
     auctionController.getAuctionDetails
 );

@@ -1,6 +1,7 @@
 const { firebase_db } = require("../config/firebase");
 const Product = require("../models/product");
-const Artist = require("../models/artist"); 
+const Artist = require("../models/artist");
+const ArtistFollow = require("../models/artistFollow"); 
 
 exports.getAuctions = async (req, res) => {
     try {
@@ -124,18 +125,26 @@ exports.getAuctionDetails = async (req, res) => {
             }));
             bids.sort((a, b) => b.bidAmount - a.bidAmount);
         }
-          let productData = auctionData.productDetails;
-        if (!productData) {
-            const product = await Product.findByPk(auctionData.productId);
-            productData = product || null;
-        }
+        const product = await Product.findByPk(auctionData.productId);
+        let productData = product;
         
         let artistData = null;
+        let isFollowing = false;
         if (auctionData.artistId) {
             const artist = await Artist.findByPk(auctionData.artistId, {
                 attributes: ['artistId', 'name', 'username']
             });
             artistData = artist;
+
+            if (req.user && req.user.customerId && artistData) {
+                const followRecord = await ArtistFollow.findOne({
+                    where: {
+                        customerId: req.user.customerId,
+                        artistId: auctionData.artistId
+                    }
+                });
+                isFollowing = !!followRecord;
+            }
         }
         
         return res.status(200).json({
@@ -145,6 +154,7 @@ exports.getAuctionDetails = async (req, res) => {
                 bids,
                 product: productData,
                 artist: artistData,
+                isFollowing,
                 timeRemaining: Math.max(0, endTime - now),
                 isEnded: now > endTime
             }
