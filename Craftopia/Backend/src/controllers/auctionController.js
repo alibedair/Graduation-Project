@@ -41,23 +41,34 @@ exports.getAuctions = async (req, res) => {
         }
         
         const artistIds = [...new Set(auctions.map(auction => auction.artistId))]; 
+        const productIds = [...new Set(auctions.map(auction => auction.productId))];
         const artists = await Artist.findAll({
             where: { artistId: artistIds },
             attributes: ['artistId', 'name', 'username']
         });
         
+        const products = await Product.findAll({
+            where: { productId: productIds }
+        });
+        
         const artistMap = {};
         artists.forEach(artist => {
             artistMap[artist.artistId] = {
+                artistId: artist.artistId,
                 name: artist.name,
                 username: artist.username
             };
         });
         
+        const productMap = {};
+        products.forEach(product => {
+            productMap[product.productId] = product;
+        });
+        
         auctions = auctions.map(auction => ({
             ...auction,
-            artistName: artistMap[auction.artistId]?.name,
-            artistUsername: artistMap[auction.artistId]?.username 
+            artist: artistMap[auction.artistId] || null,
+            product: productMap[auction.productId] || null
         }));
         
         auctions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
