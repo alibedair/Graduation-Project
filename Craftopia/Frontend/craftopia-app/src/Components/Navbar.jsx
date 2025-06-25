@@ -10,7 +10,7 @@ const Navbar = () => {
   const getProfileLink = () => {
     if (!user) return '/login';
     if (user.role === 'artist') return '/artist-profile';
-    if (user.role === 'admin')  return '/admin';
+    if (user.role === 'admin') return '/admin';
     return '/customer-profile';
   };
 
@@ -34,10 +34,11 @@ const Navbar = () => {
       <div className="flex items-center space-x-6 text-2xl text-black">
         {user && user.role === 'customer' && (
           <>
-           <AiOutlineHeart
-  className="cursor-pointer"
-  onClick={() => navigate('/customer-profile', { state: { tab: 'wishlist' } })}
-/>
+            <AiOutlineHeart
+              className="cursor-pointer"
+              onClick={() => navigate('/wishlist')}
+            />
+
 
             <AiOutlineShoppingCart
               className="cursor-pointer"

@@ -71,18 +71,23 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
-  const removeFromWishlist = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3000/wishlist/remove/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      setWishlist((prev) => prev.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error("Failed to remove from wishlist:", error);
+  const removeFromWishlist = async (productId) => {
+  try {
+    const res = await axios.delete(`http://localhost:3000/wishlist/remove/${productId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (res.status === 200) {
+      setWishlist((prev) => prev.filter((item) => item.id !== productId));
+    } else {
+      console.warn("Unexpected response when removing from wishlist:", res);
     }
-  };
+  } catch (error) {
+    console.error("Failed to remove from wishlist:", error);
+  }
+};
 
   return (
     <WishlistContext.Provider

@@ -34,7 +34,7 @@ const WishlistPage = () => {
                 key={product.id}
                 product={{
                   ...product,
-                  image: product.images?.[0],
+                  image: product.image?.[0],
                   category: product.category?.name,
                   artist: product.artist?.username || 'Unknown',
                 }}
