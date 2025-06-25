@@ -13,14 +13,21 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 
 const AdminSidebar = ({ selected, setSelected }) => {
-    const [openDropdown, setOpenDropdown] = useState(false);
-    const navigate = useNavigate();
-    const { logout } = useAuth();
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <div className="w-64 h-screen bg-[#F6EEEE] p-5 flex flex-col shadow-md shadow-gray-400">
       <div className="flex items-center gap-3 mb-20 pl-3">
-        <h1 className="text-[24px]" style={{ fontFamily: "'Lily Script One', cursive" }}>Craftopia</h1>
+        <h1
+          className="text-[24px] cursor-pointer"
+          style={{ fontFamily: "'Lily Script One', cursive" }}
+          onClick={() => navigate("/")}
+        >
+          Craftopia
+        </h1>
+
         <h1 className="text-[22px]" style={{ fontFamily: "'Lisu Bosa', sans-serif" }}>Admin</h1>
       </div>
 
@@ -35,9 +42,8 @@ const AdminSidebar = ({ selected, setSelected }) => {
         <div>
           <button
             onClick={() => setOpenDropdown(!openDropdown)}
-            className={`w-full flex justify-between items-center p-2 rounded-lg transition-all ${
-              selected === "Requests" ? "bg-[#DEC5C2] shadow-md border-l-4 border-[#8A6F6D]" : "hover:bg-[#E7D8D7]"
-            }`}
+            className={`w-full flex justify-between items-center p-2 rounded-lg transition-all ${selected === "Requests" ? "bg-[#DEC5C2] shadow-md border-l-4 border-[#8A6F6D]" : "hover:bg-[#E7D8D7]"
+              }`}
           >
             <span className="flex items-center gap-2">
               <FaClipboardList /> Requests
@@ -100,9 +106,8 @@ const AdminSidebar = ({ selected, setSelected }) => {
 const SidebarButton = ({ icon, text, selected, onClick }) => {
   return (
     <button
-      className={`w-full flex items-center gap-2 p-2 rounded-lg transition-all ${
-        selected ? "bg-[#DEC5C2] shadow-md " : "hover:bg-[#E7D8D7] active:bg-[#D1B4B2]"
-      }`}
+      className={`w-full flex items-center gap-2 p-2 rounded-lg transition-all ${selected ? "bg-[#DEC5C2] shadow-md " : "hover:bg-[#E7D8D7] active:bg-[#D1B4B2]"
+        }`}
       onClick={onClick}
     >
       {icon} {text}
