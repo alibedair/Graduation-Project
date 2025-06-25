@@ -132,7 +132,7 @@ exports.cancelOrder = async (req, res) => {
                 order
             });
         } else {
-            return res.status(400).json({ message: 'Order cannot be cancelled' });
+            return res.status(400).json({ message: 'Order cannot be cancelled as it is cancelled before' });
         }
 
     } catch (error) {

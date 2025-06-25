@@ -23,7 +23,7 @@ router.get('/myOrders',
     orderController.getmyOrders
 );
 
-router.patch('/cancel/:orderId',
+router.put('/cancel/:orderId',
     authMiddleware,
     roleMiddleware('customer'),
     [

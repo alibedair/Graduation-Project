@@ -21,7 +21,7 @@ const validateMessageContent = (content) => {
         'address', 'phone', 'mobile', 'email', 'contact me at',
         'call me', 'whatsapp', 'telegram', 'instagram',
         'facebook', 'twitter', 'linkedin', 'snapchat', 'tiktok',
-        'my number is', 'reach me at', 'find me on'
+        'my number is', 'reach me at', 'find me on' ,'username'
     ];
 
     for (const pattern of personalDataPatterns) {
