@@ -38,12 +38,12 @@ const CountdownTimer = ({ endTime }) => {
 // Embedded Bid History Component
 const BidHistory = ({ bids }) => {
   return (
-    <div className="bg-gray-50 rounded-xl p-6">
+    <div className="bg-gray-50 rounded-xl p-6 ">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <Gavel className="h-5 w-5" />
         Bidding History
       </h3>
-      <div className="space-y-3 max-h-64 overflow-y-auto">
+      <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
         {bids.map((bid, index) => (
           <motion.div
             key={index}
@@ -491,11 +491,11 @@ const handleFollowClick = async () => {
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <div className="text-sm text-gray-600">Material</div>
-                  <div className="font-medium">{auction.product.material}</div>
+                  {/* <div className="font-medium">{auction.product.material}</div> */}
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Dimensions</div>
-                  <div className="font-medium">{auction.product.dimensions}</div>
+                  {/* <div className="font-medium">{auction.product.dimensions}</div> */}
                 </div>
 
               <div><div className="text-sm text-gray-600">Started On</div><div className="font-medium">{new Date(auction.createdAt).toLocaleDateString()}</div></div>

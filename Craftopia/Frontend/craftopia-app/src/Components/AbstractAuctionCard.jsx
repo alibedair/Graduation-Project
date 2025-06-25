@@ -2,8 +2,12 @@ import React from 'react';
 import { Clock, Users, ArrowRight, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 const AbstractAuctionCard = ({ auction, index }) => {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -77,13 +81,15 @@ const AbstractAuctionCard = ({ auction, index }) => {
               <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                 {auction.category}
               </span>
-              <motion.div
-                whileHover={{ x: 5 }}
-                className="flex items-center text-coral font-medium text-sm"
-              >
-                View Details
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </motion.div>
+<motion.div
+  whileHover={{ x: 5 }}
+  className="flex items-center text-coral font-medium text-sm cursor-pointer"
+  onClick={() => navigate(`/auction/${auction.id}`)}
+>
+  View Details
+  <ArrowRight className="h-4 w-4 ml-1" />
+</motion.div>
+
             </div>
           </div>
         </div>
