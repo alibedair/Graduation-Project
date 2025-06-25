@@ -16,4 +16,19 @@ router.post('/escrow/pay/:orderId',
     paymentGateway.createEscrowPayment
 );
 
+router.put('/escrow/release/:paymentId',
+    authMiddleware,
+    roleMiddleware(['admin']),
+    [
+        param('paymentId').isInt().withMessage('Payment ID must be an integer'),
+    ],
+    paymentGateway.releaseEscrowPayment
+);
+
+router.get('/escrow/held',
+    authMiddleware,
+    roleMiddleware(['admin']),
+    paymentGateway.getallpaymentsHeld
+);
+
 module.exports = router;

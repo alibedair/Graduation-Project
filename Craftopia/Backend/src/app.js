@@ -88,6 +88,9 @@ app.use('/msg', msg);
 const paymentRoute = require('./routes/paymentRoute');
 app.use('/payment', paymentRoute);
 
+const trackRoute = require('./routes/trackRoute');
+app.use('/trackSales', trackRoute);
+
 const { startAuctionScheduler } = require('./services/auctionScheduler');
 startAuctionScheduler();
 
