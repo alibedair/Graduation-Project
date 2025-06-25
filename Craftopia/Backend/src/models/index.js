@@ -18,7 +18,7 @@ const Wishlist = require('./wishlist');
 const CustomizationRequest = require('./customizationRequest');
 const CustomizationResponse = require('./customizationResponse');
 const ArtistFollow = require('./artistFollow');
-const payment = require('./payment');
+const Payment = require('./payment');
 const AuctionRequest = require('./auctionRequest');
 const categoryRequests = require('./categoriesRequests');
 const Rating = require('./rating');
@@ -27,6 +27,8 @@ const OTP = require('./otp');
 const Message = require('./message');
 const Cart = require('./cart');
 const customizationResponse = require('./customizationResponse');
+const CreditCard = require('./creditCard');
+
 
 // User-Related Associations
 User.hasOne(Admin, { foreignKey: 'userId' });
@@ -127,13 +129,17 @@ ArtistFollow.belongsTo(Artist, { foreignKey: 'artistId' });
 Customer.hasMany(ArtistFollow, { foreignKey: 'customerId' });
 ArtistFollow.belongsTo(Customer, { foreignKey: 'customerId' });
 
-// payment & order Relationship
-Order.hasOne(payment, { foreignKey: 'orderId' });
-payment.belongsTo(Order, { foreignKey: 'orderId' });
+// payment & order Relationship (One Order can have multiple Payments pay or refund)
+Order.hasMany(Payment, { foreignKey: 'orderId' });
+Payment.belongsTo(Order, { foreignKey: 'orderId' });
 
 //customer & payment Relationship
-Customer.hasMany(payment, { foreignKey: 'customerId' });
-payment.belongsTo(Customer, { foreignKey: 'customerId' });
+Customer.hasMany(Payment, { foreignKey: 'customerId' });
+Payment.belongsTo(Customer, { foreignKey: 'customerId' });
+
+// CreditCard & Payment Relationship (One CreditCard can have multiple Payments)
+CreditCard.hasMany(Payment, { foreignKey: 'paymentReference' });
+Payment.belongsTo(CreditCard, { foreignKey: 'paymentReference' });
 
 // Auction Request associations
 Artist.hasMany(AuctionRequest, { foreignKey: 'artistId' });
@@ -196,12 +202,13 @@ module.exports = {
   CustomizationRequest,
   CustomizationResponse,  
   ArtistFollow,  
-  payment,
   AuctionRequest,
   categoryRequests,
   Rating,
   Visitor,
   OTP,
   Message,
-  Cart
+  Cart,
+  Payment,
+  CreditCard
 };

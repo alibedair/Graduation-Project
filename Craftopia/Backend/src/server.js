@@ -1,5 +1,6 @@
 const sequelize = require('./config/db');
 require('./models/index');
+const seedCreditCards = require('./scripts/seedCreditCards');
 
 (async () => {
   try {
@@ -11,6 +12,9 @@ require('./models/index');
       
     await sequelize.sync(syncOptions);
     console.log('All models were synchronized successfully.');
+    
+    
+    await seedCreditCards();
     
     const app = require('./app');
     

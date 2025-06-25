@@ -15,7 +15,7 @@ const Payment = sequelize.define('payment', {
             model: order,
             key: 'orderId'
         }
-    },
+    },    
     customerId: {
         type: DataTypes.INTEGER,
         references: {
@@ -23,11 +23,45 @@ const Payment = sequelize.define('payment', {
             key: 'customerId'
         }
     },
-    paymentDate: {
-        type: DataTypes.DATE
+    amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
     },
-    paymentAmount: {
-        type: DataTypes.DECIMAL
+    paymentMethod: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: 'escrow'
+    },
+    paymentReference: {
+        type: DataTypes.STRING(16),
+        references: {
+            model: 'creditCards',
+            key: 'number'
+        },
+        allowNull: false
+    },
+    status: {
+        type: DataTypes.ENUM('pending', 'held_in_escrow', 'completed', 'failed', 'refunded'),
+        defaultValue: 'pending',
+        allowNull: false
+    },
+    transactionType: {
+        type: DataTypes.ENUM('payment', 'refund'),
+        defaultValue: 'payment',
+        allowNull: false
+    },
+    currency: {
+        type: DataTypes.STRING(3),
+        defaultValue: 'LE',
+        allowNull: false
+    },
+    releasedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    paymentDate: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
 });
 

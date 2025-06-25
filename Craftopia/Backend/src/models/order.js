@@ -26,9 +26,13 @@ const Order = sequelize.define('order', {
             key: 'customerId'
         }
     },
-    trackingInfo: {
-        type: DataTypes.ENUM("shipped", "delivered", "in transit","no tracking info"),
-        defaultValue: "no tracking info"
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+    },
+    finishedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
 });
 
