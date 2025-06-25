@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   FaUser,
   FaPaintBrush,
@@ -18,6 +19,7 @@ import {
 } from "recharts";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [startIndex, setStartIndex] = useState(0);
   const [salesData, setSalesData] = useState([]);
   const [overview, setOverview] = useState({
@@ -115,16 +117,22 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchPopularProducts = async () => {
       try {
-        const response = await axios.get("https://fakestoreapi.com/products?limit=10");
-        const products = response.data;
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/product/get", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        const formattedProducts = products.map((product) => ({
-          title: product.title,
-          image: product.image,
-          price: product.price,
+        const rawProducts = response.data.products?.slice(0, 10) || [];
+        const formatted = rawProducts.map((product) => ({
+          title: product.name,
+          image: product.image?.[0],
+          price: Number(product.price),
         }));
 
-        setPopularProducts(formattedProducts);
+
+        setPopularProducts(formatted);
       } catch (error) {
         console.error("Error fetching popular products:", error);
       }
@@ -132,6 +140,7 @@ const AdminDashboard = () => {
 
     fetchPopularProducts();
   }, []);
+
 
   const handleNext = () => {
     setStartIndex((prev) => (prev + 1) % popularProducts.length);
@@ -146,8 +155,6 @@ const AdminDashboard = () => {
   return (
     <div className="flex flex-col pl-6 w-full bg-[#FAF9F6] mt-5">
       <h2 className="text-2xl font-semibold mt-6">Dashboard</h2>
-
-      {/* Overview Section */}
       <div className="bg-[#F6EEEE] w-4/5 p-6 mt-2 rounded-2xl border border-black">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Overview</h2>
@@ -167,9 +174,8 @@ const AdminDashboard = () => {
                       setOverviewFilter(option);
                       setOverviewDropdownVisible(false);
                     }}
-                    className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#FDECEC] ${
-                      option === overviewFilter ? "bg-[#F6EEEE] font-medium" : ""
-                    }`}
+                    className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#FDECEC] ${option === overviewFilter ? "bg-[#F6EEEE] font-medium" : ""
+                      }`}
                   >
                     {option}
                   </button>
@@ -198,9 +204,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Sales and Popular Products Section */}
       <div className="flex w-4/5 gap-4 mt-4">
-        {/* Sales */}
         <div className="flex-1 bg-[#F6EEEE] p-6 rounded-2xl border border-black">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-semibold">Summary Sales</h2>
@@ -220,9 +224,8 @@ const AdminDashboard = () => {
                         setSalesFilter(option);
                         setSalesDropdownVisible(false);
                       }}
-                      className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#FDECEC] ${
-                        option === salesFilter ? "bg-[#F6EEEE] font-medium" : ""
-                      }`}
+                      className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#FDECEC] ${option === salesFilter ? "bg-[#F6EEEE] font-medium" : ""
+                        }`}
                     >
                       {option}
                     </button>
@@ -242,9 +245,7 @@ const AdminDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Popular Products */}
-        <div className="w-64 bg-[#F6EEEE] border border-black rounded-2xl p-4 flex flex-col items-center justify-between">
+        <div className="w-64 bg-[#F6EEEE] border border-black rounded-2xl p-6 flex flex-col items-center justify-between">
           <div className="flex justify-between w-full mb-3">
             <button onClick={handlePrev} className="text-[#E07385]">
               <FaChevronLeft />
@@ -255,17 +256,26 @@ const AdminDashboard = () => {
             </button>
           </div>
           {visibleProduct && (
-            <>
-              <div className="bg-white rounded-xl shadow-md p-2 w-32 h-32 flex items-center justify-center">
+            <div className="flex flex-col items-center w-full">
+              <div
+                className="bg-white rounded-xl overflow-hidden w-40 h-35 flex items-center justify-center cursor-pointer"
+                onClick={() =>
+                  navigate(`/product/${visibleProduct.id}`, { state: { product: visibleProduct } })
+                }
+              >
                 <img
                   src={visibleProduct.image}
                   alt={visibleProduct.title}
-                  className="w-full h-full object-contain rounded"
+                  className="w-40 h-35 object-cover transition-transform duration-300 hover:scale-105"
                 />
               </div>
-              <p className="text-xs mt-2 text-center font-medium line-clamp-2 px-1">{visibleProduct.title}</p>
-              <p className="text-sm font-semibold text-[#E07385] mt-1">${visibleProduct.price}</p>
-            </>
+              <p className="text-sm mt-2 text-center font-semibold text-gray-800 px-1 line-clamp-2">
+                {visibleProduct.title}
+              </p>
+              <p className="text-md font-bold text-[#E07385] mt-1">
+                ${visibleProduct.price.toFixed(2)}
+              </p>
+            </div>
           )}
         </div>
       </div>
