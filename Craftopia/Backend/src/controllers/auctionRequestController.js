@@ -30,7 +30,8 @@ exports.createAuctionRequest = async (req, res) => {
         
         if (product.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'You can only request auctions for your own products' });
-        }        const auctionRequest = await AuctionRequest.create({
+        }
+        const auctionRequest = await AuctionRequest.create({
             artistId: artist.artistId,
             productId,
             startingPrice,
@@ -169,7 +170,8 @@ exports.approveAndScheduleAuction = async (req, res) => {
             return res.status(404).json({ 
                 message: `Product with ID ${auctionRequest.productId} not found. The product may have been deleted.` 
             });
-        }        const durationHours = Duration || auctionRequest.suggestedDuration;
+        }
+        const durationHours = Duration || auctionRequest.suggestedDuration;
         const startDateTime = new Date(startDate);
         const endDateTime = new Date(startDateTime.getTime() + durationHours * 60 * 60 * 1000);
         const now = new Date();
@@ -199,6 +201,7 @@ exports.approveAndScheduleAuction = async (req, res) => {
             createdAt: new Date().toISOString(),
             bidCount: 0,
             lastBidTime: null,
+            incrementPercentage: 10,
             productDetails: {
                 name: product.name,
                 description: product.description,

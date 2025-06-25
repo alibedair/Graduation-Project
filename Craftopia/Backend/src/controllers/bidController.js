@@ -36,7 +36,8 @@ exports.placeBid = async (req, res) => {
             return res.status(400).json({ message: 'This auction has ended' });
         }
         
-        const minBidIncrement = (auction.currentPrice * auction.incrementPercentage) / 100;
+        const incrementPercentage = auction.incrementPercentage || 10;
+        const minBidIncrement = (auction.currentPrice * incrementPercentage) / 100;
         const minimumBid = auction.currentPrice + minBidIncrement;
         
         if (parseFloat(bidAmount) < minimumBid) {
