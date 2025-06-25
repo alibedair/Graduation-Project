@@ -22,19 +22,21 @@ const Messages = ({ responseId, onClose }) => {
         if (!res.ok) throw new Error("Failed to fetch conversation");
         return res.json();
     };
-
-    const sendMessage = async ({ token, responseId, messageContent, attachment }) => {
-        const formData = new FormData();
-        formData.append("messageContent", messageContent);
-        if (attachment) formData.append("attachment", attachment);
-
+    const sendMessage = async ({ token, responseId, messageContent }) => {
         const res = await fetch(`http://localhost:3000/msg/send/${responseId}`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ messageContent }),
         });
 
-        if (!res.ok) throw new Error("Failed to send message");
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Failed to send message: ${res.statusText}: ${errorText}`);
+        }
+
         return res.json();
     };
 
@@ -85,13 +87,14 @@ const Messages = ({ responseId, onClose }) => {
     const handleSend = async () => {
         if (!newMessage.trim() && !attachment) return;
         if (containsPersonalData(newMessage)) {
-            setShowWarning(true);
+            setShowWarning("Avoid sharing personal data like email, phone, or card numbers.");
             return;
         }
 
         setIsTyping(true);
         try {
             await sendMessage({ token, responseId, messageContent: newMessage, attachment });
+
             const updated = await getConversationByResponseId(responseId);
             const updatedMessages = updated.data.messages.map((msg) => ({
                 sender: msg.senderType,
@@ -100,15 +103,35 @@ const Messages = ({ responseId, onClose }) => {
                 attachmentUrl: msg.attachmentUrl,
                 timestamp: msg.createdAt,
             }));
+
             setMessages(updatedMessages);
             setNewMessage("");
             setAttachment(null);
+            setShowWarning(false);
         } catch (error) {
             console.error("Error sending message:", error);
-        } finally {
-            setIsTyping(false);
+            const match = error.message.match(/Bad Request:\s*(\{.*\})/);
+            if (match && match[1]) {
+                try {
+                    const parsed = JSON.parse(match[1]);
+                    if (parsed?.reason) {
+                        setShowWarning(parsed.reason);
+                    } else if (parsed?.message) {
+                        setShowWarning(parsed.message);
+                    } else {
+                        setShowWarning("Message could not be sent.");
+                    }
+                } catch (parseErr) {
+                    console.error("Failed to parse backend error JSON:", parseErr);
+                    setShowWarning("Message could not be sent.");
+                }
+            } else {
+                setShowWarning("Message could not be sent.");
+            }
         }
+
     };
+
 
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -177,30 +200,30 @@ const Messages = ({ responseId, onClose }) => {
                         className="chat-scroll overflow-y-auto px-4 py-3 bg-gradient-to-b from-[#FAF9F6] to-[#F6EEEE] space-y-3"
                         style={{ maxHeight: "400px" }}
                     >
-                       {loading ? (
-  <div className="flex justify-center items-center h-64 text-[#921A40] text-lg font-medium animate-pulse">
-    Loading...
-  </div>
-) : messages.length === 0 ? (
-  <div className="flex flex-col justify-center items-center h-64 bg-gradient-to-r from-[#fdf2f8] to-[#fce7f3] rounded-xl shadow-sm border border-pink-200 p-6 text-center animate-fade-in">
-    <svg
-      className="w-14 h-14 text-[#921A40] mb-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"
-      />
-    </svg>
-    <h2 className="text-xl font-semibold text-[#921A40] mb-1">No Messages Yet</h2>
-    <p className="text-sm text-gray-600">Messages you receive will show up here.</p>
-  </div>
-) : (
- 
+                        {loading ? (
+                            <div className="flex justify-center items-center h-64 text-[#921A40] text-lg font-medium animate-pulse">
+                                Loading...
+                            </div>
+                        ) : messages.length === 0 ? (
+                            <div className="flex flex-col justify-center items-center h-64 bg-gradient-to-r from-[#fdf2f8] to-[#fce7f3] rounded-xl shadow-sm border border-pink-200 p-6 text-center animate-fade-in">
+                                <svg
+                                    className="w-14 h-14 text-[#921A40] mb-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"
+                                    />
+                                </svg>
+                                <h2 className="text-xl font-semibold text-[#921A40] mb-1">No Messages Yet</h2>
+                                <p className="text-sm text-gray-600">Messages you receive will show up here.</p>
+                            </div>
+                        ) : (
+
                             <AnimatePresence initial={false}>
                                 {messages.map((msg, index) => (
                                     <motion.div
@@ -212,16 +235,16 @@ const Messages = ({ responseId, onClose }) => {
                                         <div className="flex flex-col max-w-[80%]">
                                             <div
                                                 className={`text-[10px] font-semibold mb-1 px-2 py-[2px] rounded-full w-fit ${msg.sender === "artist"
-                                                        ? "bg-[#f7ccd1] text-[#921A40]"
-                                                        : "bg-gray-200 text-gray-700"
+                                                    ? "bg-[#f7ccd1] text-[#921A40]"
+                                                    : "bg-gray-200 text-gray-700"
                                                     }`}
                                             >
                                                 {msg.senderName || (msg.sender === "artist" ? "Artist" : "Customer")}
                                             </div>
                                             <div
                                                 className={`relative px-4 py-2 rounded-xl text-sm shadow-sm ${msg.sender === "artist"
-                                                        ? "bg-white text-[#921A40] border border-[#f3c4ca] self-end"
-                                                        : "bg-white text-gray-800 border border-gray-200 self-start"
+                                                    ? "bg-white text-[#921A40] border border-[#f3c4ca] self-end"
+                                                    : "bg-white text-gray-800 border border-gray-200 self-start"
                                                     }`}
                                             >
                                                 <div className="whitespace-pre-wrap">{msg.messageContent}</div>
@@ -238,8 +261,8 @@ const Messages = ({ responseId, onClose }) => {
                                                 )}
                                                 <div
                                                     className={`text-xs opacity-70 mt-1 text-right ${msg.sender === "artist"
-                                                            ? "text-[#921A40]/70"
-                                                            : "text-gray-500"
+                                                        ? "text-[#921A40]/70"
+                                                        : "text-gray-500"
                                                         }`}
                                                 >
                                                     {formatTime(msg.timestamp)}
@@ -261,7 +284,7 @@ const Messages = ({ responseId, onClose }) => {
                                     transition={{ duration: 0.3 }}
                                     className="mb-2 text-sm text-[#921A40] bg-[#fbeaec] border border-[#f3c4ca] rounded-lg px-4 py-2 flex justify-between items-center"
                                 >
-                                    ⚠️ Avoid sharing personal data like email, phone, or card numbers.
+                                    ⚠️ {showWarning}
                                     <button
                                         onClick={() => setShowWarning(false)}
                                         className="ml-3 font-bold"
@@ -270,6 +293,7 @@ const Messages = ({ responseId, onClose }) => {
                                     </button>
                                 </motion.div>
                             )}
+
                         </AnimatePresence>
 
                         {attachment && (
@@ -317,8 +341,8 @@ const Messages = ({ responseId, onClose }) => {
                                 whileHover={{ scale: 1.05 }}
                                 disabled={!newMessage.trim() && !attachment}
                                 className={`transition-all duration-200 ease-in-out p-2 rounded-full ${newMessage.trim() || attachment
-                                        ? "bg-gradient-to-r from-[#921A40] to-[#E07385] text-white"
-                                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                    ? "bg-gradient-to-r from-[#921A40] to-[#E07385] text-white"
+                                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
                                     }`}
                                 aria-label="Send message"
                             >
