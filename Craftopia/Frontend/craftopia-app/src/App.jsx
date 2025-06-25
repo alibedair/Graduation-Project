@@ -22,6 +22,7 @@ import ArtistsSection from './Components/ArtistsSection';
 import Auctions from './pages/Auctions';
 import ShopByCategory from './Components/ShopByCategory';
 import WishlistPage        from './pages/WishlistPage';
+import AuctionDetails from './pages/AuctionDetails';
 function LoginRoute() {
   const { user } = useAuth();
 
@@ -88,7 +89,7 @@ function AppContent() {
             />
           }
         />
-        
+        <Route path="/auction/:id" element={<AuctionDetails />}/>
         <Route path="/auctions" element={<Auctions />}/>
         <Route path="/artists" element={<Artists />}/>
         <Route path="/register" element={<Register/>}/>

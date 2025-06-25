@@ -27,7 +27,7 @@ const AuctionsSection = () => {
         const res = await fetch('http://localhost:3000/auction');
         const data = await res.json();
         const mapped = data.auctions
-          .filter((a) => a.status === 'active' || a.status === 'scheduled')
+          .filter((a) => a.status === 'active')
           .map((a) => ({
             id: a.id,
             title: a.productDetails.name,
