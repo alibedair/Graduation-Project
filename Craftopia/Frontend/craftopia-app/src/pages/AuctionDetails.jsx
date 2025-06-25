@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Share2, Eye, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
@@ -184,12 +183,10 @@ const AuctionDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [bidAmount, setBidAmount] = useState('');
-  const [isWatching, setIsWatching] = useState(false);
   const [showBidHistory, setShowBidHistory] = useState(false);
   const [auction, setAuction] = useState(null);
   const [artist, setArtist] = useState(null);
   const [error, setError] = useState('');
-const [categoryName, setCategoryName] = useState('');
 
 const [following, setFollowing] = useState(false); // initially false
 
@@ -271,40 +268,12 @@ const handleFollowClick = async () => {
       },
     });
 
-    // Optionally: callback
-    // onFollowToggle?.(newFollowingState);
   } catch (error) {
     console.error('Error toggling follow state:', error);
     setFollowing(!newFollowingState); // Rollback
   }
 };
 
-useEffect(() => {
-  const fetchCategoryName = async () => {
-    try {
-      const res = await fetch('http://localhost:3000/category/all');
-      const data = await res.json();
-
-      const auctionCategoryId = auction?.product?.categoryId;
-
-      if (auctionCategoryId && data.categories) {
-        const matchedCategory = data.categories.find(
-          (cat) => cat.categoryId === auctionCategoryId
-        );
-
-        if (matchedCategory) {
-          setCategoryName(matchedCategory.name);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch category:', err);
-    }
-  };
-
-  if (auction?.product?.categoryId) {
-    fetchCategoryName();
-  }
-}, [auction]);
 
 
 
@@ -382,13 +351,6 @@ useEffect(() => {
             {/* Title and Basic Info */}
             <div>
               <h1 className="text-3xl font-bold mb-2">{auction.title}</h1>
-              {/* <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                <span>{auction.year}</span>
-                <span>•</span>
-                <span>{auction.medium}</span>
-                <span>•</span>
-                <span>{auction.dimensions}</span>
-              </div> */}
               <div className="flex items-center px-2 gap-4 text-sm text-gray-600">
                 {/* <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
@@ -425,13 +387,7 @@ useEffect(() => {
       {auction.status === 'active' && !auctionHasEnded && (
         
         <div className="flex gap-3">
-                  {/* <input
-                    type="number"
-                    placeholder={`Enter $${minBid.toLocaleString()} or more`}
-                    value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                  /> */}
+
                             <input
                               type="number"
                               min={minBid}
