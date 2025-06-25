@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const ESCROW_FEE = 2.5;
 
@@ -11,8 +12,33 @@ const CartOverview = ({ cartItems }) => {
   const total = subtotal + ESCROW_FEE;
   const navigate = useNavigate();
 
-const handleContinueShopping = () => {
-  navigate('/');
+  const handleContinueShopping = () => {
+    navigate('/');
+  };
+
+ const handleCheckout = async () => {
+  try {
+    const productIds = cartItems.map(item => item.id); 
+    const quantity = cartItems.map(item => item.quantity);
+    console.log('🛒 Product IDs:', productIds);
+    console.log('📦 Quantities:', quantity);
+
+    const response = await axios.post('http://localhost:3000/order/placeOrder', {
+      productIds,
+      quantity
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    console.log('✅ Order placed successfully:', response.data);
+    navigate('/orders');
+
+  } catch (error) {
+    console.error('❌ Error placing order:', error.response?.data || error.message);
+    alert('Failed to place order. Please try again.');
+  }
 };
 
 
@@ -30,11 +56,11 @@ const handleContinueShopping = () => {
         <span className="text-black">Free</span>
       </div>
 
-    
-<div className="flex justify-between mb-4 text-gray-600">
-  <span>Escrow Service</span>
-  <span>${ESCROW_FEE.toFixed(2)}</span>
-</div>
+      <div className="flex justify-between mb-4 text-gray-600">
+        <span>Escrow Service</span>
+        <span>${ESCROW_FEE.toFixed(2)}</span>
+      </div>
+
       <hr className="mb-4" />
 
       <div className="flex justify-between mb-4 text-lg font-semibold">
@@ -42,14 +68,17 @@ const handleContinueShopping = () => {
         <span>${total.toFixed(2)}</span>
       </div>
 
-      <button className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition mb-2">
+      <button 
+        onClick={handleCheckout}
+        className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition mb-2"
+      >
         Proceed to Checkout
       </button>
 
       <button
-  onClick={handleContinueShopping}
-  className="w-full border border-gray-300 py-2 rounded-md hover:bg-gray-100 transition"
->
+        onClick={handleContinueShopping}
+        className="w-full border border-gray-300 py-2 rounded-md hover:bg-gray-100 transition"
+      >
         Continue Shopping
       </button>
     </div>
@@ -57,5 +86,3 @@ const handleContinueShopping = () => {
 };
 
 export default CartOverview;
-
-

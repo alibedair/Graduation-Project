@@ -8,6 +8,9 @@ import Footer from "../Components/Footer";
 import RequestCustomization from "../Components/RequestCustomization";
 import CompareProducts from "../Components/CompareProducts";
 import { MdCompare } from "react-icons/md";
+import MyOrders from "./MyOrders";
+import { FiPackage } from "react-icons/fi";
+
 const CustomerProfile = ({ setIsLoggedIn }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -50,6 +53,14 @@ const CustomerProfile = ({ setIsLoggedIn }) => {
                                 <FaHeart className="text-black" />
                                 Wishlist
                             </li>
+                           <li
+    onClick={() => navigate("/orders")}
+    className="hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2"
+>
+    <FiPackage className="text-black" />
+    My Orders
+</li>
+
                             <li
                                 onClick={() => setActiveTab("compare")}
                                 className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "compare" ? "bg-gray-200 font-semibold" : ""
@@ -64,7 +75,7 @@ const CustomerProfile = ({ setIsLoggedIn }) => {
                                 className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "customization" ? "bg-gray-200 font-semibold" : ""
                                     }`}
                             >
-                                Request Customization
+                                Custom products
                             </li>
 
                             <li
@@ -83,6 +94,7 @@ const CustomerProfile = ({ setIsLoggedIn }) => {
                         {activeTab === "profile" && <Profile setActiveTab={setActiveTab} />}
                         {activeTab === "edit" && <CompleteProfile />}
                         {activeTab === "wishlist" && <Wishlist />}
+                         {activeTab === "orders" && <MyOrders />}
                         {activeTab === "compare" && <CompareProducts />}
                         {activeTab === "customization" && <RequestCustomization />}
                     </div>
