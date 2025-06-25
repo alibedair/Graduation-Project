@@ -25,4 +25,10 @@ router.put('/escrow/release/:paymentId',
     paymentGateway.releaseEscrowPayment
 );
 
+router.get('/escrow/held',
+    authMiddleware,
+    roleMiddleware(['admin']),
+    paymentGateway.getallpaymentsHeld
+);
+
 module.exports = router;

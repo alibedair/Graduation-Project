@@ -254,3 +254,20 @@ exports.releaseEscrowPayment = async (req, res) => {
         });
     }
 };
+exports.getallpaymentsHeld = async (req, res) => {
+    try {
+        const payments = await Payment.findAll({
+            where: { status: 'held_in_escrow' },
+        });
+        return res.status(200).json({
+            success: true,
+            data: payments
+        });
+    } catch (error) {
+        console.error('Error fetching held payments:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching held payments'
+        });
+    }
+};
