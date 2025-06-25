@@ -63,7 +63,4 @@ const Artist = sequelize.define('artist', {
     }
 });
 
-
-
-
 module.exports = Artist;

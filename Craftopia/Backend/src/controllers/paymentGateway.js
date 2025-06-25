@@ -4,6 +4,8 @@ const Artist = require('../models/artist');
 const Payment = require('../models/payment');
 const User = require('../models/user');
 const CreditCard = require('../models/creditCard');
+const Product = require('../models/product');
+const Product_Order = require('../models/Product_Order');
 exports.createEscrowPayment = async (req, res) => {
     try {
         const { orderId} = req.params;
@@ -148,6 +150,104 @@ exports.createEscrowPayment = async (req, res) => {
 
     } catch (error) {
         console.error('Error processing escrow payment:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error during payment processing'
+        });
+    }
+};
+exports.releaseEscrowPayment = async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const userId = req.user.id;
+        if (!paymentId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment ID is required'
+            });
+        }
+        const user = await User.findByPk(userId);
+        if (!user || user.role !== 'admin') {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found or unauthorized'
+            });
+        }
+
+        const payment = await Payment.findByPk(paymentId);
+        if (!payment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Payment not found'
+            });
+        }
+        if (payment.status !== 'held_in_escrow') {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment is not held in escrow'
+            });
+        }
+        const order = await Order.findByPk(payment.orderId, {
+            include: [{
+                model: Product,
+                attributes: ['productId', 'name', 'price', 'artistId'],
+                include: [{
+                    model: Artist,
+                    attributes: ['artistId', 'sales']
+                }],
+                through: { 
+                    attributes: ['quantity'] 
+                }
+            }]
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+        const artistSalesMap = new Map();
+        for (const product of order.products) {
+            const artistId = product.artist.artistId;
+            
+            let quantity = 0;
+            
+             if (product.productorder && product.productorder.quantity) {
+                quantity = product.productorder.quantity;
+            }
+
+            const productTotal = parseFloat(product.price) * quantity;
+            if (artistSalesMap.has(artistId)) {
+                artistSalesMap.set(artistId, artistSalesMap.get(artistId) + productTotal);
+            } else {
+                artistSalesMap.set(artistId, productTotal);
+            }
+        }
+        for (const [artistId, salesData] of artistSalesMap) {
+            const artist = await Artist.findByPk(artistId);
+            const currentSales = parseFloat(artist.sales);
+            const newSales = currentSales + salesData;
+            
+            await Artist.update(
+                { sales: newSales },
+                { where: { artistId: artistId } }
+            );
+            
+        }
+        
+        await payment.update({ 
+            status: 'completed',
+            releasedAt: new Date()
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Payment released successfully and artists sales updated',
+        });
+
+    } catch (error) {
+        console.error('Error releasing escrow payment:', error);
         return res.status(500).json({
             success: false,
             message: 'Internal server error during payment processing'
