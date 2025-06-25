@@ -181,7 +181,41 @@ const ArtistResponses = () => {
             )}
 
             {responses.length === 0 ? (
-                <p className="text-center text-gray-700 text-lg">No responses found.</p>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    className="text-center bg-gradient-to-br from-[#FFF5F7] to-[#FDFDFD] border border-[#FADADD] rounded-2xl p-10 shadow-lg"
+                >
+                    <div className="flex flex-col items-center space-y-5">
+                        <motion.div
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ repeat: Infinity, duration: 4 }}
+                            className="bg-[#E07385]/10 p-4 rounded-full"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-16 w-16 text-[#E07385]"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                    d="M9.75 9.75h4.5m-4.5 3h2.25M5.25 4.5A2.25 2.25 0 007.5 2.25h9a2.25 2.25 0 012.25 2.25v15l-3.375-2.25H7.5A2.25 2.25 0 015.25 15V4.5z"
+                                />
+                            </svg>
+                        </motion.div>
+
+                        <h2 className="text-2xl font-bold text-[#921A40]">No Offers Submitted</h2>
+
+                        <p className="text-gray-700 max-w-md text-sm md:text-base">
+                            You haven’t responded to any customization requests yet.
+                            Once you submit an offer, it will be shown here. Start creating something amazing!
+                        </p>
+                    </div>
+                </motion.div>
+
+
             ) : (
                 <div className="space-y-6">
                     {responses.map((response) => (
@@ -240,8 +274,8 @@ const ArtistResponses = () => {
                                             </p>
                                         </div>
                                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${response.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                response.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                                                    'bg-red-100 text-red-800'
+                                            response.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                                                'bg-red-100 text-red-800'
                                             }`}>
                                             {response.status}
                                         </span>

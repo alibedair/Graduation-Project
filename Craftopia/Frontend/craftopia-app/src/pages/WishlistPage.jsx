@@ -34,14 +34,19 @@ const WishlistPage = () => {
                 key={product.id}
                 product={{
                   ...product,
-                  image: product.image?.[0],
-                  category: product.category?.name,
-                  artist: product.artist?.username || 'Unknown',
+                  image: Array.isArray(product.image)
+                    ? product.image
+                    : product.image
+                      ? [product.image]
+                      : ['/placeholder.jpg'],
+                  category: typeof product.category === 'string' ? product.category : product.category?.name,
+                  artist: typeof product.artist === 'string' ? product.artist : product.artist?.username || 'Unknown',
                 }}
                 isFavorite={true}
                 onToggleFavorite={() => removeFromWishlist(product.id)}
               />
             ))}
+
           </div>
         </div>
       </div>

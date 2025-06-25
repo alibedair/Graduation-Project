@@ -30,19 +30,20 @@ const AvaliableProducts = () => {
       .then((res) => {
         const fetched = res.data.products || [];
         const formatted = fetched.map((p) => ({
-          id: p.productId,
-          name: p.name,
-          price: p.price,
-          image: p.image?.[0],
-          rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-          reviews: Math.floor(Math.random() * 50 + 5),
-          description: p.description,
-          dimensions: p.dimensions,
-          material: p.material,
-          category: p.category?.name || "Uncategorized",
-          artist: p.artist?.name || "Unknown Artist",
-          inStock: p.quantity > 0,
-        }));
+  id: p.productId,
+  name: p.name,
+  price: p.price,
+  image: p.image, // pass full array here
+  rating: (Math.random() * (5 - 4) + 4).toFixed(1),
+  reviews: Math.floor(Math.random() * 50 + 5),
+  description: p.description,
+  dimensions: p.dimensions,
+  material: p.material,
+  category: p.category?.name || "Uncategorized",
+  artist: p.artist?.name || "Unknown Artist",
+  inStock: p.quantity > 0,
+}));
+
         setProducts(formatted);
       })
       .catch((err) => console.error(err));

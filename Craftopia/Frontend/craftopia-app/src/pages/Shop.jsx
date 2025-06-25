@@ -21,17 +21,22 @@ const Shop = () => {
                 const data = await res.json();
 
                 const productsArray = data.products || [];
-                const formatted = productsArray.map((p) => ({
-                    id: p.productId,
-                    name: p.name,
-                    price: p.price,
-                    image: p.image?.[0] || '',
-                    category: p.category?.name || 'Uncategorized',
-                    artist: p.artist?.name || 'Unknown',
-                    rating: p.rating || 4.5,
-                    reviews: p.reviews || 0,
-                    inStock: p.quantity > 0,
-                }));
+              const formatted = productsArray.map((p) => ({
+  id: p.productId,
+  name: p.name,
+  price: p.price,
+  image: p.image || [],
+  category: p.category?.name || "Uncategorized",
+  artist: p.artist?.name || "Unknown",
+  rating: p.rating || 4.5,
+  reviews: p.reviews || 0,
+  inStock: p.quantity > 0,
+  description: p.description || "No description available.",
+  dimensions: p.dimensions || "Not specified",
+  material: p.material || "Not specified",
+}));
+
+
 
                 setProducts(formatted);
                 const uniqueCategories = Array.from(

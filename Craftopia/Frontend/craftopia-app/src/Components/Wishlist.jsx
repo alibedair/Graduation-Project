@@ -74,21 +74,27 @@ const Wishlist = () => {
 
                 <div className="pt-2 pb-5 px-4">
                   <div className="mb-1">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {product.category?.name || "Handmade"}
-                    </span>
-                  </div>
-                  <div className="mb-3">
-                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-[#E07385] transition-colors duration-200 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      by{" "}
-                      <span className="font-medium">
-                        {product.artist?.name || "Unknown"}
-                      </span>
-                    </p>
-                  </div>
+  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+    {typeof product.category === "string"
+      ? product.category
+      : product.category?.name || "Handmade"}
+  </span>
+</div>
+
+<div className="mb-3">
+  <h3 className="font-bold text-lg text-gray-900 group-hover:text-[#E07385] transition-colors duration-200 line-clamp-1">
+    {product.name}
+  </h3>
+  <p className="text-sm text-gray-500 mt-1">
+    by{" "}
+    <span className="font-medium">
+      {typeof product.artist === "string"
+        ? product.artist
+        : product.artist?.name || "Unknown"}
+    </span>
+  </p>
+</div>
+
 
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex items-center gap-1">

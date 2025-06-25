@@ -4,13 +4,13 @@ import axios from 'axios';
 import { User, Heart, ShoppingCart } from 'lucide-react';
 
 const Register = () => {
-  const [email, setEmail]           = useState('');
-  const [password, setPassword]     = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole]             = useState('customer');
-  const [error, setError]           = useState('');
+  const [role, setRole] = useState('customer');
+  const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const navigate                    = useNavigate();
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -104,16 +104,30 @@ const Register = () => {
               <label htmlFor="role" className="block text-sm font-medium text-burgundy mb-2">
                 I am a
               </label>
-              <select
-                id="role"
-                value={role}
-                onChange={e => setRole(e.target.value)}
-                className="w-full px-4 py-2 border bg-white border-gray-300 rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
-              >
-                <option value="customer">Customer</option>
-                <option value="artist">Artist</option>
-                <option value="admin">Admin</option>
-              </select>
+              <div className="relative">
+                <select
+                  id="role"
+                  value={role}
+                  onChange={e => setRole(e.target.value)}
+                  className="appearance-none w-full px-4 py-2 border bg-white border-gray-300 rounded-md focus:ring-2 focus:ring-coral focus:border-coral pr-10"
+                >
+                  <option value="customer">Customer</option>
+                  <option value="artist">Artist</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <svg
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-coral w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+
             </div>
 
             <button

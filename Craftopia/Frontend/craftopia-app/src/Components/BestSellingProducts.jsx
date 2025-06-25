@@ -24,17 +24,22 @@ const BestSellingProducts = () => {
       })
       .then((res) => {
         const products = res.data.products || [];
-        const formatted = products.map((p) => ({
-          id: p.productId,
-          name: p.name,
-          price: p.price,
-          image: p.image?.[0],
-          category: p.category?.name || "Uncategorized",
-          artist: p.artist?.name || "Unknown",
-          rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-          reviews: Math.floor(Math.random() * 50 + 5),
-          inStock: p.quantity > 0,
-        }));
+     const formatted = products.map((p) => ({
+  id: p.productId,
+  name: p.name,
+  price: p.price,
+  image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ['/placeholder.jpg'],
+  category: p.category?.name || "Uncategorized",
+  artist: p.artist?.name || "Unknown",
+  rating: (Math.random() * (5 - 4) + 4).toFixed(1),
+  reviews: Math.floor(Math.random() * 50 + 5),
+  inStock: p.quantity > 0,
+  description: p.description || "No description available.",
+  material: p.material || "Not specified",
+  dimensions: p.dimensions || "Not specified",
+}));
+
+
         setProducts(formatted);
       })
       .catch((err) => console.error("Failed to fetch products:", err));

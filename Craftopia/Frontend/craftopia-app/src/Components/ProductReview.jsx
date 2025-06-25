@@ -24,16 +24,19 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
   const userId = decodeToken();
 
   useEffect(() => {
-    if (!productId) return;
-    axios
-      .get(`http://localhost:3000/review/getreview/${productId}`)
-      .then((res) => {
-        const { reviews, averageRating, totalReviews } = res.data;
-        setReviews(Array.isArray(reviews) ? reviews : []);
-        onStatsUpdate?.({ averageRating, totalReviews });
-      })
-      .catch(() => {});
-  }, [productId, onStatsUpdate]);
+  if (!productId) return;
+
+  axios
+    .get(`http://localhost:3000/review/getreview/${productId}`)
+    .then((res) => {
+      const { reviews, averageRating, totalReviews } = res.data;
+      setReviews(Array.isArray(reviews) ? reviews : []);
+      if (typeof onStatsUpdate === 'function') {
+        onStatsUpdate({ averageRating, totalReviews });
+      }
+    })
+    .catch(() => {});
+}, [productId]);
 
   const renderStars = (rating) =>
     Array.from({ length: 5 }).map((_, i) => (

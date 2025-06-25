@@ -137,8 +137,27 @@ const AllProducts = () => {
       {loadingProducts && <p className="text-center text-lg text-gray-700">Loading products...</p>}
       {productError && <p className="text-center text-red-600">{productError}</p>}
       {!loadingProducts && filteredProducts.length === 0 && (
-        <p className="text-center text-gray-500">No products found.</p>
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="relative w-40 h-40 mb-6">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+              alt="No products"
+              className="w-full h-full object-contain opacity-80 animate-bounce"
+            />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">No Products Found</h2>
+          <p className="text-gray-500 text-sm mb-4 text-center max-w-sm">
+            Sorry! We couldn’t find any matching items. Try adjusting your filters.
+          </p>
+          <button
+            onClick={() => setSelectedProductName("")}
+            className="px-5 py-2 bg-[#e07385] hover:bg-[#7a1434] text-white text-sm font-semibold rounded-full shadow-md transition duration-300"
+          >
+            Reset Filters
+          </button>
+        </div>
       )}
+
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {filteredProducts.map((product, index) => {
@@ -161,9 +180,8 @@ const AllProducts = () => {
                 />
 
                 <span
-                  className={`absolute top-4 right-4 px-3 py-1 rounded-full shadow text-sm font-semibold ${
-                    product.quantity > 0 ? "bg-[#e07385] text-white" : "bg-red-100 text-red-800"
-                  }`}
+                  className={`absolute top-4 right-4 px-3 py-1 rounded-full shadow text-sm font-semibold ${product.quantity > 0 ? "bg-[#e07385] text-white" : "bg-red-100 text-red-800"
+                    }`}
                 >
                   {product.quantity > 0 ? "In Stock" : "Out of Stock"}
                 </span>
