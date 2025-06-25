@@ -31,5 +31,13 @@ router.put('/cancel/:orderId',
     ],
     orderController.cancelOrder
 );
+router.get('/:orderId',
+    authMiddleware,
+    roleMiddleware('customer'),
+    [
+        param('orderId').isInt().withMessage('Order ID must be an integer')
+    ],
+    orderController.getOrderById
+);
 
 module.exports = router;
