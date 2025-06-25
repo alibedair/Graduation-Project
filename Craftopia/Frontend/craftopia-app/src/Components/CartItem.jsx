@@ -26,15 +26,15 @@ const CartItem = ({ item, onQuantityChange, onRemove }) => {
     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
       <div className="flex items-center gap-4">
         <img
-          src={item.image}
+          src={item.image[0]}
           alt={item.name}
           className="w-20 h-20 object-cover rounded-lg"
         />
         <div>
           <h2 className="text-lg font-semibold text-gray-900">{item.name}</h2>
           <span className="inline-block bg-[#ebaeb873] text-[#000000] text-xs font-semibold px-3 py-1 rounded-full mt-1">
-  {item.category}
-</span>
+            {item.category}
+          </span>
 
           <p className="text-lg font-bold text-gray-900 mt-1">
             ${(item.price * quantity).toFixed(2)}
