@@ -25,6 +25,7 @@ import WishlistPage        from './pages/WishlistPage';
 import AuctionDetails from './pages/AuctionDetails';
 import MyOrders from './pages/MyOrders';
 import PaymentPage from './pages/PaymentPage';
+import ArtistProfileCustomer from './pages/ArtistProfileCustomer';
 function LoginRoute() {
   const { user } = useAuth();
 
@@ -94,6 +95,7 @@ function AppContent() {
         <Route path="/auction/:id" element={<AuctionDetails />}/>
         <Route path="/auctions" element={<Auctions />}/>
         <Route path="/artists" element={<Artists />}/>
+        <Route path="/artist-profile-customer/:id" element={<ArtistProfileCustomer />}/>
         <Route path="/register" element={<Register/>}/>
         <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
