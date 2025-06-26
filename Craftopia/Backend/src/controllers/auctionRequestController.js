@@ -2,11 +2,13 @@ const AuctionRequest = require('../models/auctionRequest');
 const Artist = require('../models/artist');
 const Product = require('../models/product');
 const Admin = require('../models/admin');
+const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const { firebase_db } = require('../config/firebase');
 const Category = require('../models/category');
 const Product_Order = require('../models/Product_Order');
 const { Sequelize } = require('sequelize');
+const { sendAuctionApprovedEmail, sendAuctionRejectedEmail } = require('../utils/emailService');
 
 exports.createAuctionRequest = async (req, res) => {
     try {
@@ -216,6 +218,23 @@ exports.approveAndScheduleAuction = async (req, res) => {
             auctionId: newAuctionRef.key,
             adminNotes: adminNotes || null
         });
+        
+        try {
+            const artist = await Artist.findByPk(auctionRequest.artistId);
+            const artistUser = await User.findByPk(artist.userId);
+            if (artistUser && artistUser.email) {
+                const auctionDetails = {
+                    productName: product.name,
+                    startingPrice: parseFloat(auctionRequest.startingPrice || 0).toFixed(2),
+                    startDate: startDateTime.toISOString(),
+                    endDate: endDateTime.toISOString(),
+                    auctionId: newAuctionRef.key
+                };
+                await sendAuctionApprovedEmail(artistUser.email, artist.name || 'Artist', auctionDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending auction approval email:', emailError);
+        }
         return res.status(201).json({
             message: 'Auction request approved and auction scheduled successfully',
             auctionId: newAuctionRef.key,
@@ -237,11 +256,12 @@ exports.rejectAuctionRequest = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });        }
+            return res.status(400).json({ errors: errors.array() });        
+        }
         
         const requestId = req.params.requestId;
         const { adminNotes } = req.body;
-        
+
         if (!requestId) {
             return res.status(400).json({ message: 'Request ID is required' });
         }
@@ -260,7 +280,23 @@ exports.rejectAuctionRequest = async (req, res) => {
             status: 'rejected',
             adminNotes: adminNotes || null
         });
-        
+
+        try {
+
+            const artist = await Artist.findByPk(auctionRequest.artistId);
+            const product = await Product.findByPk(auctionRequest.productId);
+            const artistUser = await User.findByPk(artist.userId);
+            
+            if (artistUser && artistUser.email && product) {
+                const auctionDetails = {
+                    productName: product.name,
+                    reason: adminNotes || 'No specific reason provided'
+                };
+                await sendAuctionRejectedEmail(artistUser.email, artist.name || 'Artist', auctionDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending auction rejection email:', emailError);
+        }
         return res.status(200).json({
             message: 'Auction request rejected successfully',
             requestId: auctionRequest.requestId

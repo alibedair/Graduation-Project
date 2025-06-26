@@ -1,7 +1,8 @@
 const Customer = require('../models/customer');
+const User = require('../models/user');
 const { validationResult } = require('express-validator');
-
 const { firebase_db } = require('../config/firebase');
+const { sendBidReceivedEmail } = require('../utils/emailService');
 
 exports.placeBid = async (req, res) => {
     try {
@@ -96,6 +97,25 @@ exports.placeBid = async (req, res) => {
             if (!committed) {
                 return res.status(400).json({ message: 'Bid could not be placed. Please try again.' });
             }
+            (async () => {
+                try {
+                    const user = await User.findByPk(userId);
+                    if (user && user.email) {
+                        const updatedAuction = snapshot.val();
+                        const bidDetails = {
+                            productName: updatedAuction.productDetails?.name || 'Auction Item',
+                            bidAmount: parseFloat(bidAmount || 0).toFixed(2),
+                            currentHighestBid: parseFloat(updatedAuction.currentPrice || 0).toFixed(2),
+                            auctionEndTime: updatedAuction.endDate,
+                            isHighestBidder: updatedAuction.lastBidder === userId
+                        };
+                        
+                        await sendBidReceivedEmail(user.email, customer.name || 'Valued Customer', bidDetails);
+                    }
+                } catch (emailError) {
+                    console.error('Error sending bid notification email:', emailError);
+                }
+            })();
             
             const updatedAuction = snapshot.val();
             return res.status(200).json({ 

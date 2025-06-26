@@ -9,6 +9,8 @@ const {
     getArtistResponsesEnhanced, 
     getCustomerResponsesEnhanced 
 } = require('../utils/customizationUtils');
+const User = require('../models/user');
+const { sendCustomizationResponseEmail } = require('../utils/emailService');
 
 exports.respondToCustomizationRequest = async (req, res) => {
     try {
@@ -85,6 +87,25 @@ exports.respondToCustomizationRequest = async (req, res) => {
             image: image,
             status: 'PENDING'
         });
+
+        try {
+            const customer = await Customer.findOne({ where: { customerId: request.customerId } });
+            const customerUser = await User.findByPk(customer.userId);
+            
+            if (customerUser && customerUser.email) {
+                const responseDetails = {
+                    requestTitle: request.title,
+                    artistName: artist.name || 'Artist',
+                    proposedPrice: parseFloat(newResponse.price || 0).toFixed(2),
+                    estimatedDays: Math.ceil((new Date(newResponse.estimationCompletionTime) - new Date()) / (1000 * 60 * 60 * 24)),
+                    responseId: newResponse.responseId
+                };
+                
+                await sendCustomizationResponseEmail(customerUser.email, customer.name || 'Valued Customer', responseDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending customization response email:', emailError);
+        }
 
         return res.status(201).json({
             message: 'Response created successfully',

@@ -2,6 +2,8 @@ const Customer = require('../models/customer');
 const Order = require('../models/order');
 const product = require('../models/product');
 const Product_Order = require('../models/Product_Order');
+const User = require('../models/user');
+const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
 exports.placeOrder = async (req, res) => {
     try {
@@ -52,6 +54,25 @@ exports.placeOrder = async (req, res) => {
         }
         
         await Product_Order.bulkCreate(productOrderData);
+        try {
+            const user = await User.findByPk(userId);
+            if (user && user.email) {
+                const orderDetails = {
+                    orderId: order.orderId,
+                    totalAmount: parseFloat(totalAmount || 0).toFixed(2),
+                    orderDate: order.orderDate,
+                    products: products.map((product, index) => ({
+                        name: product.name,
+                        price: parseFloat(product.price || 0).toFixed(2),
+                        quantity: quantity[index]
+                    }))
+                };
+                
+                await sendOrderConfirmationEmail(user.email, 'Valued Customer', orderDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending order confirmation email:', emailError);
+        }
 
         return res.status(201).json({
             message: 'Order placed successfully',

@@ -2,8 +2,10 @@ const CustomizationRequest = require('../models/customizationRequest');
 const Artist = require('../models/artist');
 const Customer = require('../models/customer');
 const CustomizationResponse = require('../models/customizationResponse');
+const User = require('../models/user');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const { autoDeclinePendingResponses } = require('../utils/customizationUtils');
+const { sendCustomizationRequestReceivedEmail } = require('../utils/emailService');
 
 
 exports.createCustomizationRequest = async (req, res) => {
@@ -46,6 +48,21 @@ exports.createCustomizationRequest = async (req, res) => {
             customerId: customer.customerId,
             status: 'OPEN',
         });
+        try {
+            const user = await User.findByPk(userId);
+            if (user && user.email) {
+                const requestDetails = {
+                    title: newRequest.title,
+                    description: newRequest.requestDescription,
+                    budget: parseFloat(newRequest.budget || 0).toFixed(2),
+                    requestId: newRequest.requestId
+                };
+                
+                await sendCustomizationRequestReceivedEmail(user.email, customer.name || 'Valued Customer', requestDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending customization request email:', emailError);
+        }
 
         return res.status(201).json({
             message: 'Customization request created successfully',
