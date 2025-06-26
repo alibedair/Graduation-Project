@@ -42,3 +42,22 @@ exports.getArtistSalesByUsername = async (req, res) => {
             });
         }
     };
+    exports.getallSales = async (req, res) => {
+        try {
+            const sales = await Artist.findAll({
+                attributes: ['username', 'sales']
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: 'All artist sales retrieved successfully',
+                data: sales
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: 'Server error',
+                error: error.message
+            });
+        }
+    };

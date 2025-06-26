@@ -13,4 +13,10 @@ router.get('/:username',
     trackController.getArtistSalesByUsername
 );
 
+router.get('/all',
+    authMiddleware,
+    roleMiddleware(['admin']),
+    trackController.getallSales
+);
+
 module.exports = router;
