@@ -5,7 +5,7 @@ const Product_Order = require('../models/Product_Order');
 const User = require('../models/user');
 const CustomizationResponse = require('../models/customizationResponse');
 const Artist = require('../models/artist');
-const { sendOrderConfirmationEmail } = require('../utils/emailService');
+const { sendOrderConfirmationEmail,sendShipEmail } = require('../utils/emailService');
 
 exports.placeOrder = async (req, res) => {
     try {
@@ -223,6 +223,30 @@ exports.shipOrder = async (req, res) => {
             status: 'Shipped',
             customerId: respond.customerId  
         });
+        try{
+            const customer = await Customer.findByPk(respond.customerId);
+            const customerUser = await User.findByPk(customer.userId);
+            
+            if (customerUser && customerUser.email) {
+                const orderDetails = {
+                    orderId: order.orderId,
+                    totalAmount: parseFloat(respond.price || 0).toFixed(2),
+                    orderDate: order.createdAt,
+                    trackingNumber: `TR${order.orderId}${Date.now()}`,
+                    estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    customizationResponse: {
+                        customizationId: respond.customizationId,
+                        responseId: respond.respondId,
+                        status: respond.status,
+                        price: parseFloat(respond.price || 0).toFixed(2)
+                    }
+                };
+                
+                await sendShipEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending order ship email:', emailError);
+        }
         return res.status(200).json({
             message: 'Order shipped successfully',
             order: {

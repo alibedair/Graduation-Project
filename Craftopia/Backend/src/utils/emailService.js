@@ -443,6 +443,66 @@ const sendAuctionWonEmail = async (email, userName, auctionDetails) => {
     }
 };
 
+const sendShipEmail = async (email, userName, orderDetails) => {
+    try {
+        const { orderId, trackingNumber, estimatedDelivery, totalAmount, customizationResponse } = orderDetails;
+        const isCustomization = customizationResponse && customizationResponse.customizationId;
+        
+        const content = `
+            <p>Hello <strong>${userName}</strong>,</p>
+            ${isCustomization ? 
+                `<p>Exciting news! Your custom artwork has been completed and shipped by the artist! 🎨</p>` :
+                `<p>Your order has been shipped! Here are the details:</p>`
+            }
+            
+            <div style="background-color: #e8f5e8; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h3 style="color: #155724; margin-top: 0;">📦 ${isCustomization ? 'Custom Artwork' : 'Order'} Shipped!</h3>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <h3 style="color: #333; margin-top: 0;">Shipping Details</h3>
+                <p><strong>Order ID:</strong> #${orderId}</p>
+                ${totalAmount ? `<p><strong>Total Amount:</strong> $${totalAmount}</p>` : ''}
+                <p><strong>Tracking Number:</strong> ${trackingNumber}</p>
+                <p><strong>Estimated Delivery:</strong> ${new Date(estimatedDelivery).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                ${isCustomization ? `
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                    <p><strong>Customization ID:</strong> #${customizationResponse.customizationId}</p>
+                    <p><strong>Project Price:</strong> $${customizationResponse.price}</p>
+                ` : ''}
+            </div>
+            
+            ${isCustomization ? `
+                <p>Your custom artwork has been crafted with care and attention to detail. The artist has put their heart into creating something unique just for you!</p>
+                <p>You can track your package using the tracking number provided. We're excited for you to receive your one-of-a-kind piece!</p>
+            ` : `
+                <p>You can track your order using the tracking number provided. Thank you for shopping with us!</p>
+            `}
+        `;
+
+        const subject = isCustomization ? 
+            `🎨 Your Custom Artwork is On Its Way! - Order #${orderId}` :
+            `Order Shipped - Order #${orderId}`;
+
+        const footerMessage = isCustomization ?
+            'Your unique artwork is on its way! Thank you for supporting handcrafted arts.' :
+            'We hope you enjoy your purchase!';
+
+        const mailOptions = {
+            from: `"Craftopia" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: subject,
+            html: getEmailTemplate(isCustomization ? 'Custom Artwork Shipped!' : 'Order Shipped!', content, footerMessage)
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending ship email:', error);
+        return false;
+    }
+};
+
 module.exports = { 
     sendOTPEmail,
     sendOrderConfirmationEmail,
@@ -452,5 +512,6 @@ module.exports = {
     sendCustomizationRequestReceivedEmail,
     sendCustomizationResponseEmail,
     sendBidReceivedEmail,
-    sendAuctionWonEmail
+    sendAuctionWonEmail,
+    sendShipEmail
 };
