@@ -91,6 +91,9 @@ app.use('/payment', paymentRoute);
 const trackRoute = require('./routes/trackRoute');
 app.use('/trackSales', trackRoute);
 
+const reportRoute = require('./routes/reportRoute');
+app.use('/report', reportRoute);
+
 const { startAuctionScheduler } = require('./services/auctionScheduler');
 startAuctionScheduler();
 

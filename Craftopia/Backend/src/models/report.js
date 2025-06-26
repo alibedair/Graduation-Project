@@ -30,7 +30,8 @@ const Report = sequelize.define('report', {
         allowNull: false
     },
     status: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("submitted", "reviewed"),
+        defaultValue: "submitted",
         allowNull: false
     },
     attachmentUrl: {
