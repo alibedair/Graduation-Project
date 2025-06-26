@@ -5,7 +5,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const { param } = require('express-validator');
 
-router.get('/:username',
+router.get('/getArtist/:username',
     authMiddleware,
     [
         param('username').isString().notEmpty().withMessage('Username is required and must be a string'),
