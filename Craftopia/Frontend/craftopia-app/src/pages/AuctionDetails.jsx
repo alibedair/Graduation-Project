@@ -353,11 +353,11 @@ const handleFollowClick = async () => {
             {/* Title and Basic Info */}
             <div>
               <h1 className="text-3xl font-bold mb-2">{auction.title}</h1>
-              <div className="flex items-center px-2 gap-4 text-sm text-gray-600">
-                {/* <div className="flex items-center gap-1">
+              <div className="flex items-center px-2 gap-10 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  {auction.bids.length} participants
-                </div> */}
+                  {auction.product?.category?.name || 'Handmade'}
+                </div>
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   {auction.bidCount} bids
@@ -493,11 +493,11 @@ const handleFollowClick = async () => {
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <div className="text-sm text-gray-600">Material</div>
-                  <div className="font-medium">{auction.product.material}</div>
+                  <div className="font-medium">{auction?.product?.material || 'null'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Dimensions</div>
-                  <div className="font-medium">{auction.product.dimensions}</div>
+                  <div className="font-medium">{auction?.product?.dimensions || 'null'}</div>
                 </div>
 
               <div><div className="text-sm text-gray-600">Started On</div><div className="font-medium">{new Date(auction.createdAt).toLocaleDateString()}</div></div>
