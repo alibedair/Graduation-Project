@@ -209,12 +209,12 @@ exports.shipOrder = async (req, res) => {
         if (!respond) {
             return res.status(404).json({ message: 'Customization response not found' });
         }
-        if (respond.status !== 'Accepted') {
+        if (respond.status !== 'ACCEPTED') {
             return res.status(400).json({ message: 'Customization response is not accepted' });
         }
         const artist = await Artist.findOne({ where: { userId } });
         const realArtist = await Artist.findByPk(respond.artistId);
-        if (artist !== realArtist) {
+        if (artist.artistId !== realArtist.artistId) {
             return res.status(403).json({ message: 'this Artist is not authorized for shipping this order' });
         }
         const order = await Order.create({

@@ -187,7 +187,17 @@ exports.releaseEscrowPayment = async (req, res) => {
                 message: 'Payment is not held in escrow'
             });
         }
-        const order = await Order.findByPk(payment.orderId);
+        const order = await Order.findByPk(payment.orderId, {
+            include: [{
+                model: Product,
+                as: 'products',
+                include: [{
+                    model: Artist,
+                    as: 'artist',
+                    attributes: ['artistId', 'name']
+                }],
+            }]
+        });
 
         if (!order) {
             return res.status(404).json({
