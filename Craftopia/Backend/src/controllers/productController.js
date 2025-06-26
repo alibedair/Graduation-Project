@@ -72,7 +72,7 @@ exports.getProducts = async (req, res) => {
                 { model: Category, attributes: ['name'] },
                 { model: Artist, attributes: ['name'] }
             ],
-            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material']
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material','createdAt']
         });
         const productsWithStats = await Promise.all(
             products.map(async (product) => {

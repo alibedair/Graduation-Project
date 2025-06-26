@@ -42,5 +42,11 @@ router.get('/search-artists',
     authMiddleware,
     customerController.searchArtists
 );
+router.get('/all-customers', 
+    authMiddleware, 
+    roleMiddleware('admin'), 
+    customerController.getAllCustomers
+);
+
 
 module.exports = router;

@@ -60,26 +60,67 @@ const AdminDashboard = () => {
     const fetchOverviewData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/admin/dashboard", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const [artistRes, productRes, customerRes] = await Promise.all([
+          axios.get("http://localhost:3000/artist/all", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:3000/product/get", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:3000/customer/all-customers", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        const { totalArtists, totalCustomers, totalProducts } = response.data.stats;
+        const now = new Date();
+
+        const filterByDate = (createdAt) => {
+          const date = new Date(createdAt);
+          switch (overviewFilter) {
+            case "Today":
+              return date.toDateString() === now.toDateString();
+            case "This Week": {
+              const startOfWeek = new Date(now);
+              startOfWeek.setDate(now.getDate() - now.getDay());
+              startOfWeek.setHours(0, 0, 0, 0);
+              return date >= startOfWeek && date <= now;
+            }
+            case "This Month":
+              return (
+                date.getMonth() === now.getMonth() &&
+                date.getFullYear() === now.getFullYear()
+              );
+            case "This Year":
+              return date.getFullYear() === now.getFullYear();
+            default:
+              return true;
+          }
+        };
+
+        const filteredArtists = artistRes.data.artists.filter((artist) =>
+          filterByDate(artist.createdAt)
+        );
+        const filteredProducts = productRes.data.products.filter((product) =>
+          filterByDate(product.createdAt)
+        );
+        const filteredCustomers = customerRes.data.customers.filter((customer) =>
+          filterByDate(customer.createdAt)
+        );
 
         setOverview({
-          customers: totalCustomers.toLocaleString(),
-          artists: totalArtists.toLocaleString(),
-          products: totalProducts.toLocaleString(),
+          customers: filteredCustomers.length.toLocaleString(),
+          artists: filteredArtists.length.toLocaleString(),
+          products: filteredProducts.length.toLocaleString(),
         });
       } catch (error) {
-        console.error("Error fetching dashboard overview:", error);
+        console.error("Error fetching overview data:", error);
       }
     };
 
     fetchOverviewData();
   }, [overviewFilter]);
+
+
 
   useEffect(() => {
     const fetchSalesData = async () => {

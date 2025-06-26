@@ -216,3 +216,16 @@ exports.searchArtists = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+exports.getAllCustomers = async (req, res) => {
+    try {
+        const customers = await customer.findAll({
+            attributes: ['customerId', 'createdAt'],
+            order: [['createdAt', 'DESC']]
+        });
+
+        return res.status(200).json({ customers });
+    } catch (error) {
+        console.error('Error fetching all customers:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};

@@ -151,6 +151,7 @@ exports.getAllArtists = async (req, res) => {
                 'username',
                 'profilePicture',
                 'biography',
+                'createdAt',
                 [Sequelize.fn('COUNT', Sequelize.col('products.productId')), 'numberOfProducts'],
                 [Sequelize.fn('COUNT', Sequelize.col('artistfollows.customerId')), 'numberOfFollowers'],
                 'averageRating',
