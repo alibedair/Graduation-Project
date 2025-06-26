@@ -7,16 +7,12 @@ const Order = sequelize.define('order', {
         primaryKey: true,
         autoIncrement: true
     },    
-    orderDate: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
     totalAmount: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
     status: {
-        type: DataTypes.ENUM('Pending', 'Completed', 'Cancelled'),
+        type: DataTypes.ENUM('Pending', 'Completed', 'Cancelled','Shipped'),
         defaultValue: 'Pending'
     },
     customerId: {

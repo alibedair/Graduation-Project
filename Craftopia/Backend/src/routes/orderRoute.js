@@ -40,4 +40,13 @@ router.get('/:orderId',
     orderController.getOrderById
 );
 
+router.post('/ship/:respondId',
+    authMiddleware,
+    roleMiddleware('artist'),
+    [
+        param('respondId').isInt().withMessage('Response ID must be an integer')
+    ],
+    orderController.shipOrder
+);
+
 module.exports = router;

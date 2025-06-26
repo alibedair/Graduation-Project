@@ -3,6 +3,8 @@ const Order = require('../models/order');
 const product = require('../models/product');
 const Product_Order = require('../models/Product_Order');
 const User = require('../models/user');
+const CustomizationResponse = require('../models/customizationResponse');
+const Artist = require('../models/artist');
 const { sendOrderConfirmationEmail } = require('../utils/emailService');
 
 exports.placeOrder = async (req, res) => {
@@ -39,7 +41,7 @@ exports.placeOrder = async (req, res) => {
         }
 
         const order = await Order.create({
-            orderDate: new Date(),
+            createdAt: new Date(),
             totalAmount,
             customerId: customer.customerId
         });
@@ -196,6 +198,43 @@ exports.getOrderById = async (req, res) => {
 
     } catch (error) {
         console.error('Error retrieving order:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+exports.shipOrder = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const {respondId} = req.params;
+        const respond = await CustomizationResponse.findByPk(respondId);
+        if (!respond) {
+            return res.status(404).json({ message: 'Customization response not found' });
+        }
+        if (respond.status !== 'Accepted') {
+            return res.status(400).json({ message: 'Customization response is not accepted' });
+        }
+        const artist = await Artist.findOne({ where: { userId } });
+        const realArtist = await Artist.findByPk(respond.artistId);
+        if (artist !== realArtist) {
+            return res.status(403).json({ message: 'this Artist is not authorized for shipping this order' });
+        }
+        const order = await Order.create({
+            createdAt: new Date(),
+            totalAmount: respond.price,
+            status: 'Shipped',
+            customerId: respond.customerId  
+        });
+        return res.status(200).json({
+            message: 'Order shipped successfully',
+            order: {
+                orderId: order.orderId,
+                totalAmount: order.totalAmount,
+                status: order.status,
+                createdAt: order.createdAt
+            }
+        });
+
+    } catch (error) {
+        console.error('Error shipping order:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
