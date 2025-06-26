@@ -18,7 +18,7 @@ const AdminSidebar = ({ selected, setSelected }) => {
   const { logout } = useAuth();
 
   return (
-    <div className="w-64 h-screen bg-[#F6EEEE] p-5 flex flex-col shadow-md shadow-gray-400">
+    <div className="w-80 h-screen bg-[#F6EEEE] p-5 flex flex-col shadow-md shadow-gray-400">
       <div className="flex items-center gap-3 mb-20 pl-3">
         <h1
           className="text-[24px] cursor-pointer"
@@ -33,7 +33,7 @@ const AdminSidebar = ({ selected, setSelected }) => {
 
       <div className="flex flex-col rounded-lg p-2 mx-2 gap-2">
         <SidebarButton
-          // icon={<FaHome />}
+          icon={<FaHome />}
           text="Home"
           selected={selected === "Home"}
           onClick={() => setSelected("Home")}
