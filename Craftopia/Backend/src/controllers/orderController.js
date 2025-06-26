@@ -155,7 +155,7 @@ exports.cancelOrder = async (req, res) => {
                 order
             });
         } else {
-            return res.status(400).json({ message: 'Order cannot be cancelled as it is cancelled before' });
+            return res.status(400).json({ message: 'Order cannot be cancelled as it is cancelled or completed before' });
         }
 
     } catch (error) {
