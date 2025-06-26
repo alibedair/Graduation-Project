@@ -56,7 +56,13 @@ const Product = sequelize.define('product', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false
+    },
+    sellingNumber:{
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false
     }
+
 });
 
 

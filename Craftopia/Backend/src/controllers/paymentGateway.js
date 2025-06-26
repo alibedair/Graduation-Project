@@ -25,6 +25,13 @@ exports.createEscrowPayment = async (req, res) => {
             });
         }
 
+        if (creditCardNumber.length !== 16) {
+            return res.status(400).json({
+                success: false,
+                message: 'Credit card number must be exactly 16 characters'
+            });
+        }
+
         const creditCard = await CreditCard.findOne({ where: { number: creditCardNumber } });
         const order = await Order.findByPk(orderId);
         if (!order) {
@@ -88,8 +95,9 @@ exports.createEscrowPayment = async (req, res) => {
                 message: 'Credit card has expired, payment failed',
             });
         }
-
-        if (creditCard.amount < order.totalAmount) {
+        const creditCardAmount = parseFloat(creditCard.amount);
+        const orderTotalAmount = parseFloat(order.totalAmount);
+        if (creditCardAmount < orderTotalAmount) {
             await Payment.create({
                 orderId: order.orderId,
                 customerId: customer.customerId,
@@ -213,8 +221,12 @@ exports.releaseEscrowPayment = async (req, res) => {
             
              if (product.productorder && product.productorder.quantity) {
                 quantity = product.productorder.quantity;
+                 await Product.update(
+                { sellingNumber: quantity },
+                { where: { productId: product.productId } }
+            );
             }
-
+            
             const productTotal = parseFloat(product.price) * quantity;
             if (artistSalesMap.has(artistId)) {
                 artistSalesMap.set(artistId, artistSalesMap.get(artistId) + productTotal);
@@ -231,6 +243,7 @@ exports.releaseEscrowPayment = async (req, res) => {
                 paymentId: payment.paymentId,
                 salesAmount: salesData
             });
+           
             await Artist.update(
                 { sales: newSales },
                 { where: { artistId: artistId } }
