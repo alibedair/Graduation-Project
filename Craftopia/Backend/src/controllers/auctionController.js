@@ -196,6 +196,11 @@ exports.getAuctionProduct = async (req, res) => {
                     model: Artist,
                     as: 'artist',
                     attributes: ['artistId', 'name', 'username']
+                },
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['categoryId', 'name']
                 }
             ]
         });
@@ -225,3 +230,43 @@ exports.getAuctionProduct = async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
+exports.getAuctionProductsByArtist = async (req, res) => {
+    try {
+        const { artistId } = req.params;
+        
+        if (!artistId) {
+            return res.status(400).json({ message: "Artist ID is required" });
+        }
+
+        const auctionSnapshot = await firebase_db.ref("auctions").once("value");
+        const auctionsData = auctionSnapshot.val() || {};
+        const auctionsProductIds = Object.values(auctionsData)
+            .filter(auction => auction.artistId.toString() === artistId.toString())
+            .map(auction => auction.productId);
+        if(auctionsProductIds.length === 0) {
+            return res.status(404).json({ message: "No auctions found for this artist" });
+        }
+        const products = await Product.findAll({
+            where: { artistId,
+                productId: auctionsProductIds
+            },
+            include: [
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['categoryId', 'name']
+                }
+            ]
+        });
+        
+        if (products.length === 0) {
+            return res.status(404).json({ message: "No products found for this artist" });
+        }
+        
+        return res.status(200).json({ products });
+    } catch (error) {
+        console.error("Error fetching products by artist:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};

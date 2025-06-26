@@ -24,5 +24,8 @@ router.get('/product/:auctionId',
     param('auctionId').notEmpty().withMessage('Auction ID is required'),
     auctionController.getAuctionProduct
 );
-
+router.get('/artist-product/:artistId',
+    param('artistId').notEmpty().withMessage('Artist ID is required'),
+    auctionController.getAuctionProductsByArtist
+);
 module.exports = router;
