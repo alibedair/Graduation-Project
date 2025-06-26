@@ -45,8 +45,7 @@ exports.createReview = async (req, res) => {
         const hasPurchased = await Order.findOne({
             where: { 
                 customerId: customer.customerId,
-                status: 'Completed',
-                trackingInfo: 'delivered'
+                status: 'Completed'
             },
             include: [{
                 model: Product,
@@ -56,11 +55,11 @@ exports.createReview = async (req, res) => {
             }]
         });
 
-        /*if (!hasPurchased) {
+        if (!hasPurchased) {
             return res.status(403).json({
                 message: 'You can only review products you have purchased and received'
             });
-        }*/
+        }
         const newReview = await Review.create({
             customerId: customer.customerId,
             productId: productId,
