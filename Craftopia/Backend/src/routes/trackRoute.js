@@ -19,4 +19,10 @@ router.get('/all',
     trackController.getallSales
 );
 
+router.get('/salesHistory',
+    authMiddleware,
+    roleMiddleware(['admin']),
+    trackController.getSalesHistory
+);
+
 module.exports = router;

@@ -5,7 +5,7 @@ const Payment = require('../models/payment');
 const User = require('../models/user');
 const CreditCard = require('../models/creditCard');
 const Product = require('../models/product');
-const Product_Order = require('../models/Product_Order');
+const Sales = require('../models/sales');
 exports.createEscrowPayment = async (req, res) => {
     try {
         const { orderId} = req.params;
@@ -226,7 +226,11 @@ exports.releaseEscrowPayment = async (req, res) => {
             const artist = await Artist.findByPk(artistId);
             const currentSales = parseFloat(artist.sales);
             const newSales = currentSales + salesData;
-            
+            await Sales.create({
+                artistId: artistId,
+                paymentId: payment.paymentId,
+                salesAmount: salesData
+            });
             await Artist.update(
                 { sales: newSales },
                 { where: { artistId: artistId } }

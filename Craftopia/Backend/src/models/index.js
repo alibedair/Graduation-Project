@@ -28,6 +28,7 @@ const Message = require('./message');
 const Cart = require('./cart');
 const customizationResponse = require('./customizationResponse');
 const CreditCard = require('./creditCard');
+const Sales = require('./sales');
 
 
 // User-Related Associations
@@ -67,13 +68,81 @@ Cart.belongsTo(Customer, { foreignKey: 'customerId' });
 Product.hasMany(Cart, { foreignKey: 'productId' });
 Cart.belongsTo(Product, { foreignKey: 'productId' });
 
-// report & customer Relationship
-Report.belongsTo(Customer, { foreignKey: 'ReporterID' });
-Customer.hasMany(Report, { foreignKey: 'ReporterID' });
+// Polymorphic Report Associations - Reporter can be Artist or Customer
+Report.belongsTo(Artist, { 
+    foreignKey: 'ReporterID',
+    constraints: false,
+    scope: {
+        ReporterType: 'artist'
+    },
+    as: 'ReporterArtist'
+});
 
-// report & artist Relationship
-Report.belongsTo(Artist, { foreignKey: 'ReportedID' });
-Artist.hasMany(Report, { foreignKey: 'ReportedID' });
+Report.belongsTo(Customer, { 
+    foreignKey: 'ReporterID',
+    constraints: false,
+    scope: {
+        ReporterType: 'customer'
+    },
+    as: 'ReporterCustomer'
+});
+
+// Polymorphic Report Associations - Reported can be Artist or Customer
+Report.belongsTo(Artist, { 
+    foreignKey: 'ReportedID',
+    constraints: false,
+    scope: {
+        ReportedType: 'artist'
+    },
+    as: 'ReportedArtist'
+});
+
+Report.belongsTo(Customer, { 
+    foreignKey: 'ReportedID',
+    constraints: false,
+    scope: {
+        ReportedType: 'customer'
+    },
+    as: 'ReportedCustomer'
+});
+
+// Reverse associations for finding reports where user is reporter
+Artist.hasMany(Report, { 
+    foreignKey: 'ReporterID',
+    constraints: false,
+    scope: {
+        ReporterType: 'artist'
+    },
+    as: 'ArtistReports'
+});
+
+Customer.hasMany(Report, { 
+    foreignKey: 'ReporterID',
+    constraints: false,
+    scope: {
+        ReporterType: 'customer'
+    },
+    as: 'CustomerReports'
+});
+
+// Reverse associations for finding reports where user is reported
+Artist.hasMany(Report, { 
+    foreignKey: 'ReportedID',
+    constraints: false,
+    scope: {
+        ReportedType: 'artist'
+    },
+    as: 'ReportsAgainstArtist'
+});
+
+Customer.hasMany(Report, { 
+    foreignKey: 'ReportedID',
+    constraints: false,
+    scope: {
+        ReportedType: 'customer'
+    },
+    as: 'ReportsAgainstCustomer'
+});
 
 
 // Many-to-Many report & admin Relationship (Through ReportHandling)
@@ -182,6 +251,13 @@ Message.belongsTo(customizationResponse, { foreignKey: 'responseId' });
 User.hasMany(Message, { foreignKey: 'senderId' });
 Message.belongsTo(User, { foreignKey: 'senderId' });
 
+// Sales associations
+Artist.hasMany(Sales, { foreignKey: 'artistId' });
+Sales.belongsTo(Artist, { foreignKey: 'artistId' });
+
+Payment.hasMany(Sales, { foreignKey: 'paymentId' });
+Sales.belongsTo(Payment, { foreignKey: 'paymentId' });
+
 // Export all models and sequelize instance
 module.exports = {
   sequelize,
@@ -210,5 +286,6 @@ module.exports = {
   Message,
   Cart,
   Payment,
-  CreditCard
+  CreditCard,
+  Sales
 };

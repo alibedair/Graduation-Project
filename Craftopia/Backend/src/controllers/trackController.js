@@ -1,9 +1,6 @@
 const Artist = require('../models/artist');
-const User = require('../models/user');
-const Payment = require('../models/payment');
-const Order = require('../models/order');
-const Product = require('../models/product');
-const Product_Order = require('../models/Product_Order');
+const Sales = require('../models/sales');
+
 
 exports.getArtistSalesByUsername = async (req, res) => {
     try {
@@ -16,7 +13,6 @@ exports.getArtistSalesByUsername = async (req, res) => {
             });
         }
 
-        // Find artist by username
         const artist = await Artist.findOne({
             where: { username: username },
             attributes: [ 'username','sales']
@@ -61,3 +57,26 @@ exports.getArtistSalesByUsername = async (req, res) => {
             });
         }
     };
+exports.getSalesHistory = async (req, res) => {
+    try {
+        const salesHistory = await Sales.findAll({
+            include: [{
+                model: Artist,
+                as: 'artist',
+                attributes: ['username','name']
+            }]
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sales history retrieved successfully',
+            data: salesHistory
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}

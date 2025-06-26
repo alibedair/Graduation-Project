@@ -15,22 +15,44 @@ const Report = sequelize.define('report', {
     },
     ReporterID: {
         type: DataTypes.INTEGER,
-        references: {
-            model: customer,
-            key: 'customerId'
-        }
+        allowNull: false
+    },
+    ReporterType: {
+        type: DataTypes.ENUM('customer', 'artist'),
+        allowNull: false
     },
     ReportedID: {
         type: DataTypes.INTEGER,
-        references: {
-            model: artist,
-            key: 'artistId'
-        }
+        allowNull: false
+    },
+    ReportedType: {
+        type: DataTypes.ENUM('customer', 'artist'),
+        allowNull: false
     },
     status: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    attachmentUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
     }
+}, {
+    timestamps: true,
+    indexes: [
+        {
+            fields: ['ReporterID', 'ReporterType']
+        },
+        {
+            fields: ['ReportedID', 'ReportedType']
+        },
+        {
+            fields: ['status']
+        },
+        {
+            fields: ['createdAt']
+        }
+    ]
 });
 
 module.exports = Report;
