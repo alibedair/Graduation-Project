@@ -26,20 +26,20 @@ const CardContent = ({ children, className = '' }) => {
 
 const Button = ({ children, className = '', variant = 'default', size = 'default', ...props }) => {
   const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background';
-  
+
   const variants = {
     default: 'bg-coral text-white hover:bg-coral/90',
     outline: 'border border-burgundy/20 text-burgundy hover:bg-burgundy hover:text-cream',
     ghost: 'hover:bg-accent hover:text-accent-foreground'
   };
-  
+
   const sizes = {
     default: 'h-10 py-2 px-4',
     sm: 'h-9 px-3'
   };
-  
+
   return (
-    <button 
+    <button
       className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
@@ -53,7 +53,7 @@ const Badge = ({ children, className = '', variant = 'default' }) => {
     default: 'bg-primary text-primary-foreground',
     outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
   };
-  
+
   return (
     <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${variants[variant]} ${className}`}>
       {children}
@@ -66,7 +66,7 @@ const Tabs = ({ children, defaultValue, className = '' }) => {
 
   return (
     <div className={className}>
-      {React.Children.map(children, child => 
+      {React.Children.map(children, child =>
         React.cloneElement(child, { activeTab, setActiveTab })
       )}
     </div>
@@ -87,9 +87,8 @@ const TabsTrigger = ({ value, children, activeTab, setActiveTab, className = '' 
   return (
     <button
       onClick={() => setActiveTab(value)}
-      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
-        activeTab === value ? 'bg-background text-foreground shadow-sm' : ''
-      } ${className}`}
+      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${activeTab === value ? 'bg-background text-foreground shadow-sm' : ''
+        } ${className}`}
     >
       {children}
     </button>
@@ -98,7 +97,7 @@ const TabsTrigger = ({ value, children, activeTab, setActiveTab, className = '' 
 
 const TabsContent = ({ value, children, activeTab, className = '' }) => {
   if (activeTab !== value) return null;
-  
+
   return (
     <div className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`}>
       {children}
@@ -106,191 +105,195 @@ const TabsContent = ({ value, children, activeTab, className = '' }) => {
   );
 };
 const ArtistProfileCustomer = () => {
-const { id } = useParams();
-const [artist, setArtist] = useState(null);
-const [products, setProducts] = useState([]);
-const [loading, setLoading] = useState(true);
-const [activeSection, setActiveSection] = useState("gallery");
-const [loadingProducts, setLoadingProducts] = useState(false);
-const [productsError, setProductsError] = useState('');
-const [cart, setCart] = useState({});
-const [isFollowing, setIsFollowing] = useState(false);
-const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { id } = useParams();
+  const [artist, setArtist] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("gallery");
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productsError, setProductsError] = useState('');
+  const [cart, setCart] = useState({});
+  const [isFollowing, setIsFollowing] = useState(false);
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportMessage, setReportMessage] = useState("");
+  const [attachment, setAttachment] = useState(null);
+  const [reportSuccess, setReportSuccess] = useState("");
+  const [reportError, setReportError] = useState("");
+
+  useEffect(() => {
+    const fetchArtistData = async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.error('No auth token found.');
+        return;
+      }
+
+      try {
+        const headers = {
+          Authorization: `Bearer ${token}`
+        };
+
+        const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
+          headers
+        });
+        const profileData = await profileRes.json();
+
+        const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
+          headers
+        });
+        const productData = await productRes.json();
+
+        const a = profileData.artist;
+
+        setArtist({
+          id: a.artistId,
+          name: a.name,
+          username: a.username,
+          avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
+          coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
+          bio: a.biography,
+          location: 'Egypt',
+          joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          specialties: ['Handmade', 'Artisan'],
+          video: a.profileVideo,
+          stats: {
+            products: productData.products.length,
+            sales: Number(a.sales),
+            rating: parseFloat(a.averageRating || 0).toFixed(1),
+            reviews: a.totalRatings,
+            followers: 0,
+            views: a.visitors
+          }
+        });
+
+
+        setProducts(productData.products.map(p => ({
+          id: p.productId,
+          name: p.name,
+          price: p.price,
+          originalPrice: null,
+          image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
+          quantity: p.quantity || 0,
+          inStock: p.quantity > 0,
+          description: p.description || '',
+          dimensions: p.dimensions || '',
+          material: p.material || '',
+          rating: p.averageRating || 0,
+          reviews: p.totalReviews || 0,
+          isOnSale: false
+        })));
 
 
 
-useEffect(() => {
-  const fetchArtistData = async () => {
-    const token = localStorage.getItem('token'); 
-
-    if (!token) {
-      console.error('No auth token found.');
-      return;
-    }
-
-    try {
-      const headers = {
-        Authorization: `Bearer ${token}`
-      };
-
-      const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
-        headers
-      });
-      const profileData = await profileRes.json();
-
-      const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
-        headers
-      });
-      const productData = await productRes.json();
-
-      const a = profileData.artist;
-
-      setArtist({
-        id: a.artistId,
-        name: a.name,
-        avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
-        coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
-        bio: a.biography,
-        location: 'Egypt',
-        joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        specialties: ['Handmade', 'Artisan'],
-        video: a.profileVideo,
-        stats: {
-          products: productData.products.length,
-          sales: Number(a.sales),
-          rating: parseFloat(a.averageRating || 0).toFixed(1),
-          reviews: a.totalRatings,
-          followers: 0,
-          views: a.visitors
-        }
-      });
-
-          
-    setProducts(productData.products.map(p => ({
-      id: p.productId,
-      name: p.name,
-      price: p.price,
-      originalPrice: null,
-      image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
-      quantity: p.quantity || 0,
-      inStock: p.quantity > 0,
-      description: p.description || '',
-      dimensions: p.dimensions || '',
-      material: p.material || '',
-      rating: p.averageRating || 0,
-      reviews: p.totalReviews || 0,
-      isOnSale: false
-    })));
-
-
-
-          setLoading(false);
-        } catch (error) {
-          console.error('Failed to fetch artist or product data:', error);
-          setLoading(false);
-        }
-      };
-
-      fetchArtistData();
-    }, [id]);
-
-    useEffect(() => {
-      const checkFollowStatus = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        try {
-          const res = await fetch(`http://localhost:3000/customer/followed-artists`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          const data = await res.json();
-          const followedIds = data.followedArtists.map(a => a.artistId);
-          setIsFollowing(followedIds.includes(Number(id)));
-        } catch (err) {
-          console.error("Error checking follow status:", err);
-        }
-      };
-
-      checkFollowStatus();
-    }, [id]);
-
-
-      if (loading || !artist) return <div className="text-center py-10 text-burgundy font-medium">Loading artist profile...</div>;
-
-      const onAddToCart = (product) => {
-      setCart((prev) => ({
-        ...prev,
-        [product.id]: { ...product, quantity: 1 }
-      }));
-    };
-
-    const isFavorite = (productId) => {
-      return wishlist.some((item) => item.id === productId);
-    };
-
-    const toggleFavorite = (product) => {
-      if (isFavorite(product.id)) {
-        removeFromWishlist(product.id);
-      } else {
-        addToWishlist(product);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch artist or product data:', error);
+        setLoading(false);
       }
     };
 
-    const onIncrement = (product) => {
-      setCart((prev) => ({
-        ...prev,
-        [product.id]: {
-          ...prev[product.id],
-          quantity: (prev[product.id]?.quantity || 0) + 1
-        }
-      }));
-    };
+    fetchArtistData();
+  }, [id]);
 
-    const onDecrement = (product) => {
-      setCart((prev) => {
-        const currentQty = prev[product.id]?.quantity || 0;
-        if (currentQty <= 1) {
-          const updatedCart = { ...prev };
-          delete updatedCart[product.id];
-          return updatedCart;
-        }
-        return {
-          ...prev,
-          [product.id]: {
-            ...prev[product.id],
-            quantity: currentQty - 1
-          }
-        };
-      });
-    };
-
-    const handleToggleFollow = async () => {
+  useEffect(() => {
+    const checkFollowStatus = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const url = isFollowing
-        ? `http://localhost:3000/customer/unfollow/${id}`
-        : `http://localhost:3000/customer/follow/${id}`;
-
       try {
-        const res = await fetch(url, {
-          method: isFollowing ? "DELETE" : "POST",
+        const res = await fetch(`http://localhost:3000/customer/followed-artists`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        if (res.ok) {
-          setIsFollowing(!isFollowing);
-        } else {
-          console.error("Failed to toggle follow state");
-        }
+        const data = await res.json();
+        const followedIds = data.followedArtists.map(a => a.artistId);
+        setIsFollowing(followedIds.includes(Number(id)));
       } catch (err) {
-        console.error("Error during follow/unfollow:", err);
+        console.error("Error checking follow status:", err);
       }
     };
+
+    checkFollowStatus();
+  }, [id]);
+
+
+  if (loading || !artist) return <div className="text-center py-10 text-burgundy font-medium">Loading artist profile...</div>;
+
+  const onAddToCart = (product) => {
+    setCart((prev) => ({
+      ...prev,
+      [product.id]: { ...product, quantity: 1 }
+    }));
+  };
+
+  const isFavorite = (productId) => {
+    return wishlist.some((item) => item.id === productId);
+  };
+
+  const toggleFavorite = (product) => {
+    if (isFavorite(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
+  const onIncrement = (product) => {
+    setCart((prev) => ({
+      ...prev,
+      [product.id]: {
+        ...prev[product.id],
+        quantity: (prev[product.id]?.quantity || 0) + 1
+      }
+    }));
+  };
+
+  const onDecrement = (product) => {
+    setCart((prev) => {
+      const currentQty = prev[product.id]?.quantity || 0;
+      if (currentQty <= 1) {
+        const updatedCart = { ...prev };
+        delete updatedCart[product.id];
+        return updatedCart;
+      }
+      return {
+        ...prev,
+        [product.id]: {
+          ...prev[product.id],
+          quantity: currentQty - 1
+        }
+      };
+    });
+  };
+
+  const handleToggleFollow = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const url = isFollowing
+      ? `http://localhost:3000/customer/unfollow/${id}`
+      : `http://localhost:3000/customer/follow/${id}`;
+
+    try {
+      const res = await fetch(url, {
+        method: isFollowing ? "DELETE" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setIsFollowing(!isFollowing);
+      } else {
+        console.error("Failed to toggle follow state");
+      }
+    } catch (err) {
+      console.error("Error during follow/unfollow:", err);
+    }
+  };
 
   // Static mock reviews (can be updated if you later support dynamic reviews)
   const reviews = [
@@ -305,8 +308,52 @@ useEffect(() => {
       verified: true
     }
   ];
+  const handleReportSubmit = async () => {
+  if (!reportMessage.trim()) {
+    setReportError("Please enter a message.");
+    return;
+  }
 
-  
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setReportError("You must be logged in to report.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("content", reportMessage);
+  if (attachment) {
+    formData.append("attachment", attachment);
+  }
+
+  try {
+    const res = await fetch(`http://localhost:3000/report/createReportArtist/${artist.username}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setReportSuccess("Report submitted successfully.");
+      setReportMessage("");
+      setAttachment(null);
+
+      setTimeout(() => {
+        setReportSuccess("");
+        setShowReportModal(false);
+      }, 2000);
+    } else {
+      setReportError(data.message || "Failed to submit report.");
+    }
+  } catch (err) {
+    setReportError("An error occurred while submitting the report.");
+  }
+};
+
+
   return (
     <div className="min-h-screen bg-cream">
       {/* COVER IMAGE */}
@@ -341,13 +388,20 @@ useEffect(() => {
               </div>
 
               <div className="flex flex-col space-y-3">
-                <Button 
+                <Button
                   className="bg-coral hover:bg-coral/90 text-white"
                   onClick={handleToggleFollow}
                 >
                   {isFollowing ? "following" : "Follow"}
                 </Button>
               </div>
+              <Button
+                variant="outline"
+                className="text-burgundy border border-burgundy hover:bg-burgundy hover:text-white bg-cream"
+                onClick={() => setShowReportModal(true)}
+              >
+                Report Artist
+              </Button>
             </div>
           </Card>
         </motion.div>
@@ -373,18 +427,18 @@ useEffect(() => {
           <TabsContent value="products" className="space-y-6">
             <h2 className="text-2xl font-bold text-burgundy">Products ({artist.stats.products})</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product, index) => (
-                  <motion.div
-                    key={product.productId || product.id || index}
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ y: -3 }}
-                  >
-                  <ProductCard 
+              {products.map((product, index) => (
+                <motion.div
+                  key={product.productId || product.id || index}
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -3 }}
+                >
+                  <ProductCard
                     product={product}
-                    isFavorite={isFavorite(product.id)} 
-                    onToggleFavorite={() => toggleFavorite(product)} 
+                    isFavorite={isFavorite(product.id)}
+                    onToggleFavorite={() => toggleFavorite(product)}
                     isInCart={!!cart[product.id]}
                     quantity={cart[product.id]?.quantity || 0}
                     onAddToCart={() => onAddToCart(product)}
@@ -424,21 +478,19 @@ useEffect(() => {
               <div className="flex justify-start gap-6 mb-8">
                 <button
                   onClick={() => setActiveSection("gallery")}
-                  className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${
-                    activeSection === "gallery"
+                  className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
                       ? "bg-[#E07385] text-white shadow-md"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                    }`}
                 >
                   Gallery Products
                 </button>
                 <button
                   onClick={() => setActiveSection("auction")}
-                  className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${
-                    activeSection === "auction"
+                  className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "auction"
                       ? "bg-[#E07385] text-white shadow-md"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                    }`}
                 >
                   Auction Products
                 </button>
@@ -523,6 +575,52 @@ useEffect(() => {
 
         </Tabs>
       </div>
+      {showReportModal && (
+  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+    <div className="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative transition-all duration-300">
+      {reportSuccess ? (
+        <div className="text-center py-10">
+          <h2 className="text-xl font-bold text-green-600 mb-3">✅ Report Submitted!</h2>
+          <p className="text-gray-700">Thank you for helping us keep the community safe.</p>
+        </div>
+      ) : (
+        <>
+          <h2 className="text-xl font-bold text-burgundy mb-4">Report Artist</h2>
+
+          <textarea
+            className="w-full p-3 border rounded-lg bg-white text-sm text-gray-800 mb-4"
+            rows={4}
+            placeholder="Enter your message..."
+            value={reportMessage}
+            onChange={(e) => setReportMessage(e.target.value)}
+          />
+
+          <label className="block mb-4">
+            <span className="text-sm font-medium text-burgundy block mb-1">Attach Screenshot (optional)</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setAttachment(e.target.files[0])}
+              className="w-full border rounded-md px-3 py-2 text-sm"
+            />
+            {attachment && (
+              <p className="text-sm text-gray-600 mt-1">📎 {attachment.name}</p>
+            )}
+          </label>
+
+          {reportError && <p className="text-red-500 text-sm mb-2">{reportError}</p>}
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setShowReportModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReportSubmit}>Submit Report</Button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
