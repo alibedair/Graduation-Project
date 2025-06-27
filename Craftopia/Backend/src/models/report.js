@@ -49,6 +49,14 @@ const Report = sequelize.define('report', {
     reviewedAt: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    reporterusername: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    reportedusername: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true,

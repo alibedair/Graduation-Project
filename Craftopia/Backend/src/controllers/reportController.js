@@ -34,6 +34,7 @@ exports.createReportUser = async (req, res) => {
 
         let reporterId;
         let reporterType;
+         let reporterusername = '';
 
         if (role === 'artist') {
             const artist = await Artist.findOne({ where: { userId } });
@@ -45,6 +46,7 @@ exports.createReportUser = async (req, res) => {
             }
             reporterId = artist.artistId;
             reporterType = 'artist';
+            reporterusername = artist.username;
         } else if (role === 'customer') {
             const customer = await Customer.findOne({ where: { userId } });
             if (!customer) {
@@ -55,6 +57,7 @@ exports.createReportUser = async (req, res) => {
             }
             reporterId = customer.customerId;
             reporterType = 'customer';
+            reporterusername = customer.username;
         } else {
             return res.status(403).json({
                 success: false,
@@ -113,8 +116,10 @@ exports.createReportUser = async (req, res) => {
         const report = await Report.create({
             content,
             ReporterID: reporterId,
+            reporterusername: reporterusername,
             ReporterType: reporterType,
             ReportedID: reportedCustomer.customerId,
+            reportedusername: reportedCustomer.username,
             ReportedType: 'customer',
             attachmentUrl: attachmentUrl
         });
@@ -164,7 +169,7 @@ exports.createReportArtist = async (req, res) => {
 
         let reporterId;
         let reporterType;
-
+        let reporterusername = '';
         if (role === 'artist') {
             const artist = await Artist.findOne({ where: { userId } });
             if (!artist) {
@@ -173,6 +178,7 @@ exports.createReportArtist = async (req, res) => {
                     message: 'Artist profile not found'
                 });
             }
+            reporterusername = artist.username;
             reporterId = artist.artistId;
             reporterType = 'artist';
         } else if (role === 'customer') {
@@ -183,6 +189,7 @@ exports.createReportArtist = async (req, res) => {
                     message: 'Customer profile not found'
                 });
             }
+            reporterusername = customer.username;
             reporterId = customer.customerId;
             reporterType = 'customer';
         } else {
@@ -246,7 +253,9 @@ exports.createReportArtist = async (req, res) => {
             ReporterType: reporterType,
             ReportedID: reportedArtist.artistId,
             ReportedType: 'artist',
-            attachmentUrl: attachmentUrl
+            attachmentUrl: attachmentUrl,
+            reportedusername: username,
+            reporterusername: reporterusername
         });
         res.status(201).json({
             success: true,
