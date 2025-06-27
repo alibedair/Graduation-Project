@@ -27,6 +27,7 @@ import MyOrders from './pages/MyOrders';
 import PaymentPage from './pages/PaymentPage';
 import ArtistProfileCustomer from './pages/ArtistProfileCustomer';
 import ScrollToTop from './Components/ScrollToTop';
+import Following from './Components/Following';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -106,8 +107,8 @@ function AppContent() {
         <Route path="/artist/:id" element={<ArtistProfile />} />
          <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/orders" element={<MyOrders />} />
-
-<Route path="/payment/:orderId" element={<PaymentPage />} />
+        <Route path="/following" element={<Following />}/>
+        <Route path="/payment/:orderId" element={<PaymentPage />} />
 
 
       </Routes>
