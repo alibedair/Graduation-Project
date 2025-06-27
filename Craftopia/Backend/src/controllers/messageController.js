@@ -10,7 +10,7 @@ const { validationResult } = require('express-validator');
 
 
 const { validateMessageContent } = require('../utils/validateMsg');
-const customizationResponse = require('../models/customizationResponse');
+
 exports.sendMessage = async (req, res) => {
     try {
         const errors = validationResult(req);

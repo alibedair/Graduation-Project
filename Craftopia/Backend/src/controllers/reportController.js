@@ -2,6 +2,8 @@ const { Report, Artist, Customer, User } = require('../models');
 const { Op, sequelize } = require('sequelize');
 const db = require('../config/db');
 const { validationResult } = require('express-validator');
+const uploadBuffer = require('../utils/cloudinaryUpload');
+
 exports.createReportUser = async (req, res) => {
     try {
          const errors = validationResult(req);
@@ -76,6 +78,37 @@ exports.createReportUser = async (req, res) => {
                 message: 'Cannot report yourself'
             });
         }
+         const uploadPromises = [];
+        let attachmentUrl = attachment || '';
+        if (req.files) {
+            if (req.files.attachment && req.files.attachment[0]) {
+                const attachmentFile = req.files.attachment[0];
+                if (attachmentFile.mimetype.startsWith('image/')) {
+                    uploadPromises.push(
+                        uploadBuffer(attachmentFile.buffer, {
+                            folder: `reports/${reporterId}`,
+                            resource_type: 'image',
+                            public_id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                        }).then(result => {
+                            attachmentUrl = result.secure_url || '';
+                        })
+                    );
+                } else {
+                    return res.status(400).json({ 
+                        message: 'Only image files are allowed as attachments' 
+                    });
+                }
+            }
+            
+            if (uploadPromises.length > 0) {
+                try {
+                    await Promise.all(uploadPromises);
+                } catch (uploadError) {
+                    console.error('Error uploading attachment:', uploadError);
+                    return res.status(500).json({ message: 'Failed to upload attachment' });
+                }
+            }
+        }
 
         const report = await Report.create({
             content,
@@ -83,6 +116,7 @@ exports.createReportUser = async (req, res) => {
             ReporterType: reporterType,
             ReportedID: reportedCustomer.customerId,
             ReportedType: 'customer',
+            attachmentUrl: attachmentUrl
         });
         res.status(201).json({
             success: true,
@@ -174,6 +208,37 @@ exports.createReportArtist = async (req, res) => {
                 message: 'Cannot report yourself'
             });
         }
+        const uploadPromises = [];
+        let attachmentUrl = attachment || '';
+        if (req.files) {
+            if (req.files.attachment && req.files.attachment[0]) {
+                const attachmentFile = req.files.attachment[0];
+                if (attachmentFile.mimetype.startsWith('image/')) {
+                    uploadPromises.push(
+                        uploadBuffer(attachmentFile.buffer, {
+                            folder: `reports/${reporterId}`,
+                            resource_type: 'image',
+                            public_id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                        }).then(result => {
+                            attachmentUrl = result.secure_url || '';
+                        })
+                    );
+                } else {
+                    return res.status(400).json({ 
+                        message: 'Only image files are allowed as attachments' 
+                    });
+                }
+            }
+            
+            if (uploadPromises.length > 0) {
+                try {
+                    await Promise.all(uploadPromises);
+                } catch (uploadError) {
+                    console.error('Error uploading attachment:', uploadError);
+                    return res.status(500).json({ message: 'Failed to upload attachment' });
+                }
+            }
+        }
 
         const report = await Report.create({
             content,
@@ -181,6 +246,7 @@ exports.createReportArtist = async (req, res) => {
             ReporterType: reporterType,
             ReportedID: reportedArtist.artistId,
             ReportedType: 'artist',
+            attachmentUrl: attachmentUrl
         });
         res.status(201).json({
             success: true,
