@@ -2,6 +2,7 @@ const Review = require('../models/Review');
 const Product = require('../models/product');
 const Customer = require('../models/customer');
 const Order = require('../models/order');
+const Artist = require('../models/artist');
 const Product_Order = require('../models/Product_Order');
 const { validationResult } = require('express-validator');
 
@@ -238,3 +239,65 @@ exports.getCustomerReviews = async (req, res) => {
         });
     }
 };
+
+exports.getArtistProductsReviews = async (req, res) => {
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                message: 'Validation errors',
+                errors: errors.array()
+            });
+        }
+        const artistId = req.params.artistId;
+        const artist = await Artist.findByPk(artistId);
+        if (!artist) {
+            return res.status(404).json({ 
+                message: 'Artist not found' 
+            });
+        }
+        const products = await Product.findAll({
+            where: { artistId: artistId },
+            include: [
+                {
+                    model: Review,
+                    required: false,
+                    include: [
+                        {
+                            model: Customer,
+                            attributes: ['name', 'username']
+                        }
+                    ]
+                }
+            ]
+        });
+        if (products.length === 0) {
+            return res.status(404).json({
+                message: 'No products found for this artist'
+            });
+        }
+        const productReviews = products.map(product => ({
+            productId: product.productId,
+            productName: product.name,
+            reviews: product.reviews ? product.reviews.map(review => ({
+                reviewId: review.reviewId,
+                rating: review.rating,
+                review: review.review,
+                customerName: review.customer.name,
+                customerUsername: review.customer.username,
+                createdAt: review.createdAt
+            })) : []
+        }));
+        
+        res.status(200).json({
+            message: 'Artist products reviews retrieved successfully',
+            productReviews: productReviews
+        });
+    }catch (error) {
+        console.error('Error fetching artist products reviews:', error);
+        res.status(500).json({
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+}

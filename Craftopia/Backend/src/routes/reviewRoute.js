@@ -46,4 +46,11 @@ router.get('/my-reviews',
     reviewController.getCustomerReviews
 );
 
+router.get('/artist-reviews/:artistId',
+    [
+        param('artistId').isInt().withMessage('Artist ID must be an integer')
+    ],
+    reviewController.getArtistProductsReviews
+);
+
 module.exports = router;
