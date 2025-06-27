@@ -24,7 +24,8 @@ const BestSellingProducts = () => {
       })
       .then((res) => {
         const products = res.data.products || [];
-        const formatted = products.map((p) => ({
+        const sorted = [...products].sort((a, b) => b.sellingNumber - a.sellingNumber);
+        const formatted = sorted.map((p) => ({
           id: p.productId,
           name: p.name,
           price: p.price,
@@ -37,8 +38,8 @@ const BestSellingProducts = () => {
           description: p.description || "No description available.",
           material: p.material || "Not specified",
           dimensions: p.dimensions || "Not specified",
+          sold: p.sellingNumber || 0,
         }));
-
 
         setProducts(formatted);
       })
@@ -79,7 +80,6 @@ const BestSellingProducts = () => {
   return (
     <section className="py-20 bg-cream overflow-hidden">
       <div className="container mx-auto px-4 relative">
-        {/* Animated Header like other sections */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -94,8 +94,6 @@ const BestSellingProducts = () => {
             Our customers' favorites – handcrafted and high in demand
           </p>
         </motion.div>
-
-        {/* Scroll Arrows */}
         {canScrollLeft && (
           <button
             onClick={() => handleScroll("left")}
@@ -113,8 +111,6 @@ const BestSellingProducts = () => {
             <FiChevronRight className="text-[#921A40] text-2xl" />
           </button>
         )}
-
-        {/* Product Scroll Container */}
         <motion.div
           ref={scrollRef}
           className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"

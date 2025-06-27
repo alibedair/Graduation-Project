@@ -6,15 +6,17 @@ import AdminReports from "../Components/AdminReports";
 import AdminCategory from "../Components/AdminCategory";
 import AddCategory from "../Components/AddCategory";
 import AdminAuctionManagement from "./AdminAuctionManagement";
+import ReleasePayment from "../Components/ReleasePayment";
+
 
 const AdminPage = () => {
   const [selected, setSelected] = useState(() => {
-  return localStorage.getItem("adminSelectedTab") || "Home";
-});
-const handleSetSelected = (tab) => {
-  setSelected(tab);
-  localStorage.setItem("adminSelectedTab", tab);
-};
+    return localStorage.getItem("adminSelectedTab") || "Home";
+  });
+  const handleSetSelected = (tab) => {
+    setSelected(tab);
+    localStorage.setItem("adminSelectedTab", tab);
+  };
 
 
   const renderContent = () => {
@@ -29,6 +31,8 @@ const handleSetSelected = (tab) => {
         return <AddCategory />;
       case "Auctions":
         return <AdminAuctionManagement />;
+      case "Payments":
+        return <ReleasePayment />;
       default:
         return <AdminDashboard />;
     }

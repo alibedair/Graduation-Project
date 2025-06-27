@@ -227,12 +227,22 @@ const AdminDashboard = () => {
           },
         });
 
-        const rawProducts = response.data.products?.slice(0, 10) || [];
-        const formatted = rawProducts.map((product) => ({
-          id: product.id,
+        const allProducts = response.data.products || [];
+
+        const topSelling = allProducts
+          .filter((p) => p.sellingNumber > 0)
+          .sort((a, b) => b.sellingNumber - a.sellingNumber)
+          .slice(0, 10);
+
+        const formatted = topSelling.map((product) => ({
+          id: product.productId,
           title: product.name,
           image: product.image?.[0],
           price: Number(product.price),
+          artist: product.artist?.name || "",
+          category: product.category?.name || "",
+          rating: product.averageRating || 0,
+          reviews: product.totalReviews || 0,
         }));
 
         setPopularProducts(formatted);
@@ -243,6 +253,7 @@ const AdminDashboard = () => {
 
     fetchPopularProducts();
   }, []);
+
 
   const handleNext = () => {
     setStartIndex((prev) => (prev + 1) % popularProducts.length);
@@ -394,9 +405,9 @@ const AdminDashboard = () => {
             </button>
           </div>
           {visibleProduct && (
-            <div className="flex flex-col items-center w-full">
+            <div className="w-full">
               <div
-                className="bg-white rounded-xl overflow-hidden w-40 h-35 flex items-center justify-center cursor-pointer"
+                className="bg-white rounded-xl overflow-hidden w-full h-40 flex items-center justify-center cursor-pointer"
                 onClick={() =>
                   navigate(`/product/${visibleProduct.id}`, {
                     state: { product: visibleProduct },
@@ -406,17 +417,35 @@ const AdminDashboard = () => {
                 <img
                   src={visibleProduct.image}
                   alt={visibleProduct.title}
-                  className="w-40 h-35 object-cover transition-transform duration-300 hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
               </div>
-              <p className="text-sm mt-2 text-center font-semibold text-gray-800 px-1 line-clamp-2">
-                {visibleProduct.title}
-              </p>
-              <p className="text-md font-bold text-[#E07385] mt-1">
-                ${visibleProduct.price.toFixed(2)}
-              </p>
+
+              <div className="w-full mt-2">
+                <p
+                  onClick={() =>
+                    navigate(`/product/${visibleProduct.id}`, {
+                      state: { product: visibleProduct },
+                    })
+                  }
+                  className="text-sm font-semibold text-gray-800 cursor-pointer line-clamp-2"
+                >
+                  {visibleProduct.title}
+                </p>
+
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-500 font-medium">
+                    {visibleProduct.artist}
+                  </p>
+                  <p className="text-md font-bold text-[#E07385]">
+                    ${visibleProduct.price.toFixed(2)}
+                  </p>
+                </div>
+              </div>
             </div>
+
           )}
+
         </div>
       </div>
     </div>

@@ -70,7 +70,7 @@ exports.getProducts = async (req, res) => {
         const products = await Product.findAll({
             include: [
                 { model: Category, attributes: ['name'] },
-                { model: Artist, attributes: ['name'] }
+                { model: Artist, attributes: ['artistId','name'] }
             ],
             attributes: ['productId', 'name', 'price', 'description', 'image', 'sellingNumber', 'quantity', 'dimensions', 'material','createdAt']
         });

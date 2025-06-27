@@ -7,7 +7,7 @@ import {
   FaThList,
   FaSignOutAlt,
   FaExclamation,
-  FaPlus
+  FaPlus, FaMoneyCheckAlt
 } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
@@ -78,6 +78,12 @@ const AdminSidebar = ({ selected, setSelected }) => {
           text="Reports"
           selected={selected === "Reports"}
           onClick={() => setSelected("Reports")}
+        />
+        <SidebarButton
+          icon={<FaMoneyCheckAlt />}
+          text="Payments"
+          selected={selected === "Payments"}
+          onClick={() => setSelected("Payments")}
         />
 
         {/* <SidebarButton
