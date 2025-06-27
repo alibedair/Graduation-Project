@@ -26,6 +26,8 @@ import AuctionDetails from './pages/AuctionDetails';
 import MyOrders from './pages/MyOrders';
 import PaymentPage from './pages/PaymentPage';
 import ArtistProfileCustomer from './pages/ArtistProfileCustomer';
+import ScrollToTop from './Components/ScrollToTop';
+
 function LoginRoute() {
   const { user } = useAuth();
 
@@ -119,6 +121,7 @@ export default function App() {
       <WishlistProvider>
         <CartProvider>
           <Router>
+            <ScrollToTop />
             <AppContent />
           </Router>
         </CartProvider>

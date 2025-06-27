@@ -64,6 +64,7 @@ const Navbar = () => {
             onClick={() => {
               logout();
               navigate('/');
+              window.location.href = '/';
             }}
             className="ml-4 px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-[#E07385] hover:text-white transition"
           >
