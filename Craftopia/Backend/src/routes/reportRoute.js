@@ -19,5 +19,52 @@ router.post('/createReportUser/:username',
     reportController.createReportUser
 );
 
+
+router.post('/createReportArtist/:username', 
+    authMiddleware,
+    roleMiddleware(['artist', 'customer']),
+    upload.fields([
+        { name: 'attachment', maxCount: 2 }
+    ]),
+    [
+        body('content').notEmpty().trim().withMessage('Report content is required'),
+        param('username').isString().withMessage('Reported username must be a valid string'),
+        body('attachment').optional().isString().withMessage('Attachment must be a string')
+    ],
+    reportController.createReportArtist
+);
+
+
+router.get('/submitted', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    reportController.getAllSubmittedReports
+);
+
+
+router.get('/reviewed', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    reportController.getAllReviewedReports
+);
+
+router.get('/:id', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    [
+        param('id').isInt().withMessage('Report ID must be a valid integer')
+    ],
+    reportController.getReportbyId
+);
+
+router.put('/review/:id', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    [
+        param('id').isInt().withMessage('Report ID must be a valid integer')
+    ],
+    reportController.ReviewReport
+);
+
 module.exports = router;
 

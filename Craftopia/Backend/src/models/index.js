@@ -10,7 +10,6 @@ const Order = require('./order');
 const Product_Order = require('./Product_Order');
 const Category = require('./category');
 const Report = require('./report');
-const ReportHandling = require('./reportHandling');
 const CustomizableOption = require('./customizableOption');
 const OptionValue = require('./optionValue');
 const Review = require('./Review');
@@ -145,11 +144,6 @@ Customer.hasMany(Report, {
 });
 
 
-// Many-to-Many report & admin Relationship (Through ReportHandling)
-Report.belongsToMany(Admin, { through: ReportHandling, foreignKey: 'reportId' });
-Admin.belongsToMany(Report, { through: ReportHandling, foreignKey: 'adminId' });
-
-
 // Product & CustomizableOption Relationship
 Product.hasMany(CustomizableOption, { foreignKey: 'productId' });
 CustomizableOption.belongsTo(Product, { foreignKey: 'productId' });
@@ -270,7 +264,6 @@ module.exports = {
   Order,
   Product_Order,
   Report,
-  ReportHandling,
   CustomizableOption,
   OptionValue,
   Review,

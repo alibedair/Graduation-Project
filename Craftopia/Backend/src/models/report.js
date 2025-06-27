@@ -37,6 +37,18 @@ const Report = sequelize.define('report', {
     attachmentUrl: {
         type: DataTypes.STRING,
         allowNull: true,
+    },
+    adminReviwerId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'users',
+            key: 'userId'
+        }
+    },
+    reviewedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     timestamps: true,
