@@ -5,7 +5,8 @@ const Product_Order = require('../models/Product_Order');
 const User = require('../models/user');
 const CustomizationResponse = require('../models/customizationResponse');
 const Artist = require('../models/artist');
-const { sendOrderConfirmationEmail,sendShipEmail } = require('../utils/emailService');
+const { sendOrderConfirmationEmail, sendShipAuctionEmail, sendCustomizationShipEmail } = require('../utils/emailService');
+const { firebase_db } = require('../config/firebase');
 
 exports.placeOrder = async (req, res) => {
     try {
@@ -242,7 +243,7 @@ exports.shipOrder = async (req, res) => {
                     }
                 };
                 
-                await sendShipEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
+                await sendCustomizationShipEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
             }
         } catch (emailError) {
             console.error('Error sending order ship email:', emailError);
@@ -259,6 +260,98 @@ exports.shipOrder = async (req, res) => {
 
     } catch (error) {
         console.error('Error shipping order:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+exports.shipAuctionOrder = async(req, res) => {
+    try{
+        const userId = req.user.id;
+        const { auctionId } = req.params;
+        const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
+        if (!auctionSnapshot.exists()) {
+            return res.status(404).json({ message: 'Auction not found' });
+        }
+        const auctionData = auctionSnapshot.val();
+        const artist = await Artist.findOne({ where: { userId } });
+        if(!artist || auctionData.artistId !== artist.artistId) {
+            return res.status(403).json({ message: 'This Artist is not authorized for shipping this auction order' });
+        }
+        const currentTime = new Date().toISOString();
+        if(!auctionData.endDate || auctionData.endDate > currentTime) {
+            return res.status(400).json({ message: 'Auction has not ended yet' });
+        }
+
+        const bidsSnapshot = await firebase_db.ref(`auctions/${auctionId}/bids`).once('value');
+        if (!bidsSnapshot.exists()) {
+            return res.status(400).json({ message: 'No bids found for this auction' });
+        }
+        const bidsData = bidsSnapshot.val();
+        const bidsArray = Object.values(bidsData);
+        
+        if (bidsArray.length === 0) {
+            return res.status(400).json({ message: 'No bids found for this auction' });
+        }
+        const highestBid = bidsArray[bidsArray.length - 1];
+        const customer = await Customer.findByPk(highestBid.customerId);
+        if (!customer) {
+            return res.status(404).json({ message: 'Winner customer not found' });
+        }
+
+        const order = await Order.create({
+            createdAt: new Date(),
+            totalAmount: highestBid.bidAmount,
+            status: 'Shipped',
+            customerId: customer.customerId  
+        });
+        try {
+            const customerUser = await User.findByPk(customer.userId);
+            if (customerUser && customerUser.email) {
+                const orderDetails = {
+                    orderId: order.orderId,
+                    totalAmount: parseFloat(highestBid.bidAmount || 0).toFixed(2),
+                    orderDate: order.createdAt,
+                    trackingNumber: `TR${order.orderId}${Date.now()}`,
+                    estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    isAuction: true,
+                    auctionDetails: {
+                        auctionId: auctionId,
+                        productName: auctionData.productDetails?.name || auctionData.productName || 'Auction Item',
+                        finalPrice: parseFloat(highestBid.bidAmount || 0).toFixed(2),
+                        winningBid: {
+                            bidId: highestBid.bidId || 'N/A',
+                            timestamp: highestBid.timestamp
+                        }
+                    }
+                };
+                
+                await sendShipAuctionEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending auction ship email:', emailError);
+        }
+        
+        await firebase_db.ref(`auctions/${auctionId}`).update({
+            status: 'shipped',
+            shippedAt: new Date().toISOString(),
+            orderId: order.orderId,
+            winnerId: highestBid.customerId,
+            winningAmount: highestBid.bidAmount
+        });
+        
+        return res.status(200).json({
+            message: 'Auction order shipped successfully',
+            order: {
+                orderId: order.orderId,
+                totalAmount: order.totalAmount,
+                status: order.status,
+                createdAt: order.createdAt,
+                auctionId: auctionId
+            }
+        });
+
+    }catch (error) {
+        console.error('Error shipping auction order:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }

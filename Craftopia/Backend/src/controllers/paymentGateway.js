@@ -6,6 +6,8 @@ const User = require('../models/user');
 const CreditCard = require('../models/creditCard');
 const Product = require('../models/product');
 const Sales = require('../models/sales');
+const { sendPaymentConfirmationEmail } = require('../utils/emailService');
+
 exports.createEscrowPayment = async (req, res) => {
     try {
         const { orderId} = req.params;
@@ -131,6 +133,29 @@ exports.createEscrowPayment = async (req, res) => {
             paymentId: payment.paymentId,
             updatedAt: new Date()
         });
+        
+        try {
+            const user = await User.findByPk(customerId);
+            if (user && user.email) {
+                const paymentDetails = {
+                    orderId: order.orderId,
+                    amount: parseFloat(payment.amount || 0).toFixed(2),
+                    paymentMethod: `Credit Card ending in ${creditCardNumber.slice(-4)}`,
+                    transactionId: payment.paymentId,
+                    paymentDate: payment.createdAt || new Date(),
+                    status: 'held_in_escrow',
+                    escrowDetails: {
+                        holdPeriod: 'Admin will approve the order within 7 days',
+                        releaseCondition: 'Order completion or cancellation',
+                        estimatedRelease: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                    }
+                };
+                
+                await sendPaymentConfirmationEmail(user.email, 'Valued Customer', paymentDetails);
+            }
+        } catch (emailError) {
+            console.error('Error sending payment confirmation email:', emailError);
+        }
 
         return res.status(201).json({
             success: true,

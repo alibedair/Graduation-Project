@@ -49,4 +49,13 @@ router.post('/ship/:respondId',
     orderController.shipOrder
 );
 
+router.post('/shipment-auction/:auctionId',
+    authMiddleware,
+    roleMiddleware('artist'),
+    [
+        param('auctionId').notEmpty().withMessage('Auction ID is required')
+    ],
+    orderController.shipAuctionOrder
+);
+
 module.exports = router;
