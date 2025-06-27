@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 const Category = require('../models/category');
 const Artist = require('../models/artist');
+const CustomizableOption = require('../models/customizableOption');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const Review = require('../models/Review');
 const { Sequelize } = require('sequelize');
@@ -12,8 +13,8 @@ exports.createProduct = async (req, res) => {
         if(!artist) {
             return res.status(403).json({message: 'You are not authorized to create a product'});
         }
-        
-        const {name, description, price, categoryName, quantity,dimension,material} = req.body;
+
+        const {name, description, price, categoryName, quantity,dimension,material,customizableOptions} = req.body;
         if(!name || !description || !price || !categoryName || !quantity || !dimension || !material) {
             return res.status(400).json({
                 message: 'Please provide all required fields',
@@ -45,7 +46,6 @@ exports.createProduct = async (req, res) => {
         if(!category) {
             return res.status(400).json({message: 'Category does not exist'});
         }
-
         const product = await Product.create({
             name,
             description,
@@ -55,8 +55,31 @@ exports.createProduct = async (req, res) => {
             artistId: artist.artistId,
             quantity: quantity,
             dimensions: dimension,
-            material: material
+            material: material,
         });
+       
+        if(customizableOptions) {
+            let optionsArray = [];
+            if(typeof customizableOptions === 'string') {
+                try {
+                    optionsArray = JSON.parse(customizableOptions);
+                } catch (e) {
+                    optionsArray = customizableOptions.split(',').map(opt => opt.trim()).filter(opt => opt);
+                }
+            } else if(Array.isArray(customizableOptions)) {
+                optionsArray = customizableOptions;
+            }
+            if(optionsArray.length > 0) {
+                const options = optionsArray.map(optionName => ({
+                    productId: product.productId,
+                    optionName: optionName,
+                    optionPrice: 0
+                }));
+                await CustomizableOption.bulkCreate(options);
+                product.isCustomizable = true;
+                await product.save();
+            }
+        }
 
         res.status(201).json({product});
     } catch (error) {

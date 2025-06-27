@@ -17,14 +17,15 @@ router.post('/create',
         body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
         body('dimensions').optional().isString().withMessage('Dimensions must be a string'),
         body('material').optional().isString().withMessage('Material must be a string'),
+        body('customizableOptions').optional().isArray().withMessage('Customizable options must be an array')
     ],  
     productController.createProduct
 );
 
 router.get('/get', productController.getProducts);
 
-router.post('/update/:productId', 
-    authMiddleware, 
+router.put('/update/:productId',
+    authMiddleware,
     roleMiddleware(['artist', 'admin']),
     [
         param('productId').isInt().withMessage('Product ID must be an integer'),
