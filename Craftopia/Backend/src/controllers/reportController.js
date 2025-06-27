@@ -1,4 +1,4 @@
-const { Report, Artist, Customer, Admin } = require('../models');
+const { Report, Artist, Customer, User } = require('../models');
 const { Op, sequelize } = require('sequelize');
 const db = require('../config/db');
 const { validationResult } = require('express-validator');
@@ -259,6 +259,14 @@ exports.getAllReviewedReports = async (req, res) => {
 exports.getReportbyId = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        if (isNaN(id) || !Number.isInteger(Number(id))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid report ID. Must be a valid integer.'
+            });
+        }
+        
          if (!req.user || req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
@@ -296,6 +304,14 @@ exports.getReportbyId = async (req, res) => {
 exports.ReviewReport = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        if (isNaN(id) || !Number.isInteger(Number(id))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid report ID. Must be a valid integer.'
+            });
+        }
+        
          if (!req.user || req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
@@ -314,12 +330,13 @@ exports.ReviewReport = async (req, res) => {
             });
         }
         if( report.status == 'reviewed') {
-            Admin = await Admin.findOne({
+            const admin = await User.findOne({
                 where: { userId: report.adminReviwerId }
             });
+            const adminEmail = admin.email;
             return res.status(400).json({
                 success: false,
-                message: 'Report is already reviewed before by ' + Admin.username
+                message: 'Report is already reviewed before by an admin with email: ' + adminEmail
             });
         }
 
