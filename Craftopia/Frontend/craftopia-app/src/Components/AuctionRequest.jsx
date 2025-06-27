@@ -116,103 +116,121 @@ const AuctionRequest = () => {
   };
 
   // --- Handle Auction Request Submission ---
-  const handleAuctionRequestSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
+ const handleAuctionRequestSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+  setSuccessMessage(null);
 
-    // Basic validation
-    if (!auctionFormData.title || !auctionFormData.description || !auctionFormData.startingBid ||
-        !auctionFormData.category || !auctionFormData.materials || !auctionFormData.dimensions ||
-        auctionFormData.images.length < 1 || auctionFormData.images.length > 5) {
-      setError('Please provide all required fields and between 1 to 5 images.');
-      setLoading(false);
-      return;
+  // Detailed frontend validation
+  const errors = [];
+  const {
+    title,
+    category,
+    startingBid,
+    description,
+    materials,
+    dimensions,
+    notes,
+    duration,
+    images,
+  } = auctionFormData;
+
+  if (!title.trim()) errors.push('Item title is required.');
+  if (!category.trim()) errors.push('Category is required.');
+  if (!description.trim()) errors.push('Description is required.');
+  if (!startingBid || isNaN(startingBid) || Number(startingBid) <= 0) errors.push('Valid starting bid is required.');
+  if (!duration) errors.push('Auction duration is required.');
+  if (!materials.trim()) errors.push('Materials are required.');
+  if (!dimensions.trim()) errors.push('Dimensions are required.');
+  if (images.length < 1 || images.length > 5) errors.push('Please upload between 1 and 5 images.');
+
+  if (errors.length > 0) {
+    setError(errors.join('\n'));
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please log in before submitting an auction request.');
     }
 
-    try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('No authentication token found. Please log in before submitting an auction request.');
-      }
+    // Step 1: Create Product
+    const productFormData = new FormData();
+    productFormData.append('name', title);
+    productFormData.append('description', description);
+    productFormData.append('price', startingBid);
+    productFormData.append('categoryName', category);
+    productFormData.append('quantity', 1);
+    productFormData.append('dimension', dimensions);
+    productFormData.append('material', materials);
 
-      // Step 1: Create Product
-      const productFormData = new FormData();
-      productFormData.append('name', auctionFormData.title);
-      productFormData.append('description', auctionFormData.description);
-      productFormData.append('price', auctionFormData.startingBid);
-      productFormData.append('categoryName', auctionFormData.category);
-      productFormData.append('quantity', 1);
-      productFormData.append('dimension', auctionFormData.dimensions); 
-      productFormData.append('material', auctionFormData.materials);   
+    images.forEach((file) => {
+      productFormData.append('image', file);
+    });
 
-      auctionFormData.images.forEach((file) => {
-        productFormData.append('image', file); 
-      });
+    const productResponse = await fetch('http://localhost:3000/product/create', {
+      method: 'POST',
+      body: productFormData,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
-      const productResponse = await fetch('http://localhost:3000/product/create', {
-        method: 'POST',
-        body: productFormData,
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
-      });
-
-      if (!productResponse.ok) {
-        const errorData = await productResponse.json();
-        throw new Error(errorData.message || 'Failed to create product.');
-      }
-      const productResult = await productResponse.json();
-      const productId = productResult.product.productId;
-
-      // Step 2: Create Auction Request
-      const auctionRequestPayload = {
-        productId: productId,
-        startingPrice: parseFloat(auctionFormData.startingBid),
-        Duration: parseInt(auctionFormData.duration),
-        notes: auctionFormData.notes,
-      };
-
-      const auctionResponse = await fetch('http://localhost:3000/auctionRequest/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(auctionRequestPayload),
-      });
-
-      if (!auctionResponse.ok) {
-        const errorData = await auctionResponse.json();
-        throw new Error(errorData.message || 'Failed to create auction request.');
-      }
-
-      setSuccessMessage('Auction request submitted successfully!');
-      // Reset form fields
-      setAuctionFormData({
-        title: '',
-        category: '',
-        startingBid: '',
-        description: '',
-        materials: '',
-        dimensions: '',
-        notes: '',
-        duration: '7',
-        images: [],
-      });
-      setShowAuctionRequestForm(false);
-
-      // Re-fetch auction requests to update the list
-      fetchArtistAuctionRequests(); // Call the now globally defined function
-
-    } catch (err) {
-      console.error('Submission error:', err);
-      setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
+    if (!productResponse.ok) {
+      const errorData = await productResponse.json();
+      throw new Error(errorData.message || 'Failed to create product.');
     }
-  };
+
+    const productResult = await productResponse.json();
+    const productId = productResult.product.productId;
+
+    // Step 2: Create Auction Request
+    const auctionRequestPayload = {
+      productId,
+      startingPrice: parseFloat(startingBid),
+      Duration: parseInt(duration),
+      notes: notes || '',
+    };
+
+    const auctionResponse = await fetch('http://localhost:3000/auctionRequest/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(auctionRequestPayload),
+    });
+
+    if (!auctionResponse.ok) {
+      const errorData = await auctionResponse.json();
+      throw new Error(errorData.message || 'Failed to create auction request.');
+    }
+
+    setSuccessMessage('Auction request submitted successfully!');
+    setAuctionFormData({
+      title: '',
+      category: '',
+      startingBid: '',
+      description: '',
+      materials: '',
+      dimensions: '',
+      notes: '',
+      duration: '7',
+      images: [],
+    });
+    setShowAuctionRequestForm(false);
+    fetchArtistAuctionRequests();
+  } catch (err) {
+    console.error('Submission error:', err);
+    setError(err.message || 'An unexpected error occurred.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Maps backend status to frontend display
   const getStatusClasses = (status) => {
@@ -223,7 +241,6 @@ const AuctionRequest = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
 
     return (
         <>
@@ -264,7 +281,7 @@ const AuctionRequest = () => {
                           <form onSubmit={handleAuctionRequestSubmit} className="space-y-6 bg-white p-6 rounded-2xl shadow-xl border border-[#f9d2d9]">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div>
-                                <label htmlFor="title" className="block font-semibold text-sm text-[#7a162e] mb-2">Item Title</label>
+                                <label htmlFor="title" className="block font-semibold text-sm text-[#7a162e] mb-2">Item Title <span className="text-red-500">*</span> </label>
                                 <input
                                   id="title"
                                   name="title"
@@ -275,7 +292,7 @@ const AuctionRequest = () => {
                                 />
                               </div>
                               <div>
-                                <label htmlFor="category" className="block font-semibold text-sm text-[#7a162e] mb-2">Category</label>
+                                <label htmlFor="category" className="block font-semibold text-sm text-[#7a162e] mb-2">Category <span className="text-red-500">*</span></label>
                                 <select
                                   id="category"
                                   name="category"
@@ -303,7 +320,7 @@ const AuctionRequest = () => {
                             </div>
 
                             <div>
-                              <label htmlFor="description" className="block font-semibold text-sm text-[#7a162e] mb-2">Description</label>
+                              <label htmlFor="description" className="block font-semibold text-sm text-[#7a162e] mb-2">Description <span className="text-red-500">*</span></label>
                               <textarea
                                 id="description"
                                 name="description"
@@ -317,7 +334,7 @@ const AuctionRequest = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                               <div>
-                                <label htmlFor="startingBid" className="block font-semibold text-sm text-[#7a162e] mb-2">Starting Bid (L.E)</label>
+                                <label htmlFor="startingBid" className="block font-semibold text-sm text-[#7a162e] mb-2">Starting Bid (L.E) <span className="text-red-500">*</span></label>
                                 <input
                                   id="startingBid"
                                   name="startingBid"
@@ -330,7 +347,7 @@ const AuctionRequest = () => {
                               </div>
 
                               <div>
-                                <label htmlFor="duration" className="block font-semibold text-sm text-[#7a162e] mb-2">Auction Duration</label>
+                                <label htmlFor="duration" className="block font-semibold text-sm text-[#7a162e] mb-2">Auction Duration <span className="text-red-500">*</span></label>
                                 <select
                                   id="duration"
                                   name="duration"
@@ -360,7 +377,7 @@ const AuctionRequest = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div>
-                                <label htmlFor="materials" className="block font-semibold text-sm text-[#7a162e] mb-2">Materials</label>
+                                <label htmlFor="materials" className="block font-semibold text-sm text-[#7a162e] mb-2">Materials <span className="text-red-500">*</span></label>
                                 <input
                                   id="materials"
                                   name="materials"
@@ -371,7 +388,7 @@ const AuctionRequest = () => {
                                 />
                               </div>
                               <div>
-                                <label htmlFor="dimensions" className="block font-semibold text-sm text-[#7a162e] mb-2">Dimensions</label>
+                                <label htmlFor="dimensions" className="block font-semibold text-sm text-[#7a162e] mb-2">Dimensions <span className="text-red-500">*</span></label>
                                 <input
                                   id="dimensions"
                                   name="dimensions"
@@ -384,7 +401,7 @@ const AuctionRequest = () => {
                             </div>
 
                             <div>
-                              <label className="block font-semibold text-sm text-[#7a162e] mb-2">Upload Images</label>
+                              <label className="block font-semibold text-sm text-[#7a162e] mb-2">Upload Images <span className="text-red-500">*</span></label>
                               <div
                                 className="relative border-4 border-dashed border-[#E07385] rounded-xl p-6 text-center bg-[#fff0f3] hover:bg-[#ffe6eb] transition cursor-pointer"
                                 onClick={() => fileInputRef.current.click()}

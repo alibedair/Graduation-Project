@@ -119,7 +119,7 @@ const ArtistsSection = () => {
                 <motion.button
                   whileHover={{ scale: 1.05, backgroundColor: '#722F37', color: '#F5F3F0' }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate(`/artist/${artist.id}`)}
+                  onClick={() => navigate(`/artist-profile-customer/${artist.id}`)}
                   className="w-full bg-coral/90 hover:bg-burgundy text-cream hover:text-white py-2 rounded-lg font-medium transition-all duration-300"
                 >
                   View Profile
