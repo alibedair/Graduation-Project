@@ -8,16 +8,29 @@ import AddCategory from "../Components/AddCategory";
 import AdminAuctionManagement from "./AdminAuctionManagement";
 import ReleasePayment from "../Components/ReleasePayment";
 
+const tabOptions = ["Home", "Reports", "Categories", "Add Category", "Auctions", "Payments"];
 
 const AdminPage = () => {
   const [selected, setSelected] = useState(() => {
     return localStorage.getItem("adminSelectedTab") || "Home";
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredTabs, setFilteredTabs] = useState([]);
+
   const handleSetSelected = (tab) => {
     setSelected(tab);
     localStorage.setItem("adminSelectedTab", tab);
+    setSearchTerm("");
+    setFilteredTabs([]);
   };
 
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+    const filtered = tabOptions.filter((tab) =>
+      tab.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredTabs(filtered);
+  };
 
   const renderContent = () => {
     switch (selected) {
@@ -42,7 +55,12 @@ const AdminPage = () => {
     <div className="flex min-h-screen bg-[#FAF9F6] overflow-hidden">
       <AdminSidebar selected={selected} setSelected={handleSetSelected} />
       <div className="flex flex-col items-stretch w-full ml-20 pr-10 overflow-auto h-screen">
-        <AdminSearchbar />
+        <AdminSearchbar
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          filteredTabs={filteredTabs}
+          onTabClick={handleSetSelected}
+        />
         {renderContent()}
       </div>
     </div>
