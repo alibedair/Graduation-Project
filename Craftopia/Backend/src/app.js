@@ -55,6 +55,9 @@ app.use('/product', productRoute);
 const categoryRoute = require('./routes/categoryRoute');
 app.use('/category', categoryRoute);
 
+const customizableOptionRoute = require('./routes/customizableOptionRoute');
+app.use('/customizableOption', customizableOptionRoute);
+
 const customizationRequestRoute = require('./routes/customizationRequestRoute');
 app.use('/customizationRequest', customizationRequestRoute);
 

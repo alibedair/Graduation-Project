@@ -18,6 +18,10 @@ const CustomizableOption = sequelize.define('customizableoption', {
             model: Product,
             key: 'productId'
         }
+    },
+    optionPrice : {
+        type: DataTypes.DECIMAL,
+        allowNull: false
     }
 });
 
