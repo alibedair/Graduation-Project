@@ -5,12 +5,14 @@ import { motion } from "framer-motion";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import ProductCard from "./ProductCard";
+import { useNavigate } from "react-router-dom";
 
 const AvaliableProducts = () => {
   const [products, setProducts] = useState([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const {
@@ -153,7 +155,7 @@ const AvaliableProducts = () => {
                   onToggleFavorite={() => toggleWishlist(product)}
                   isInCart={!!inCart}
                   quantity={quantity}
-                  onAddToCart={() => addToCart(product)}
+                  onAddToCart={() => addToCart(product, navigate)}
                   onIncrement={() => incrementQuantity(product.id)}
                   onDecrement={() => decrementQuantity(product.id)}
                 />

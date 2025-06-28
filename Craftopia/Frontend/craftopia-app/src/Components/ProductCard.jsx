@@ -16,7 +16,6 @@ const ProductCard = ({
     const [showControls, setShowControls] = useState(false);
     const [timerId, setTimerId] = useState(null);
 
-    if (!product) return null;
     const mainImage =
         Array.isArray(product.image) && product.image.length > 0
             ? product.image[0]
@@ -35,10 +34,17 @@ const ProductCard = ({
         }
     }, [isInCart, quantity]);
 
+    if (!product) return null;
+
     const handleBadgeClick = (e) => {
         e.stopPropagation();
         clearTimeout(timerId);
         setShowControls(true);
+    };
+
+    const handleAddToCart = (e) => {
+        e.stopPropagation();
+        onAddToCart?.(product, navigate);
     };
 
     return (
@@ -119,6 +125,7 @@ const ProductCard = ({
                             </span>
                         )}
                     </div>
+
                     {product.inStock ? (
                         isInCart ? (
                             showControls ? (
@@ -150,10 +157,7 @@ const ProductCard = ({
                             )
                         ) : (
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onAddToCart?.(product);
-                                }}
+                                onClick={handleAddToCart}
                                 className="text-sm font-medium rounded-full px-4 py-1 bg-[#E07385] text-white hover:bg-[#d15e72] transition"
                             >
                                 Add to Cart

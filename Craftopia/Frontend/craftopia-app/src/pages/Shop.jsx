@@ -5,6 +5,8 @@ import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import Footer from '../Components/Footer';
 import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const Shop = () => {
@@ -18,6 +20,8 @@ const Shop = () => {
 
     const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
     const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+    const navigate = useNavigate();
+
 
 
     useEffect(() => {
@@ -144,7 +148,7 @@ const Shop = () => {
                                                 onToggleFavorite={() => toggleWishlist(product)}
                                                 isInCart={!!inCart}
                                                 quantity={quantity}
-                                                onAddToCart={() => addToCart(product)}
+                                                onAddToCart={() => addToCart(product, navigate)}
                                                 onIncrement={() => incrementQuantity(product.id)}
                                                 onDecrement={() => decrementQuantity(product.id)}
                                             />

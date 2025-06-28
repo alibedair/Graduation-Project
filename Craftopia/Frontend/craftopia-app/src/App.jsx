@@ -46,7 +46,7 @@ function LoginRoute() {
   }
 }
 function AppContent() {
-  const { user }   = useAuth();
+  useAuth();
   const location   = useLocation();
   const hideNavbar = location.pathname.startsWith('/admin');
 

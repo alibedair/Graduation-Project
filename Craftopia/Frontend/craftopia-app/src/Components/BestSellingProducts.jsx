@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import ProductCard from "./ProductCard";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 const BestSellingProducts = () => {
   const [products, setProducts] = useState([]);
@@ -14,6 +15,7 @@ const BestSellingProducts = () => {
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -146,7 +148,7 @@ const BestSellingProducts = () => {
                   onToggleFavorite={() => toggleWishlist(product)}
                   isInCart={!!inCart}
                   quantity={quantity}
-                  onAddToCart={() => addToCart(product)}
+                  onAddToCart={() => addToCart(product, navigate)}
                   onIncrement={() => incrementQuantity(product.id)}
                   onDecrement={() => decrementQuantity(product.id)}
                 />

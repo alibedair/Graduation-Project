@@ -66,28 +66,40 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    const addToCart = async (product) => {
-        const authHeader = getAuthHeader();
-        if (!authHeader) return;
+    const addToCart = async (product, navigate) => {
+    const token = localStorage.getItem("token");
 
-        try {
-            await axios.post(`http://localhost:3000/mycart/add/${product.id}`, {}, authHeader);
-            const existing = cartItems.find((item) => item.id === product.id);
-            if (existing) {
-                setCartItems((prev) =>
-                    prev.map((item) =>
-                        item.id === product.id
-                            ? { ...item, quantity: item.quantity + 1 }
-                            : item
-                    )
-                );
-            } else {
-                setCartItems((prev) => [...prev, { ...product, quantity: 1 }]);
-            }
-        } catch (err) {
-            console.error("Add to cart failed:", err);
+    if (!token) {
+        if (navigate) {
+            navigate("/login", { replace: true });
         }
+        return;
+    }
+
+    const authHeader = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     };
+
+    try {
+        await axios.post(`http://localhost:3000/mycart/add/${product.id}`, {}, authHeader);
+        const existing = cartItems.find((item) => item.id === product.id);
+        if (existing) {
+            setCartItems((prev) =>
+                prev.map((item) =>
+                    item.id === product.id
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                )
+            );
+        } else {
+            setCartItems((prev) => [...prev, { ...product, quantity: 1 }]);
+        }
+    } catch (err) {
+        console.error("Add to cart failed:", err);
+    }
+};
 
     const removeFromCart = async (id) => {
         const authHeader = getAuthHeader();
