@@ -103,16 +103,17 @@ const ProductCard = ({
                 </div>
 
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-[#E07385] text-[#E07385]" />
-                        <span className="text-sm font-semibold text-gray-900">
-                            {Number(product.rating || 0).toFixed(1)}
-                        </span>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                        ({product.reviews || 0} reviews)
-                    </span>
-                </div>
+  <div className="flex items-center gap-1">
+    <Star className="h-4 w-4 fill-[#E07385] text-[#E07385]" />
+    <span className="text-sm font-semibold text-gray-900">
+      {Number(product.averageRating || 0).toFixed(1)}
+    </span>
+  </div>
+  <span className="text-sm text-gray-500">
+    ({product.totalReviews || 0} reviews)
+  </span>
+</div>
+
 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

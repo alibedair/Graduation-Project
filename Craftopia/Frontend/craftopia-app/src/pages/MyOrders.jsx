@@ -7,10 +7,9 @@ import {
     FiXCircle,
     FiClock,
     FiStar,
-    FiEdit2
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-
+import ReviewModal from '../Components/ReviewModal';
 const MyOrders = () => {
     const [orders, setOrders] = useState([]);
     const [activeFilter, setActiveFilter] = useState('all');
@@ -105,7 +104,6 @@ const MyOrders = () => {
     };
 
     const submitReview = async () => {
-        // Validate inputs
         if (rating === 0) {
             alert('Please select a rating');
             return;
@@ -117,29 +115,34 @@ const MyOrders = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:3000/review/create', {
-                productId: currentProduct.productId || currentProduct.id,
-                rating: rating,
-                review: review.trim()
-            }, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
+            const response = await axios.post(
+                'http://localhost:3000/review/create',
+                {
+                    productId: currentProduct.productId || currentProduct.id,
+                    rating: rating,
+                    review: review.trim(),
+                    artistRating: artistRating || 0,
+                    artistComment: artistComment?.trim() || ""
                 },
-            });
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
             if (response.status === 201) {
                 alert('Thank you for your review!');
                 closeReviewModal();
             } else {
                 alert('Something went wrong. Please try again.');
             }
-
         } catch (error) {
             console.error('Error submitting review:', error);
             alert(error.response?.data?.message || error.message || 'Failed to submit review. Please try again.');
         }
     };
-
 
     if (isLoading) {
         return (
@@ -156,100 +159,20 @@ const MyOrders = () => {
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-12 bg-[var(--color-cream)] min-h-screen">
 
-            {showReviewModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4  backdrop-blur-sm transition-opacity duration-300">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 scale-[0.98] hover:scale-100">
-                        <div className="p-6 pb-4 border-b border-gray-100">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Share Your Experience</h3>
-                                    <p className="text-sm text-gray-500 mt-1">Your feedback helps others</p>
-                                </div>
-                                <button
-                                    onClick={closeReviewModal}
-                                    className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div className="max-h-[65vh] overflow-y-auto p-6">
-                            <div className="mb-8">
-                                <div className="flex items-start gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
-                                    <img
-                                        src={currentProduct.image?.[0]}
-                                        alt={currentProduct.name}
-                                        className="w-20 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
-                                    />
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">{currentProduct.name}</h4>
-                                        <p className="text-sm text-gray-500 mb-3">Product</p>
-
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
-                                            <div className="flex items-center gap-1">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <button
-                                                        key={star}
-                                                        onClick={() => setRating(star)}
-                                                        className="transition-transform hover:scale-110 focus:outline-none"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            className={`h-8 w-8 ${star <= rating ? 'text-amber-400' : 'text-gray-300'}`}
-                                                            viewBox="0 0 20 20"
-                                                            fill="currentColor"
-                                                        >
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                        </svg>
-                                                    </button>
-                                                ))}
-                                                <span className="ml-2 text-sm font-medium text-gray-700">
-                                                    {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : "Not rated"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Detailed Review</label>
-                                    <textarea
-                                        value={review}
-                                        onChange={(e) => setReview(e.target.value)}
-                                        className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--color-burgundy)] focus:border-transparent transition-all duration-200"
-                                        rows="4"
-                                        placeholder="What did you like or dislike about this product? Share your experience..."
-                                    ></textarea>
-                                    <p className="text-xs text-gray-500 mt-1">Minimum 20 characters</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex justify-end gap-3">
-                            <button
-                                onClick={closeReviewModal}
-                                className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={submitReview}
-                                className="px-5 py-2.5 bg-[var(--color-burgundy)] text-white rounded-xl hover:bg-[var(--color-burgundy-dark)] transition-all duration-200 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                disabled={rating === 0}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                Submit Review
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ReviewModal
+                isOpen={showReviewModal}
+                onClose={closeReviewModal}
+                product={currentProduct}
+                rating={rating}
+                setRating={setRating}
+                review={review}
+                setReview={setReview}
+                artistRating={artistRating}
+                setArtistRating={setArtistRating}
+                artistComment={artistComment}
+                setArtistComment={setArtistComment}
+                onSubmit={submitReview}
+            />
 
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -314,7 +237,7 @@ const MyOrders = () => {
                                     </div>
                                     <div className="flex flex-col sm:items-end">
                                         <div className="text-sm text-gray-500 mb-1">
-                                            {new Date(order.orderDate).toLocaleDateString('en-US', {
+                                            {new Date(order.createdAt).toLocaleDateString('en-US', {
                                                 year: 'numeric',
                                                 month: 'long',
                                                 day: 'numeric',
@@ -334,7 +257,6 @@ const MyOrders = () => {
                                         </div>
                                     </div>
                                 </div>
-
                                 <div className="border-t border-gray-200 pt-4 mb-4">
                                     <div className="flex overflow-x-auto gap-4 pb-2">
                                         {order.products?.map((item, i) => (
@@ -360,14 +282,21 @@ const MyOrders = () => {
                                                     </p>
                                                 </div>
                                                 {order.status === 'Completed' && (
-                                                    <button
-                                                        onClick={() => openReviewModal(item, item.artist)}
-                                                        className="absolute bottom-2 right-2 bg-[var(--color-burgundy)] text-white p-1 rounded-full hover:bg-[var(--color-burgundy-dark)] transition-colors"
-                                                        title="Rate & Review"
-                                                    >
-                                                        <FiEdit2 size={14} />
-                                                    </button>
+                                                    <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn">
+                                                        <p className="text-xs text-[var(--color-burgundy)] font-semibold mb-1">
+                                                            Enjoyed this product? Leave a review!
+                                                        </p>
+                                                        <button
+                                                            onClick={() => openReviewModal(item, item.artist)}
+                                                            className="flex items-center gap-1 px-3 py-1 bg-[var(--color-burgundy)] text-white text-xs rounded-full hover:bg-[var(--color-coral)] transition-colors duration-300"
+                                                        >
+                                                            <FiStar size={14} className="text-yellow-300 animate-pulse" />
+                                                            Rate & Review
+                                                        </button>
+                                                    </div>
                                                 )}
+
+
                                             </div>
                                         ))}
                                     </div>

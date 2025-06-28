@@ -43,13 +43,14 @@ const Shop = () => {
                     image: p.image || [],
                     category: p.category?.name || "Uncategorized",
                     artist: p.artist?.name || "Unknown",
-                    rating: p.rating || 4.5,
-                    reviews: p.reviews || 0,
+                    averageRating: parseFloat(p.averageRating) || 0,
+                    totalReviews: p.totalReviews || 0,
                     inStock: p.quantity > 0,
                     description: p.description || "No description available.",
                     dimensions: p.dimensions || "Not specified",
                     material: p.material || "Not specified",
                 }));
+
 
 
 
@@ -76,9 +77,17 @@ const Shop = () => {
     }, [selected, products]);
 
     const toggleWishlist = (product) => {
-        const exists = wishlist.find(item => item.id === product.id);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
+        const exists = wishlist.find((item) => item.id === product.id);
         exists ? removeFromWishlist(product.id) : addToWishlist(product);
     };
+
 
     return (
         <>
@@ -107,8 +116,8 @@ const Shop = () => {
                                             key={name}
                                             onClick={() => setSelected(name)}
                                             className={`relative z-10 px-4 py-1.5 sm:px-6 sm:py-2 rounded-full text-sm sm:text-base transition-all duration-300 ${isSelected
-                                                    ? 'text-white font-medium'
-                                                    : 'text-gray-600 hover:text-[#E07385] font-medium'
+                                                ? 'text-white font-medium'
+                                                : 'text-gray-600 hover:text-[#E07385] font-medium'
                                                 }`}
                                         >
                                             {isSelected && (
