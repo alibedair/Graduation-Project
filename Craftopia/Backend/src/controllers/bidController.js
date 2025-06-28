@@ -3,6 +3,7 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const { firebase_db } = require('../config/firebase');
 const { sendBidReceivedEmail } = require('../utils/emailService');
+const { formatToLocaleString } = require('../utils/dateValidation');
 
 exports.placeBid = async (req, res) => {
     try {
@@ -73,18 +74,18 @@ exports.placeBid = async (req, res) => {
                 customerId: customer.customerId,
                 customerName: customer.name || 'Anonymous',
                 bidAmount: parseFloat(bidAmount),
-                timestamp: now.toISOString()
+                timestamp: formatToLocaleString(now)
             };
 
             currentAuction.currentPrice = parseFloat(bidAmount);
-            currentAuction.lastBidTime = now.toISOString();
+            currentAuction.lastBidTime = formatToLocaleString(now);
             currentAuction.bidCount = (currentAuction.bidCount || 0) + 1;
             currentAuction.lastBidder = userId;
             
             const timeLeftMinutes = (endTime - now) / (1000 * 60);
             if (timeLeftMinutes < 5) {
                 const newEndTime = new Date(now.getTime() + 5 * 60 * 1000); 
-                currentAuction.endDate = newEndTime.toISOString();
+                currentAuction.endDate = formatToLocaleString(newEndTime);
             }
             
             return currentAuction;
@@ -212,6 +213,53 @@ exports.getMyBids = async (req, res) => {
         
     } catch (error) {
         console.error('Error getting user bids:', error);
+        return res.status(500).json({message: 'Internal server error'});
+    }
+};
+
+
+exports.getTodayBids = async (req, res) => {
+    try {
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfDay = new Date(startOfDay);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        const auctionsSnapshot = await firebase_db.ref('auctions').once('value');
+        const auctions = auctionsSnapshot.val() || {};
+        
+        const todayBids = [];
+        
+        Object.entries(auctions).forEach(([auctionId, auction]) => {
+            if (auction.bids) {
+                Object.entries(auction.bids).forEach(([bidId, bid]) => {
+                    const bidTime = new Date(bid.timestamp);
+                    if (!isNaN(bidTime.getTime()) && bidTime >= startOfDay && bidTime <= endOfDay) {
+                        todayBids.push({
+                            auctionId,
+                            bidId,
+                            ...bid,
+                            auctionDetails: {
+                                productId: auction.productId,
+                                currentPrice: auction.currentPrice,
+                                endDate: auction.endDate,
+                                status: auction.status
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        todayBids.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        return res.status(200).json({
+            date: formatToLocaleString(now).split(',')[0],
+            totalBids: todayBids.length,
+            bids: todayBids
+        });
+        
+    } catch (error) {
+        console.error('Error getting today\'s bids:', error);
         return res.status(500).json({message: 'Internal server error'});
     }
 };

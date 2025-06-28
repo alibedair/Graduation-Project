@@ -26,4 +26,8 @@ router.get('/my-bids',
     bidController.getMyBids
 );
 
+router.get('/today-bids',
+    bidController.getTodayBids
+);
+
 module.exports = router;

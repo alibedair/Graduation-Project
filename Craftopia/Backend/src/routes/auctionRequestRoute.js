@@ -3,6 +3,7 @@ const auctionRequestController = require('../controllers/auctionRequestControlle
 const { body, param, query } = require('express-validator');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
+const { validateAuctionStartDate } = require('../utils/dateValidation');
 
 router.post('/create', 
     authMiddleware,
@@ -36,7 +37,7 @@ router.post('/schedule/:requestId',
     roleMiddleware('admin'),
     [
         param('requestId').isInt().withMessage('Request ID must be an integer'),
-        body('startDate').isISO8601().withMessage('Start date must be a valid date'),
+        body('startDate').custom(validateAuctionStartDate),
         body('Duration').optional().isInt({ min: 1 }).withMessage('Duration must be a positive integer (hours)'),
         body('adminNotes').optional().isString().withMessage('Admin notes must be a string')
     ],

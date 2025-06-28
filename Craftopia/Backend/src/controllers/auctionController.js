@@ -17,11 +17,14 @@ exports.getAuctions = async (req, res) => {
         }));
         const now = new Date();
         auctions = auctions.map(auction => {
-            if (auction.status === 'scheduled' && new Date(auction.startDate) <= now) {
+            const startDate = new Date(auction.startDate);
+            const endDate = new Date(auction.endDate);
+            
+            if (auction.status === 'scheduled' && startDate <= now) {
                 firebase_db.ref(`auctions/${auction.id}`).update({ status: 'active' });
                 return { ...auction, status: 'active' };
             }
-            if (auction.status === 'active' && new Date(auction.endDate) <= now) {
+            if (auction.status === 'active' && endDate <= now) {
                 firebase_db.ref(`auctions/${auction.id}`).update({ status: 'ended' });
                 return { ...auction, status: 'ended' };
             }
@@ -80,7 +83,11 @@ exports.getAuctions = async (req, res) => {
             product: productMap[auction.productId] || null
         }));
         
-        auctions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        auctions.sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateB - dateA;
+        });
 
         return res.status(200).json({ 
             auctions: auctions
@@ -106,9 +113,10 @@ exports.getAuctionDetails = async (req, res) => {
         if (!auctionData) {
             return res.status(404).json({ message: "Auction not found" });
         }
-          const now = new Date();
+        const now = new Date();
         const startTime = new Date(auctionData.startDate);
         const endTime = new Date(auctionData.endDate);
+        
         if (auctionData.status === 'scheduled' && now >= startTime) {
             await auctionRef.update({ status: 'active' });
             auctionData.status = 'active';

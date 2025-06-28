@@ -9,6 +9,7 @@ const Category = require('../models/category');
 const Product_Order = require('../models/Product_Order');
 const { Sequelize } = require('sequelize');
 const { sendAuctionApprovedEmail, sendAuctionRejectedEmail } = require('../utils/emailService');
+const { convertToDateTime, formatToLocaleString } = require('../utils/dateValidation');
 
 exports.createAuctionRequest = async (req, res) => {
     try {
@@ -174,12 +175,15 @@ exports.approveAndScheduleAuction = async (req, res) => {
             });
         }
         const durationHours = Duration || auctionRequest.suggestedDuration;
-        const startDateTime = new Date(startDate);
+        let startDateTime;
+        try {
+            startDateTime = convertToDateTime(startDate);
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
+        }
+        
         const endDateTime = new Date(startDateTime.getTime() + durationHours * 60 * 60 * 1000);
         const now = new Date();
-        if (isNaN(startDateTime.getTime())) {
-            return res.status(400).json({ message: 'Invalid start date format.' });
-        }
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
         if (startDateTime < oneHourAgo) {
             return res.status(400).json({ 
@@ -188,7 +192,8 @@ exports.approveAndScheduleAuction = async (req, res) => {
         }
         if (isNaN(endDateTime.getTime()) || endDateTime <= startDateTime) {
             return res.status(400).json({ message: 'Invalid duration. Must result in a future end date.' });
-        }const auctionRef = firebase_db.ref('auctions');
+        }
+        const auctionRef = firebase_db.ref('auctions');
         const newAuctionRef = auctionRef.push();
         const initialStatus = startDateTime <= now ? 'active' : 'scheduled';
         await newAuctionRef.set({
@@ -197,10 +202,10 @@ exports.approveAndScheduleAuction = async (req, res) => {
             requestId: auctionRequest.requestId,
             startingPrice: parseFloat(auctionRequest.startingPrice),
             currentPrice: parseFloat(auctionRequest.startingPrice),
-            startDate: startDateTime.toISOString(),
-            endDate: endDateTime.toISOString(),
+            startDate: formatToLocaleString(startDateTime),
+            endDate: formatToLocaleString(endDateTime),
             status: initialStatus,
-            createdAt: new Date().toISOString(),
+            createdAt: formatToLocaleString(new Date()),
             bidCount: 0,
             lastBidTime: null,
             incrementPercentage: 10,
@@ -226,8 +231,8 @@ exports.approveAndScheduleAuction = async (req, res) => {
                 const auctionDetails = {
                     productName: product.name,
                     startingPrice: parseFloat(auctionRequest.startingPrice || 0).toFixed(2),
-                    startDate: startDateTime.toISOString(),
-                    endDate: endDateTime.toISOString(),
+                    startDate: formatToLocaleString(startDateTime),
+                    endDate: formatToLocaleString(endDateTime),
                     auctionId: newAuctionRef.key
                 };
                 await sendAuctionApprovedEmail(artistUser.email, artist.name || 'Artist', auctionDetails);
@@ -239,8 +244,8 @@ exports.approveAndScheduleAuction = async (req, res) => {
             message: 'Auction request approved and auction scheduled successfully',
             auctionId: newAuctionRef.key,
             status: initialStatus,
-            scheduledStartDate: startDateTime.toISOString(),
-            scheduledEndDate: endDateTime.toISOString(),
+            scheduledStartDate: formatToLocaleString(startDateTime),
+            scheduledEndDate: formatToLocaleString(endDateTime),
             durationUsed: Duration ? 'admin-specified' : 'artist-suggested',
             durationHours: durationHours,
             automatedStatusUpdates: true,
