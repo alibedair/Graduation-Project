@@ -12,7 +12,8 @@ router.post('/placeOrder',
         body('productIds').isArray().withMessage('Product IDs must be an array'),
         body('productIds.*').isInt().withMessage('Each product ID must be an integer'),
         body('quantity').isArray().withMessage('Quantities must be an array'),
-        body('quantity.*').isInt({ min: 1 }).withMessage('Each quantity must be a positive integer')
+        body('quantity.*').isInt({ min: 1 }).withMessage('Each quantity must be a positive integer'),
+        body('optionValues').optional().isArray().withMessage('Option values must be an array')
     ],
     orderController.placeOrder
 );

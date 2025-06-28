@@ -11,6 +11,7 @@ const Product_Order = require('./Product_Order');
 const Category = require('./category');
 const Report = require('./report');
 const CustomizableOption = require('./customizableOption');
+const OptionValue = require('./optionValue');
 const Review = require('./Review');
 const Wishlist = require('./wishlist');
 const CustomizationRequest = require('./customizationRequest');
@@ -147,6 +148,14 @@ Customer.hasMany(Report, {
 Product.hasMany(CustomizableOption, { foreignKey: 'productId' });
 CustomizableOption.belongsTo(Product, { foreignKey: 'productId' });
 
+// CustomizableOption & OptionValue Relationship
+CustomizableOption.hasMany(OptionValue, { foreignKey: 'optionId' });
+OptionValue.belongsTo(CustomizableOption, { foreignKey: 'optionId' });
+
+// Order & OptionValue Relationship
+Order.hasMany(OptionValue, { foreignKey: 'orderId' });
+OptionValue.belongsTo(Order, { foreignKey: 'orderId' });
+
 // Product & Review Relationship
 Product.hasMany(Review, { foreignKey: 'productId' });
 Review.belongsTo(Product, { foreignKey: 'productId' });
@@ -260,6 +269,7 @@ module.exports = {
   Product_Order,
   Report,
   CustomizableOption,
+  OptionValue,
   Review,
   Wishlist,
   CustomizationRequest,
