@@ -11,7 +11,9 @@ router.post('/create',
         body('productId').isInt().withMessage('Product ID must be an integer'),
         body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
         body('review').notEmpty().withMessage('Review text is required')
-            .isLength({ min: 10, max: 500 }).withMessage('Review must be between 10 and 500 characters')
+            .isLength({ min: 10, max: 500 }).withMessage('Review must be between 10 and 500 characters'),
+        body('artistRating').optional().isInt({ min: 1, max: 5 }).withMessage('Artist rating must be between 1 and 5'),
+        body('artistComment').optional().isLength({ max: 500 }).withMessage('Artist comment must not exceed 500 characters')
     ],
     reviewController.createReview
 );

@@ -1,15 +1,20 @@
 const { Rating, Artist, Customer } = require('../models');
 const { Op } = require('sequelize');
+const { validationResult } = require('express-validator');
+const { updateArtistRating } = require('../utils/ratingUtils');
 const addRating = async (req, res) => {
-    try {const { artistId, rating, comment } = req.body;
-        if (!artistId) {
-            return res.status(400).json({ message: 'Artist ID is required' });
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                message: 'Validation errors',
+                errors: errors.array()
+            });
         }
-        if (!rating) {
-            return res.status(400).json({ message: 'Rating is required' });
-        }
-        
+
+        const { artistId, rating, comment } = req.body;
         const userId = req.user.id;
+        
         const customer = await Customer.findOne({ where: { userId } });
         if (!customer) {
             return res.status(404).json({ message: 'Customer not found' });
@@ -17,9 +22,6 @@ const addRating = async (req, res) => {
 
         const customerId = customer.customerId;
 
-        if (rating < 1 || rating > 5) {
-            return res.status(400).json({ message: 'Rating must be between 1 and 5' });
-        }
         const existingRating = await Rating.findOne({
             where: { customerId, artistId }
         });
@@ -36,6 +38,7 @@ const addRating = async (req, res) => {
                 comment
             });
         }
+        
         await updateArtistRating(artistId);
 
         res.status(201).json({
@@ -50,17 +53,22 @@ const addRating = async (req, res) => {
 
 const getArtistRatings = async (req, res) => {
     try {
-        const { artistId } = req.params;
-        if (!artistId) {
-            return res.status(400).json({ message: 'Artist ID is required' });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                message: 'Validation errors',
+                errors: errors.array()
+            });
         }
+
+        const { artistId } = req.params;
+        
         const artist = await Artist.findByPk(artistId,{
             attributes: ['artistId', 'name', 'username', 'profilePicture', 'averageRating', 'totalRatings']
         });
         if (!artist) {
             return res.status(404).json({ message: 'Artist not found' });
         }
-
 
         const ratings = await Rating.findAndCountAll({
             where: { artistId },
@@ -94,12 +102,17 @@ const getArtistRatings = async (req, res) => {
 
 const getCustomerRating = async (req, res) => {
     try {
-        const { artistId } = req.params;
-        if (!artistId) {
-            return res.status(400).json({ message: 'Artist ID is required' });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                message: 'Validation errors',
+                errors: errors.array()
+            });
         }
-        
+
+        const { artistId } = req.params;
         const userId = req.user.id;
+        
         const customer = await Customer.findOne({ where: { userId } });
         if (!customer) {
             return res.status(404).json({ message: 'Customer not found' });
@@ -119,35 +132,6 @@ const getCustomerRating = async (req, res) => {
     } catch (error) {
         console.error('Error fetching customer rating:', error);
         res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
-const updateArtistRating = async (artistId) => {
-    try {
-        if (!artistId) {
-            throw new Error('Artist ID is required for updating rating');
-        }
-        
-        const ratings = await Rating.findAll({
-            where: { artistId },
-            attributes: ['rating']
-        });
-
-        const totalRatings = ratings.length;
-        const averageRating = totalRatings > 0 
-            ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings 
-            : 0;
-
-        await Artist.update(
-            { 
-                averageRating: parseFloat(averageRating.toFixed(2)),
-                totalRatings 
-            },
-            { where: { artistId } }
-        );
-    } catch (error) {
-        console.error('Error updating artist rating:', error);
-        throw error;
     }
 };
 

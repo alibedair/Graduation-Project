@@ -4,7 +4,9 @@ const Customer = require('../models/customer');
 const Order = require('../models/order');
 const Artist = require('../models/artist');
 const Product_Order = require('../models/Product_Order');
+const Rating = require('../models/rating');
 const { validationResult } = require('express-validator');
+const { updateArtistRating } = require('../utils/ratingUtils');
 
 exports.createReview = async (req, res) => {
     try {
@@ -17,7 +19,7 @@ exports.createReview = async (req, res) => {
         }
 
         const userId = req.user.id;
-        const { productId, rating, review } = req.body;
+        const { productId, rating, review, artistRating, artistComment } = req.body;
         const customer = await Customer.findOne({ where: { userId } });
         if (!customer) {
             return res.status(403).json({ 
@@ -55,19 +57,39 @@ exports.createReview = async (req, res) => {
                 required: true
             }]
         });
-
+/*
         if (!hasPurchased) {
             return res.status(403).json({
                 message: 'You can only review products you have purchased and received'
             });
-        }
+        }*/
         const newReview = await Review.create({
             customerId: customer.customerId,
             productId: productId,
             rating: rating,
             review: review
         });
+        if (artistRating) {
+            const existingArtistRating = await Rating.findOne({
+                where: { customerId: customer.customerId, artistId: product.artistId }
+            });
 
+            if (existingArtistRating) {
+                await existingArtistRating.update({ 
+                    rating: artistRating,
+                    comment: artistComment || existingArtistRating.comment
+                });
+            } else {
+                await Rating.create({
+                    customerId: customer.customerId,
+                    artistId: product.artistId,
+                    rating: artistRating,
+                    comment: artistComment
+                });
+            }
+            
+            await updateArtistRating(product.artistId);
+        }
         res.status(201).json({
             message: 'Review created successfully',
             review: newReview
