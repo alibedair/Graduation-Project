@@ -22,10 +22,9 @@ const ProductInfo = ({ product }) => {
             ? product.inStock
             : Number(product.quantity ?? 0) > 0;
 
- const navigate = useNavigate();
-    useEffect(() => {
-        setQuantity(cartItem?.cartQuantity || 0);
-    }, [cartItem]);
+useEffect(() => {
+    setQuantity(cartItem?.cartQuantity || 0);
+}, [cartItem]);
     useEffect(() => {
         setReviewsCount(product.totalReviews || 0);
     }, [product.totalReviews]);
