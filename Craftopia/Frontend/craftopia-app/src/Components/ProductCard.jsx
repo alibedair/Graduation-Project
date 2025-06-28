@@ -16,9 +16,11 @@ const ProductCard = ({
     const [showControls, setShowControls] = useState(false);
     const [timerId, setTimerId] = useState(null);
 
-    const mainImage = Array.isArray(product.image)
-        ? product.image[0]
-        : product.image || "/placeholder.jpg";
+    if (!product) return null;
+    const mainImage =
+        Array.isArray(product.image) && product.image.length > 0
+            ? product.image[0]
+            : product.image || "/placeholder.jpg";
 
     const handleCardClick = () => {
         navigate(`/product/${product.id}`, { state: { product } });

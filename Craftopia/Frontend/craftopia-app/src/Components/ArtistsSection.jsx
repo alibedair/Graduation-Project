@@ -136,14 +136,6 @@ const ArtistsSection = () => {
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-        {/* <motion.button
-          whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(114,47,55,0.3)" }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/artists')}
-          className="bg-coral hover:bg-burgundy/90 text-cream px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 shadow-lg"
-        >
-          Discover All Artists
-        </motion.button> */}
 
         <Link to="/artists">
             <motion.button
