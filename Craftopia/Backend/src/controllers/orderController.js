@@ -211,7 +211,12 @@ exports.getOrderById = async (req, res) => {
                 through: { 
                     attributes: ['quantity']
                 }
-            }]
+            },{
+             model: OptionValue,
+                attributes: ['valueofOption'],
+                where: { orderId: orderId }
+            }
+        ]
         });
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
