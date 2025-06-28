@@ -4,7 +4,7 @@ import CartOverview from '../Components/CartOverview';
 import Footer from '../Components/Footer';
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, clearCart } = useCart();
+  const { cartItems, removeFromCart, clearCart, incrementQuantity, decrementQuantity } = useCart();
   const isCartEmpty = cartItems.length === 0;
 
   return (
@@ -38,8 +38,12 @@ const CartPage = () => {
                   <CartItem
                     key={item.id}
                     item={item}
-                    onQuantityChange={() => {}}
-                    onRemove={removeFromCart}
+                    onQuantityChange={(type) =>
+                      type === "inc"
+                        ? incrementQuantity(item)
+                        : decrementQuantity(item)
+                    }
+                    onRemove={() => removeFromCart(item.id)}
                   />
                 ))}
               </div>

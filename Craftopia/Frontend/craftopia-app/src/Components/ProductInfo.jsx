@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Star, Package, Ruler, Palette } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 const ProductInfo = ({ product }) => {
     const {
         cartItems,
@@ -11,9 +12,11 @@ const ProductInfo = ({ product }) => {
     } = useCart();
 
     const cartItem = cartItems.find((item) => item.id === product.id);
-    const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
+    const [quantity, setQuantity] = useState(cartItem?.cartQuantity || 0);
     const [reviewsCount, setReviewsCount] = useState(product.totalReviews || 0);
     const [selectedImage, setSelectedImage] = useState(null);
+    const navigate = useNavigate();
+
     const isAvailable =
         typeof product.inStock === "boolean"
             ? product.inStock
@@ -21,7 +24,7 @@ const ProductInfo = ({ product }) => {
 
 
     useEffect(() => {
-        setQuantity(cartItem?.quantity || 0);
+        setQuantity(cartItem?.cartQuantity || 0);
     }, [cartItem]);
     useEffect(() => {
         setReviewsCount(product.totalReviews || 0);
@@ -29,13 +32,14 @@ const ProductInfo = ({ product }) => {
 
     const handleAddToCart = () => {
         setQuantity(1);
-        addToCart(product);
+        addToCart(product, navigate);
+
     };
 
     const handleIncrease = () => {
         const newQty = quantity + 1;
         setQuantity(newQty);
-        updateQuantity(product.id, newQty);
+        updateQuantity(product, newQty);
     };
 
     const handleDecrease = () => {
@@ -45,10 +49,9 @@ const ProductInfo = ({ product }) => {
             removeFromCart(product.id);
         } else {
             setQuantity(newQty);
-            updateQuantity(product.id, newQty);
+            updateQuantity(product, newQty);
         }
     };
-
 
     const productImages = useMemo(() => {
         if (Array.isArray(product.image)) return product.image;
@@ -98,7 +101,7 @@ const ProductInfo = ({ product }) => {
             <div className="space-y-5">
                 <div className="space-y-1">
                     <p className="text-sm font-semibold uppercase text-[#e07385] tracking-wide">
-                         {typeof product.category === "string"
+                        {typeof product.category === "string"
                             ? product.category
                             : product.category?.name || "Handmade"}
                     </p>

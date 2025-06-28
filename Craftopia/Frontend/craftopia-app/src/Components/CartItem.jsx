@@ -1,26 +1,19 @@
-import { useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 
 const CartItem = ({ item, onQuantityChange, onRemove }) => {
-  const [quantity, setQuantity] = useState(item.quantity || 1);
-
   const handleDecrease = () => {
-    if (quantity > 1) {
-      const newQty = quantity - 1;
-      setQuantity(newQty);
-      onQuantityChange(item.id, newQty);
+    if (item.cartQuantity > 1) {
+      onQuantityChange('dec');
     }
   };
 
   const handleIncrease = () => {
-    const newQty = quantity + 1;
-    setQuantity(newQty);
-    onQuantityChange(item.id, newQty);
+    if (item.cartQuantity < item.stockQuantity) {
+      onQuantityChange('inc');
+    }
   };
 
-  const handleRemove = () => {
-    onRemove(item.id);
-  };
+  const reachedMax = item.cartQuantity >= item.stockQuantity;
 
   return (
     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
@@ -37,7 +30,7 @@ const CartItem = ({ item, onQuantityChange, onRemove }) => {
           </span>
 
           <p className="text-lg font-bold text-gray-900 mt-1">
-            ${(item.price * quantity).toFixed(2)}
+            ${(item.price * item.cartQuantity).toFixed(2)}
           </p>
         </div>
       </div>
@@ -46,18 +39,26 @@ const CartItem = ({ item, onQuantityChange, onRemove }) => {
           <button
             onClick={handleDecrease}
             className="px-2 text-lg text-gray-700"
-            disabled={quantity === 1}
+            disabled={item.cartQuantity <= 1}
           >
             −
           </button>
 
-          <span className="px-2">{quantity}</span>
-          <button onClick={handleIncrease} className="px-2 text-lg text-gray-700">
+          <span className="px-2">{item.cartQuantity}</span>
+
+          <button
+            onClick={handleIncrease}
+            className={`px-2 text-lg ${
+              reachedMax ? "text-gray-300 cursor-not-allowed" : "text-gray-700"
+            }`}
+            disabled={reachedMax}
+            title={reachedMax ? "Maximum stock reached" : ""}
+          >
             +
           </button>
         </div>
 
-        <button onClick={handleRemove} className="text-red-500 hover:text-red-700">
+        <button onClick={() => onRemove(item.id)} className="text-red-500 hover:text-red-700">
           <FiTrash2 size={20} />
         </button>
       </div>

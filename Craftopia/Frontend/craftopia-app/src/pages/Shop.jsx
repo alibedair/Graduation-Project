@@ -49,6 +49,7 @@ const Shop = () => {
                     description: p.description || "No description available.",
                     dimensions: p.dimensions || "Not specified",
                     material: p.material || "Not specified",
+                    quantity: p.quantity
                 }));
 
 
@@ -107,8 +108,8 @@ const Shop = () => {
                                             key={name}
                                             onClick={() => setSelected(name)}
                                             className={`relative z-10 px-4 py-1.5 sm:px-6 sm:py-2 rounded-full text-sm sm:text-base transition-all duration-300 ${isSelected
-                                                    ? 'text-white font-medium'
-                                                    : 'text-gray-600 hover:text-[#E07385] font-medium'
+                                                ? 'text-white font-medium'
+                                                : 'text-gray-600 hover:text-[#E07385] font-medium'
                                                 }`}
                                         >
                                             {isSelected && (
@@ -133,7 +134,6 @@ const Shop = () => {
                             >
                                 {filteredProducts.map((product) => {
                                     const inCart = cartItems.find((item) => item.id === product.id);
-                                    const quantity = inCart?.quantity || 0;
 
                                     return (
                                         <motion.div
@@ -147,11 +147,16 @@ const Shop = () => {
                                                 isFavorite={wishlist.some((item) => item.id === product.id)}
                                                 onToggleFavorite={() => toggleWishlist(product)}
                                                 isInCart={!!inCart}
-                                                quantity={quantity}
+                                                quantity={inCart?.cartQuantity || 0}
                                                 onAddToCart={() => addToCart(product, navigate)}
-                                                onIncrement={() => incrementQuantity(product.id)}
-                                                onDecrement={() => decrementQuantity(product.id)}
+                                                onIncrement={() => {
+                                                    if (inCart) incrementQuantity(inCart);
+                                                }}
+                                                onDecrement={() => {
+                                                    if (inCart && inCart.cartQuantity > 0) decrementQuantity(inCart);
+                                                }}
                                             />
+
                                         </motion.div>
                                     );
                                 })}

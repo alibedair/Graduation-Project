@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCart } from "../context/CartContext";
 
 const PaymentPage = () => {
     const { orderId } = useParams();
@@ -12,6 +13,7 @@ const PaymentPage = () => {
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [expiryDate, setExpiryDate] = useState('');
     const [cardFocused, setCardFocused] = useState(false);
+    const { clearCart } = useCart();
 
     const navigate = useNavigate();
 
@@ -65,7 +67,7 @@ const PaymentPage = () => {
                     },
                 }
             );
-
+            clearCart();
             setPaymentSuccess(true);
             setTimeout(() => {
                 navigate('/orders');
@@ -144,89 +146,89 @@ const PaymentPage = () => {
         );
     }
 
-   if (paymentSuccess) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[var(--color-cream)]/30 to-white p-6 overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-40 h-40 bg-[var(--color-burgundy)]/5 rounded-full filter blur-xl transform -translate-x-20 -translate-y-20"></div>
-            <div className="absolute bottom-0 right-0 w-60 h-60 bg-[var(--color-coral)]/5 rounded-full filter blur-xl transform translate-x-20 translate-y-20"></div>
-            <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8 text-center relative z-10 transform transition-all duration-700 animate-float">
-                <div className="relative mx-auto mb-8">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-burgundy)] to-[var(--color-coral)] rounded-full opacity-20 blur-md animate-pulse-slow w-24 h-24 -ml-12 -mt-12"></div>
-                    <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-green-100 to-green-50 shadow-inner mb-6 animate-scale-pop border-4 border-green-100/50">
-                        <svg
-                            className="h-10 w-10 text-green-600 animate-draw-check"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                        >
-                            <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                d="M5 13l4 4L19 7" 
-                                pathLength="100"
-                                strokeDasharray="100"
-                                strokeDashoffset="100"
-                                style={{
-                                    animation: "draw-check 1s ease-in-out forwards",
-                                    animationDelay: "0.3s"
-                                }}
-                            />
-                        </svg>
-                    </div>
-                </div>
-                <div className="space-y-4">
-                    <h2 className="text-4xl font-extrabold text-gray-800 mb-2 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
-                        Payment Successful!
-                    </h2>
-                    <p className="text-xl text-gray-600 animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
-                        Your order <span className="font-semibold text-[var(--color-coral)]">#{order.orderId}</span> has been completed.
-                    </p>
-                    <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
-                        <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[var(--color-cream)]/30 to-white rounded-full border border-[var(--color-cream)] shadow-sm">
-                            <span className="text-lg font-medium text-gray-500 mr-2">Amount Paid:</span>
-                            <span className="text-2xl font-bold text-[var(--color-burgundy)]">
-                                {parseFloat(order.totalAmount).toLocaleString('en-US', {
-                                    style: 'currency',
-                                    currency: 'EGP',
-                                    minimumFractionDigits: 2,
-                                })}
-                            </span>
+    if (paymentSuccess) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[var(--color-cream)]/30 to-white p-6 overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-40 h-40 bg-[var(--color-burgundy)]/5 rounded-full filter blur-xl transform -translate-x-20 -translate-y-20"></div>
+                <div className="absolute bottom-0 right-0 w-60 h-60 bg-[var(--color-coral)]/5 rounded-full filter blur-xl transform translate-x-20 translate-y-20"></div>
+                <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8 text-center relative z-10 transform transition-all duration-700 animate-float">
+                    <div className="relative mx-auto mb-8">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-burgundy)] to-[var(--color-coral)] rounded-full opacity-20 blur-md animate-pulse-slow w-24 h-24 -ml-12 -mt-12"></div>
+                        <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-green-100 to-green-50 shadow-inner mb-6 animate-scale-pop border-4 border-green-100/50">
+                            <svg
+                                className="h-10 w-10 text-green-600 animate-draw-check"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M5 13l4 4L19 7"
+                                    pathLength="100"
+                                    strokeDasharray="100"
+                                    strokeDashoffset="100"
+                                    style={{
+                                        animation: "draw-check 1s ease-in-out forwards",
+                                        animationDelay: "0.3s"
+                                    }}
+                                />
+                            </svg>
                         </div>
                     </div>
-                    <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.7s" }}>
-                        <div className="relative pt-1">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-[var(--color-burgundy)] bg-[var(--color-cream)]">
-                                        Redirecting...
-                                    </span>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xs font-semibold inline-block text-[var(--color-coral)]">
-                                        3s
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="overflow-hidden h-2 mt-2 rounded-full bg-gray-100">
-                                <div 
-                                    className="h-full rounded-full bg-gradient-to-r from-[var(--color-burgundy)] to-[var(--color-coral)] animate-progress"
-                                    style={{ animationDuration: "3s" }}
-                                ></div>
+                    <div className="space-y-4">
+                        <h2 className="text-4xl font-extrabold text-gray-800 mb-2 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+                            Payment Successful!
+                        </h2>
+                        <p className="text-xl text-gray-600 animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
+                            Your order <span className="font-semibold text-[var(--color-coral)]">#{order.orderId}</span> has been completed.
+                        </p>
+                        <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
+                            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[var(--color-cream)]/30 to-white rounded-full border border-[var(--color-cream)] shadow-sm">
+                                <span className="text-lg font-medium text-gray-500 mr-2">Amount Paid:</span>
+                                <span className="text-2xl font-bold text-[var(--color-burgundy)]">
+                                    {parseFloat(order.totalAmount).toLocaleString('en-US', {
+                                        style: 'currency',
+                                        currency: 'EGP',
+                                        minimumFractionDigits: 2,
+                                    })}
+                                </span>
                             </div>
                         </div>
-                    </div>
-                    <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.8s" }}>
-                        <button 
-                            onClick={() => navigate('/')}
-                            className="px-6 py-3 text-sm font-medium text-[var(--color-burgundy)] hover:text-white border border-[var(--color-burgundy)] hover:bg-[var(--color-burgundy)] rounded-full transition-all duration-300 hover:shadow-lg"
-                        >
-                            Continue Shopping
-                        </button>
+                        <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.7s" }}>
+                            <div className="relative pt-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-[var(--color-burgundy)] bg-[var(--color-cream)]">
+                                            Redirecting...
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-xs font-semibold inline-block text-[var(--color-coral)]">
+                                            3s
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="overflow-hidden h-2 mt-2 rounded-full bg-gray-100">
+                                    <div
+                                        className="h-full rounded-full bg-gradient-to-r from-[var(--color-burgundy)] to-[var(--color-coral)] animate-progress"
+                                        style={{ animationDuration: "3s" }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.8s" }}>
+                            <button
+                                onClick={() => navigate('/')}
+                                className="px-6 py-3 text-sm font-medium text-[var(--color-burgundy)] hover:text-white border border-[var(--color-burgundy)] hover:bg-[var(--color-burgundy)] rounded-full transition-all duration-300 hover:shadow-lg"
+                            >
+                                Continue Shopping
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <style jsx global>{`
+                <style jsx global>{`
                 @keyframes float {
                     0%, 100% { transform: translateY(0); }
                     50% { transform: translateY(-10px); }
@@ -271,9 +273,9 @@ const PaymentPage = () => {
                     animation: progress 3s linear forwards;
                 }
             `}</style>
-        </div>
-    );
-}
+            </div>
+        );
+    }
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">

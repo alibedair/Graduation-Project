@@ -32,19 +32,21 @@ const AvaliableProducts = () => {
       .then((res) => {
         const fetched = res.data.products || [];
         const formatted = fetched.map((p) => ({
-  id: p.productId,
-  name: p.name,
-  price: p.price,
-  image: p.image, // pass full array here
-  rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-  reviews: Math.floor(Math.random() * 50 + 5),
-  description: p.description,
-  dimensions: p.dimensions,
-  material: p.material,
-  category: p.category?.name || "Uncategorized",
-  artist: p.artist?.name || "Unknown Artist",
-  inStock: p.quantity > 0,
-}));
+          id: p.productId,
+          name: p.name,
+          price: p.price,
+          image: p.image,
+          rating: (Math.random() * (5 - 4) + 4).toFixed(1),
+          reviews: Math.floor(Math.random() * 50 + 5),
+          description: p.description,
+          dimensions: p.dimensions,
+          material: p.material,
+          category: p.category?.name || "Uncategorized",
+          artist: p.artist?.name || "Unknown Artist",
+          inStock: p.quantity > 0,
+          quantity: p.quantity,
+        }));
+
 
         setProducts(formatted);
       })
@@ -85,7 +87,6 @@ const AvaliableProducts = () => {
   return (
     <section className="py-20 bg-cream overflow-hidden">
       <div className="container mx-auto px-4 relative">
-        {/* Header with motion */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -100,8 +101,6 @@ const AvaliableProducts = () => {
             Browse unique, handmade items crafted by talented artists
           </p>
         </motion.div>
-
-        {/* Arrows */}
         {canScrollLeft && (
           <button
             onClick={() => handleScroll("left")}
@@ -118,8 +117,6 @@ const AvaliableProducts = () => {
             <FiChevronRight className="text-[#921A40] text-2xl" />
           </button>
         )}
-
-        {/* Horizontal Scroll Container */}
         <motion.div
           ref={scrollRef}
           className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"
@@ -137,7 +134,7 @@ const AvaliableProducts = () => {
           {products.map((product, index) => {
             const isFavorite = wishlist.some((item) => item.id === product.id);
             const inCart = cartItems.find((item) => item.id === product.id);
-            const quantity = inCart?.quantity || 0;
+            const quantity = inCart?.cartQuantity || 0;
 
             return (
               <motion.div
@@ -156,9 +153,16 @@ const AvaliableProducts = () => {
                   isInCart={!!inCart}
                   quantity={quantity}
                   onAddToCart={() => addToCart(product, navigate)}
-                  onIncrement={() => incrementQuantity(product.id)}
-                  onDecrement={() => decrementQuantity(product.id)}
+                  onIncrement={() => {
+  if (inCart) incrementQuantity(inCart);
+}}
+
+                  onDecrement={() => {
+  if (inCart) decrementQuantity(inCart);
+}}
+
                 />
+
               </motion.div>
             );
           })}

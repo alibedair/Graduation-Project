@@ -12,10 +12,10 @@ const BestSellingProducts = () => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
-  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -25,13 +25,15 @@ const BestSellingProducts = () => {
         },
       })
       .then((res) => {
-        const products = res.data.products || [];
-        const sorted = [...products].sort((a, b) => b.sellingNumber - a.sellingNumber);
+        const sorted = [...(res.data.products || [])].sort(
+          (a, b) => b.sellingNumber - a.sellingNumber
+        );
+
         const formatted = sorted.map((p) => ({
           id: p.productId,
           name: p.name,
           price: p.price,
-          image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ['/placeholder.jpg'],
+          image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ["/placeholder.jpg"],
           category: p.category?.name || "Uncategorized",
           artist: p.artist?.name || "Unknown",
           rating: (Math.random() * (5 - 4) + 4).toFixed(1),
@@ -41,6 +43,7 @@ const BestSellingProducts = () => {
           material: p.material || "Not specified",
           dimensions: p.dimensions || "Not specified",
           sold: p.sellingNumber || 0,
+          quantity: p.quantity,
         }));
 
         setProducts(formatted);
@@ -104,7 +107,6 @@ const BestSellingProducts = () => {
             <FiChevronLeft className="text-[#921A40] text-2xl" />
           </button>
         )}
-
         {canScrollRight && (
           <button
             onClick={() => handleScroll("right")}
@@ -130,7 +132,7 @@ const BestSellingProducts = () => {
           {products.map((product, index) => {
             const isFavorite = wishlist.some((item) => item.id === product.id);
             const inCart = cartItems.find((item) => item.id === product.id);
-            const quantity = inCart?.quantity || 0;
+            const quantity = inCart?.cartQuantity || 0;
 
             return (
               <motion.div
@@ -140,7 +142,7 @@ const BestSellingProducts = () => {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ scale: 1.05, rotateY: 5 }}
                 viewport={{ once: true }}
-                className="group cursor-pointer snap-centerw-[300px] md:w-[330px] flex-shrink-0"
+                className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
               >
                 <ProductCard
                   product={product}
@@ -149,8 +151,13 @@ const BestSellingProducts = () => {
                   isInCart={!!inCart}
                   quantity={quantity}
                   onAddToCart={() => addToCart(product, navigate)}
-                  onIncrement={() => incrementQuantity(product.id)}
-                  onDecrement={() => decrementQuantity(product.id)}
+                  onIncrement={() => {
+  if (inCart) incrementQuantity(inCart);
+}}
+onDecrement={() => {
+  if (inCart && quantity > 0) decrementQuantity(inCart);
+}}
+
                 />
               </motion.div>
             );

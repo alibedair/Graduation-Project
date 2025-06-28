@@ -124,67 +124,67 @@ const ArtistProfileCustomer = () => {
   const [reportSuccess, setReportSuccess] = useState("");
   const [reportError, setReportError] = useState("");
   const navigate = useNavigate();
-  
+
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
   useEffect(() => {
-const fetchArtistData = async () => {
-  try {
-    const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`);
-    const profileData = await profileRes.json();
+    const fetchArtistData = async () => {
+      try {
+        const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`);
+        const profileData = await profileRes.json();
 
-    const token = localStorage.getItem('token'); // Only needed for product fetch if required
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const token = localStorage.getItem('token'); // Only needed for product fetch if required
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
-      headers
-    });
-    const productData = await productRes.json();
+        const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
+          headers
+        });
+        const productData = await productRes.json();
 
-    const a = profileData.artist;
+        const a = profileData.artist;
 
-    setArtist({
-      id: a.artistId,
-      name: a.name,
-      username: a.username,
-      avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
-      coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
-      bio: a.biography,
-      joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-      specialties: ['Handmade', 'Artisan'],
-      video: a.profileVideo,
-      stats: {
-        products: productData.products.length,
-        sales: Number(a.sales),
-        rating: parseFloat(a.averageRating || 0).toFixed(1),
-        reviews: a.totalRatings,
-        followers: 0,
-        views: a.visitors
+        setArtist({
+          id: a.artistId,
+          name: a.name,
+          username: a.username,
+          avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
+          coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
+          bio: a.biography,
+          joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          specialties: ['Handmade', 'Artisan'],
+          video: a.profileVideo,
+          stats: {
+            products: productData.products.length,
+            sales: Number(a.sales),
+            rating: parseFloat(a.averageRating || 0).toFixed(1),
+            reviews: a.totalRatings,
+            followers: 0,
+            views: a.visitors
+          }
+        });
+
+        setProducts(productData.products.map(p => ({
+          id: p.productId,
+          name: p.name,
+          price: p.price,
+          originalPrice: null,
+          image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
+          quantity: p.quantity || 0,
+          inStock: p.quantity > 0,
+          description: p.description || '',
+          dimensions: p.dimensions || '',
+          material: p.material || '',
+          rating: p.averageRating || 0,
+          reviews: p.totalReviews || 0,
+          isOnSale: false
+        })));
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch artist or product data:', error);
+        setLoading(false);
       }
-    });
-
-    setProducts(productData.products.map(p => ({
-      id: p.productId,
-      name: p.name,
-      price: p.price,
-      originalPrice: null,
-      image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
-      quantity: p.quantity || 0,
-      inStock: p.quantity > 0,
-      description: p.description || '',
-      dimensions: p.dimensions || '',
-      material: p.material || '',
-      rating: p.averageRating || 0,
-      reviews: p.totalReviews || 0,
-      isOnSale: false
-    })));
-
-    setLoading(false);
-  } catch (error) {
-    console.error('Failed to fetch artist or product data:', error);
-    setLoading(false);
-  }
-};
+    };
 
 
     fetchArtistData();
@@ -231,35 +231,35 @@ const fetchArtistData = async () => {
   };
 
 
-const handleToggleFollow = async () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    toast.error("Please login to follow an artist.");
-    // setTimeout(() => navigate("/login"), 1500); 
-    return;
-  }
-
-  const url = isFollowing
-    ? `http://localhost:3000/customer/unfollow/${id}`
-    : `http://localhost:3000/customer/follow/${id}`;
-
-  try {
-    const res = await fetch(url, {
-      method: isFollowing ? "DELETE" : "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.ok) {
-      setIsFollowing(!isFollowing);
-    } else {
-      console.error("Failed to toggle follow state");
+  const handleToggleFollow = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login to follow an artist.");
+      // setTimeout(() => navigate("/login"), 1500); 
+      return;
     }
-  } catch (err) {
-    console.error("Error during follow/unfollow:", err);
-  }
-};
+
+    const url = isFollowing
+      ? `http://localhost:3000/customer/unfollow/${id}`
+      : `http://localhost:3000/customer/follow/${id}`;
+
+    try {
+      const res = await fetch(url, {
+        method: isFollowing ? "DELETE" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setIsFollowing(!isFollowing);
+      } else {
+        console.error("Failed to toggle follow state");
+      }
+    } catch (err) {
+      console.error("Error during follow/unfollow:", err);
+    }
+  };
 
 
   const reviews = [
@@ -275,49 +275,49 @@ const handleToggleFollow = async () => {
     }
   ];
   const handleReportSubmit = async () => {
-  if (!reportMessage.trim()) {
-    setReportError("Please enter a message.");
-    return;
-  }
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    setReportError("You must be logged in to report.");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("content", reportMessage);
-  if (attachment) {
-    formData.append("attachment", attachment);
-  }
-
-  try {
-    const res = await fetch(`http://localhost:3000/report/createReportArtist/${artist.username}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      body: formData
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      setReportSuccess("Report submitted successfully.");
-      setReportMessage("");
-      setAttachment(null);
-
-      setTimeout(() => {
-        setReportSuccess("");
-        setShowReportModal(false);
-      }, 2000);
-    } else {
-      setReportError(data.message || "Failed to submit report.");
+    if (!reportMessage.trim()) {
+      setReportError("Please enter a message.");
+      return;
     }
-  } catch (err) {
-    setReportError("An error occurred while submitting the report.");
-  }
-};
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setReportError("You must be logged in to report.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("content", reportMessage);
+    if (attachment) {
+      formData.append("attachment", attachment);
+    }
+
+    try {
+      const res = await fetch(`http://localhost:3000/report/createReportArtist/${artist.username}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setReportSuccess("Report submitted successfully.");
+        setReportMessage("");
+        setAttachment(null);
+
+        setTimeout(() => {
+          setReportSuccess("");
+          setShowReportModal(false);
+        }, 2000);
+      } else {
+        setReportError(data.message || "Failed to submit report.");
+      }
+    } catch (err) {
+      setReportError("An error occurred while submitting the report.");
+    }
+  };
 
 
   return (
@@ -406,11 +406,18 @@ const handleToggleFollow = async () => {
                     isFavorite={isFavorite(product.id)}
                     onToggleFavorite={() => toggleFavorite(product)}
                     isInCart={!!cartItems.find((item) => item.id === product.id)}
-                    quantity={cartItems.find((item) => item.id === product.id)?.quantity || 0}
+                    quantity={cartItems.find((item) => item.id === product.id)?.cartQuantity || 0}
                     onAddToCart={() => addToCart(product)}
-                    onIncrement={() => incrementQuantity(product.id)}
-                    onDecrement={() => decrementQuantity(product.id)}
+                    onIncrement={() => {
+                      const inCart = cartItems.find((item) => item.id === product.id);
+                      if (inCart) incrementQuantity(inCart);
+                    }}
+                    onDecrement={() => {
+                      const inCart = cartItems.find((item) => item.id === product.id);
+                      if (inCart && inCart.cartQuantity > 0) decrementQuantity(inCart);
+                    }}
                   />
+
 
                 </motion.div>
               ))}
@@ -446,8 +453,8 @@ const handleToggleFollow = async () => {
                 <button
                   onClick={() => setActiveSection("gallery")}
                   className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
-                      ? "bg-[#E07385] text-white shadow-md"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-[#E07385] text-white shadow-md"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                 >
                   Gallery Products
@@ -455,8 +462,8 @@ const handleToggleFollow = async () => {
                 <button
                   onClick={() => setActiveSection("auction")}
                   className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "auction"
-                      ? "bg-[#E07385] text-white shadow-md"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-[#E07385] text-white shadow-md"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                 >
                   Auction Products
@@ -543,51 +550,51 @@ const handleToggleFollow = async () => {
         </Tabs>
       </div>
       {showReportModal && (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-    <div className="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative transition-all duration-300">
-      {reportSuccess ? (
-        <div className="text-center py-10">
-          <h2 className="text-xl font-bold text-green-600 mb-3">✅ Report Submitted!</h2>
-          <p className="text-gray-700">Thank you for helping us keep the community safe.</p>
-        </div>
-      ) : (
-        <>
-          <h2 className="text-xl font-bold text-burgundy mb-4">Report Artist</h2>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative transition-all duration-300">
+            {reportSuccess ? (
+              <div className="text-center py-10">
+                <h2 className="text-xl font-bold text-green-600 mb-3">✅ Report Submitted!</h2>
+                <p className="text-gray-700">Thank you for helping us keep the community safe.</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-burgundy mb-4">Report Artist</h2>
 
-          <textarea
-            className="w-full p-3 border rounded-lg bg-white text-sm text-gray-800 mb-4"
-            rows={4}
-            placeholder="Enter your message..."
-            value={reportMessage}
-            onChange={(e) => setReportMessage(e.target.value)}
-          />
+                <textarea
+                  className="w-full p-3 border rounded-lg bg-white text-sm text-gray-800 mb-4"
+                  rows={4}
+                  placeholder="Enter your message..."
+                  value={reportMessage}
+                  onChange={(e) => setReportMessage(e.target.value)}
+                />
 
-          <label className="block mb-4">
-            <span className="text-sm font-medium text-burgundy block mb-1">Attach Screenshot (optional)</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setAttachment(e.target.files[0])}
-              className="w-full border rounded-md px-3 py-2 text-sm"
-            />
-            {attachment && (
-              <p className="text-sm text-gray-600 mt-1">📎 {attachment.name}</p>
+                <label className="block mb-4">
+                  <span className="text-sm font-medium text-burgundy block mb-1">Attach Screenshot (optional)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setAttachment(e.target.files[0])}
+                    className="w-full border rounded-md px-3 py-2 text-sm"
+                  />
+                  {attachment && (
+                    <p className="text-sm text-gray-600 mt-1">📎 {attachment.name}</p>
+                  )}
+                </label>
+
+                {reportError && <p className="text-red-500 text-sm mb-2">{reportError}</p>}
+                <div className="flex justify-end gap-3 mt-4">
+                  <Button variant="outline" onClick={() => setShowReportModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleReportSubmit}>Submit Report</Button>
+                </div>
+              </>
             )}
-          </label>
-
-          {reportError && <p className="text-red-500 text-sm mb-2">{reportError}</p>}
-          <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={() => setShowReportModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleReportSubmit}>Submit Report</Button>
           </div>
-        </>
+        </div>
       )}
-    </div>
-  </div>
-)}    
-<Footer />
+      <Footer />
 
     </div>
 

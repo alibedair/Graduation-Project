@@ -47,6 +47,8 @@ const ProductCard = ({
         onAddToCart?.(product, navigate);
     };
 
+    const maxReached = quantity >= product.quantity;
+
     return (
         <div
             onClick={handleCardClick}
@@ -76,10 +78,11 @@ const ProductCard = ({
                     aria-label="Toggle wishlist"
                 >
                     <Heart
-                        className={`h-4 w-4 transition-colors duration-200 ${isFavorite
-                            ? "fill-[#E07385] text-[#E07385]"
-                            : "text-gray-400 hover:text-[#E07385]"
-                            }`}
+                        className={`h-4 w-4 transition-colors duration-200 ${
+                            isFavorite
+                                ? "fill-[#E07385] text-[#E07385]"
+                                : "text-gray-400 hover:text-[#E07385]"
+                        }`}
                     />
                 </button>
             </div>
@@ -139,12 +142,20 @@ const ProductCard = ({
                                     >
                                         <Minus className="w-4 h-4 text-gray-600" />
                                     </button>
-                                    <span className="text-sm font-semibold text-gray-800">{quantity}</span>
+                                    <span className="text-sm font-semibold text-gray-800">
+                                        {quantity}
+                                    </span>
                                     <button
-                                        onClick={() => onIncrement?.(product)}
-                                        className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                                        onClick={() => !maxReached && onIncrement?.(product)}
+                                        disabled={maxReached}
+                                        title={maxReached ? "Maximum stock reached" : "Increase quantity"}
+                                        className={`p-1.5 rounded-full transition ${
+                                            maxReached
+                                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                                : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                                        }`}
                                     >
-                                        <Plus className="w-4 h-4 text-gray-600" />
+                                        <Plus className="w-4 h-4" />
                                     </button>
                                 </div>
                             ) : (
