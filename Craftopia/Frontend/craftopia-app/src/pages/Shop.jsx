@@ -43,14 +43,15 @@ const Shop = () => {
                     image: p.image || [],
                     category: p.category?.name || "Uncategorized",
                     artist: p.artist?.name || "Unknown",
-                    rating: p.rating || 4.5,
-                    reviews: p.reviews || 0,
+                    averageRating: parseFloat(p.averageRating) || 0,
+                    totalReviews: p.totalReviews || 0,
                     inStock: p.quantity > 0,
                     description: p.description || "No description available.",
                     dimensions: p.dimensions || "Not specified",
                     material: p.material || "Not specified",
                     quantity: p.quantity
                 }));
+
 
 
 
@@ -77,9 +78,17 @@ const Shop = () => {
     }, [selected, products]);
 
     const toggleWishlist = (product) => {
-        const exists = wishlist.find(item => item.id === product.id);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
+        const exists = wishlist.find((item) => item.id === product.id);
         exists ? removeFromWishlist(product.id) : addToWishlist(product);
     };
+
 
     return (
         <>

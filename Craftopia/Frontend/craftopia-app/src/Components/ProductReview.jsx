@@ -200,39 +200,6 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
           );
         })}
       </div>
-      <div className="border-t pt-10">
-        <h3 className="text-xl font-bold mb-4">Leave a Review</h3>
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                onClick={() => setNewRating(star)}
-                className={`w-6 h-6 cursor-pointer ${
-                  star <= newRating ? "text-yellow-400 fill-current" : "text-gray-300"
-                }`}
-              />
-            ))}
-          </div>
-          <textarea
-            className="w-full p-3 border rounded-lg"
-            rows={4}
-            placeholder="Write your review (10–500 characters)..."
-            value={newReview}
-            onChange={(e) => setNewReview(e.target.value)}
-          />
-          <div className="text-sm text-gray-500 text-right">
-            {newReview.length}/500 characters
-          </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button
-            onClick={handleSubmitReview}
-            className="bg-[#E07385] text-white font-semibold px-6 py-2 rounded-full shadow hover:opacity-90"
-          >
-            Submit Review
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

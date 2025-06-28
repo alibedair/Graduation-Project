@@ -75,9 +75,8 @@ exports.createReview = async (req, res) => {
             });
 
             if (existingArtistRating) {
-                await existingArtistRating.update({ 
-                    rating: artistRating,
-                    comment: artistComment || existingArtistRating.comment
+                return res.status(400).json({
+                    message: 'You have already rated this artist'
                 });
             } else {
                 await Rating.create({

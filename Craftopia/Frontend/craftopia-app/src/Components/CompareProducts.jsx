@@ -105,7 +105,7 @@ const CompareProducts = () => {
                                         <div className="flex items-center text-yellow-500">
                                             <Star size={14} fill="currentColor" />
                                             <span className="text-xs ml-1 text-gray-700">
-                                                {product.averageRating?.toFixed(1) || "0.0"}
+                                                {Number(product.averageRating || 0).toFixed(1)}
                                             </span>
                                         </div>
                                     </div>
@@ -193,9 +193,9 @@ const CompareProducts = () => {
                                                     <Star
                                                         key={i}
                                                         size={14}
-                                                        className={`${i < Math.floor(p.averageRating || 0)
-                                                            ? "text-[#E07385] fill-current"
-                                                            : "text-gray-300"
+                                                        className={`${i < Math.floor(Number(p.averageRating) || 0)
+                                                                ? "text-[#E07385] fill-current"
+                                                                : "text-gray-300"
                                                             }`}
                                                     />
                                                 ))}

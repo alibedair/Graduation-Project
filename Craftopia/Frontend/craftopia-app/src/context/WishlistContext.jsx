@@ -55,21 +55,33 @@ export const WishlistProvider = ({ children }) => {
 
 
   const addToWishlist = async (product) => {
-    try {
-      await axios.post(`http://localhost:3000/wishlist/add/${product.id}`, null, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      setWishlist((prev) => [...prev, product]);
-    } catch (error) {
-      if (error.response?.data?.message === "Product already in wishlist") {
-        console.warn("Already in wishlist.");
-      } else {
-        console.error("Failed to add to wishlist:", error);
-      }
+  try {
+    await axios.post(`http://localhost:3000/wishlist/add/${product.id}`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const normalizedProduct = {
+      ...product,
+      id: product.productId || product.id,
+      category: product.category || { name: "Unknown" },
+      artist: product.artist || { name: "Unknown" },
+      inStock: product.quantity > 0,
+      averageRating: product.averageRating || 0,
+      totalReviews: product.totalReviews || 0,
+    };
+
+    setWishlist((prev) => [...prev, normalizedProduct]);
+  } catch (error) {
+    if (error.response?.data?.message === "Product already in wishlist") {
+      console.warn("Already in wishlist.");
+    } else {
+      console.error("Failed to add to wishlist:", error);
     }
-  };
+  }
+};
+
 
   const removeFromWishlist = async (productId) => {
   try {

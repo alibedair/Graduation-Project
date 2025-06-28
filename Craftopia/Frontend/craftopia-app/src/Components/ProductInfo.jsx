@@ -22,7 +22,7 @@ const ProductInfo = ({ product }) => {
             ? product.inStock
             : Number(product.quantity ?? 0) > 0;
 
-
+ const navigate = useNavigate();
     useEffect(() => {
         setQuantity(cartItem?.cartQuantity || 0);
     }, [cartItem]);
@@ -31,27 +31,41 @@ const ProductInfo = ({ product }) => {
     }, [product.totalReviews]);
 
     const handleAddToCart = () => {
-        setQuantity(1);
-        addToCart(product, navigate);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    setQuantity(1);
+    addToCart(product);
+  };
+   const handleIncrease = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    const newQty = quantity + 1;
+    setQuantity(newQty);
+    updateQuantity(product.id, newQty);
+  };
 
-    };
+  const handleDecrease = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    const newQty = quantity - 1;
+    if (newQty <= 0) {
+      setQuantity(0);
+      removeFromCart(product.id);
+    } else {
+      setQuantity(newQty);
+      updateQuantity(product.id, newQty);
+    }
+  };
 
-    const handleIncrease = () => {
-        const newQty = quantity + 1;
-        setQuantity(newQty);
-        updateQuantity(product, newQty);
-    };
-
-    const handleDecrease = () => {
-        const newQty = quantity - 1;
-        if (newQty <= 0) {
-            setQuantity(0);
-            removeFromCart(product.id);
-        } else {
-            setQuantity(newQty);
-            updateQuantity(product, newQty);
-        }
-    };
 
     const productImages = useMemo(() => {
         if (Array.isArray(product.image)) return product.image;

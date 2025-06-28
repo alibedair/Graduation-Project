@@ -9,6 +9,7 @@ const Customer = require('../models/customer');
 const Category = require('../models/category');
 const Visitor = require('../models/visitor');
 const Review = require('../models/Review');
+const sequelize = require('../config/db');
 
 exports.updateArtist = async (req, res) => {
     try {
@@ -109,6 +110,12 @@ exports.getArtist = async (req, res) => {
         if (!artist) {
             return res.status(404).json({ message: 'Artist profile not found' });
         }
+        const numberOfFollowers = await ArtistFollow.count({
+            where: { artistId: artist.artistId }
+        });
+        const numberOfProducts = await Product.count({
+            where: { artistId: artist.artistId }
+        });
 
         // Only handle visitor tracking if user is authenticated
         const userId = req.user?.id;
@@ -139,7 +146,11 @@ exports.getArtist = async (req, res) => {
             }
         }
 
-        return res.status(200).json({ artist });
+        return res.status(200).json({ artist:{
+            ...artist.toJSON(),
+            numberOfFollowers,
+            numberOfProducts,
+        } });
     } catch (error) {
         console.error('Error fetching artist profile:', error);
         return res.status(500).json({
@@ -165,8 +176,8 @@ exports.getAllArtists = async (req, res) => {
                 'profilePicture',
                 'biography',
                 'createdAt',
-                [Sequelize.fn('COUNT', Sequelize.col('products.productId')), 'numberOfProducts'],
-                [Sequelize.fn('COUNT', Sequelize.col('artistfollows.customerId')), 'numberOfFollowers'],
+                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT',Sequelize.col('products.productId'))), 'numberOfProducts'],
+                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT',Sequelize.col('artistfollows.customerId'))), 'numberOfFollowers'],
                 'averageRating',
                 [
                     Sequelize.literal(`(
