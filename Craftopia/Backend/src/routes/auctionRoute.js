@@ -15,7 +15,6 @@ router.get('/',
 );
 
 router.get('/:auctionId',
-    authMiddleware,
     param('auctionId').notEmpty().withMessage('Auction ID is required'),
     auctionController.getAuctionDetails
 );

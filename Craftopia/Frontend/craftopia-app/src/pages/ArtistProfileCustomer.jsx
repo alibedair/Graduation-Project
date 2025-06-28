@@ -4,10 +4,13 @@ import { motion } from 'framer-motion';
 import { Star, MapPin, Calendar, Heart, Eye, Users } from 'lucide-react';
 import ProductCard from '../Components/ProductCard';
 import { useWishlist } from "../context/WishlistContext";
+import { useNavigate } from 'react-router-dom';
+import Footer from '../Components/Footer';
+import { toast } from 'react-hot-toast';
+import { useCart } from '../context/CartContext';
 
 
 
-// Self-contained UI Components
 const Card = ({ children, className = '' }) => {
   return (
     <div className={`bg-card border border-burgundy/10 rounded-lg shadow-sm ${className}`}>
@@ -120,79 +123,69 @@ const ArtistProfileCustomer = () => {
   const [attachment, setAttachment] = useState(null);
   const [reportSuccess, setReportSuccess] = useState("");
   const [reportError, setReportError] = useState("");
+  const navigate = useNavigate();
+  
+  const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
   useEffect(() => {
-    const fetchArtistData = async () => {
-      const token = localStorage.getItem('token');
+const fetchArtistData = async () => {
+  try {
+    const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`);
+    const profileData = await profileRes.json();
 
-      if (!token) {
-        console.error('No auth token found.');
-        return;
+    const token = localStorage.getItem('token'); // Only needed for product fetch if required
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
+      headers
+    });
+    const productData = await productRes.json();
+
+    const a = profileData.artist;
+
+    setArtist({
+      id: a.artistId,
+      name: a.name,
+      username: a.username,
+      avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
+      coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
+      bio: a.biography,
+      joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      specialties: ['Handmade', 'Artisan'],
+      video: a.profileVideo,
+      stats: {
+        products: productData.products.length,
+        sales: Number(a.sales),
+        rating: parseFloat(a.averageRating || 0).toFixed(1),
+        reviews: a.totalRatings,
+        followers: 0,
+        views: a.visitors
       }
+    });
 
-      try {
-        const headers = {
-          Authorization: `Bearer ${token}`
-        };
+    setProducts(productData.products.map(p => ({
+      id: p.productId,
+      name: p.name,
+      price: p.price,
+      originalPrice: null,
+      image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
+      quantity: p.quantity || 0,
+      inStock: p.quantity > 0,
+      description: p.description || '',
+      dimensions: p.dimensions || '',
+      material: p.material || '',
+      rating: p.averageRating || 0,
+      reviews: p.totalReviews || 0,
+      isOnSale: false
+    })));
 
-        const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
-          headers
-        });
-        const profileData = await profileRes.json();
+    setLoading(false);
+  } catch (error) {
+    console.error('Failed to fetch artist or product data:', error);
+    setLoading(false);
+  }
+};
 
-        const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
-          headers
-        });
-        const productData = await productRes.json();
-
-        const a = profileData.artist;
-
-        setArtist({
-          id: a.artistId,
-          name: a.name,
-          username: a.username,
-          avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
-          coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
-          bio: a.biography,
-          location: 'Egypt',
-          joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          specialties: ['Handmade', 'Artisan'],
-          video: a.profileVideo,
-          stats: {
-            products: productData.products.length,
-            sales: Number(a.sales),
-            rating: parseFloat(a.averageRating || 0).toFixed(1),
-            reviews: a.totalRatings,
-            followers: 0,
-            views: a.visitors
-          }
-        });
-
-
-        setProducts(productData.products.map(p => ({
-          id: p.productId,
-          name: p.name,
-          price: p.price,
-          originalPrice: null,
-          image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
-          quantity: p.quantity || 0,
-          inStock: p.quantity > 0,
-          description: p.description || '',
-          dimensions: p.dimensions || '',
-          material: p.material || '',
-          rating: p.averageRating || 0,
-          reviews: p.totalReviews || 0,
-          isOnSale: false
-        })));
-
-
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch artist or product data:', error);
-        setLoading(false);
-      }
-    };
 
     fetchArtistData();
   }, [id]);
@@ -222,12 +215,8 @@ const ArtistProfileCustomer = () => {
 
   if (loading || !artist) return <div className="text-center py-10 text-burgundy font-medium">Loading artist profile...</div>;
 
-  const onAddToCart = (product) => {
-    setCart((prev) => ({
-      ...prev,
-      [product.id]: { ...product, quantity: 1 }
-    }));
-  };
+
+
 
   const isFavorite = (productId) => {
     return wishlist.some((item) => item.id === productId);
@@ -241,61 +230,38 @@ const ArtistProfileCustomer = () => {
     }
   };
 
-  const onIncrement = (product) => {
-    setCart((prev) => ({
-      ...prev,
-      [product.id]: {
-        ...prev[product.id],
-        quantity: (prev[product.id]?.quantity || 0) + 1
-      }
-    }));
-  };
 
-  const onDecrement = (product) => {
-    setCart((prev) => {
-      const currentQty = prev[product.id]?.quantity || 0;
-      if (currentQty <= 1) {
-        const updatedCart = { ...prev };
-        delete updatedCart[product.id];
-        return updatedCart;
-      }
-      return {
-        ...prev,
-        [product.id]: {
-          ...prev[product.id],
-          quantity: currentQty - 1
-        }
-      };
+const handleToggleFollow = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    toast.error("Please login to follow an artist.");
+    // setTimeout(() => navigate("/login"), 1500); 
+    return;
+  }
+
+  const url = isFollowing
+    ? `http://localhost:3000/customer/unfollow/${id}`
+    : `http://localhost:3000/customer/follow/${id}`;
+
+  try {
+    const res = await fetch(url, {
+      method: isFollowing ? "DELETE" : "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-  };
 
-  const handleToggleFollow = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const url = isFollowing
-      ? `http://localhost:3000/customer/unfollow/${id}`
-      : `http://localhost:3000/customer/follow/${id}`;
-
-    try {
-      const res = await fetch(url, {
-        method: isFollowing ? "DELETE" : "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        setIsFollowing(!isFollowing);
-      } else {
-        console.error("Failed to toggle follow state");
-      }
-    } catch (err) {
-      console.error("Error during follow/unfollow:", err);
+    if (res.ok) {
+      setIsFollowing(!isFollowing);
+    } else {
+      console.error("Failed to toggle follow state");
     }
-  };
+  } catch (err) {
+    console.error("Error during follow/unfollow:", err);
+  }
+};
 
-  // Static mock reviews (can be updated if you later support dynamic reviews)
+
   const reviews = [
     {
       id: 1,
@@ -439,12 +405,13 @@ const ArtistProfileCustomer = () => {
                     product={product}
                     isFavorite={isFavorite(product.id)}
                     onToggleFavorite={() => toggleFavorite(product)}
-                    isInCart={!!cart[product.id]}
-                    quantity={cart[product.id]?.quantity || 0}
-                    onAddToCart={() => onAddToCart(product)}
-                    onIncrement={() => onIncrement(product)}
-                    onDecrement={() => onDecrement(product)}
+                    isInCart={!!cartItems.find((item) => item.id === product.id)}
+                    quantity={cartItems.find((item) => item.id === product.id)?.quantity || 0}
+                    onAddToCart={() => addToCart(product)}
+                    onIncrement={() => incrementQuantity(product.id)}
+                    onDecrement={() => decrementQuantity(product.id)}
                   />
+
                 </motion.div>
               ))}
             </div>
@@ -619,9 +586,11 @@ const ArtistProfileCustomer = () => {
       )}
     </div>
   </div>
-)}
+)}    
+<Footer />
 
     </div>
+
   );
 };
 

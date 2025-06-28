@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Share2, Eye, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '../Components/Footer';
+import { toast } from 'react-hot-toast';
+
 
 const CountdownTimer = ({ endTime }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: '00', minutes: '00', seconds: '00' });
@@ -77,6 +79,7 @@ const BidHistory = ({ bids }) => {
 
 // Embedded Artist Info Component
 const ArtistInfo = ({ artist,handleFollow, isFollowed}) => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white border rounded-xl p-6">
       <div className="flex items-start gap-4">
@@ -103,8 +106,11 @@ const ArtistInfo = ({ artist,handleFollow, isFollowed}) => {
             <button onClick={handleFollow} className="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors">
               {isFollowed ? "Following" : "Follow Artist"}
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-              View Portfolio
+            <button
+              onClick={() => navigate(`/artist-profile-customer/${artist.artistId}`)}
+              className="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            >
+               View Profile
             </button>
           </div>
         </div>
@@ -188,6 +194,7 @@ const AuctionDetails = () => {
   const [auction, setAuction] = useState(null);
   const [artist, setArtist] = useState(null);
   const [error, setError] = useState('');
+  
 
 const [following, setFollowing] = useState(false); // initially false
 
@@ -251,10 +258,15 @@ const minBid = currentBid + minIncrement;
 const auctionHasEnded = auction.endDate && new Date(auction.endDate) <= new Date();
 
 const handleFollowClick = async () => {
-  const newFollowingState = !following;
-  setFollowing(newFollowingState); // Optimistically update
+  if (!isLoggedIn) {
+    alert("⚠️ Please login first to follow the artist.");
+    navigate("/login");
+    return;
+  }
 
-  const token = localStorage.getItem('token');
+  const newFollowingState = !following;
+  setFollowing(newFollowingState); 
+
   const artistId = artist?.artistId;
 
   try {
@@ -268,12 +280,12 @@ const handleFollowClick = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-
   } catch (error) {
     console.error('Error toggling follow state:', error);
-    setFollowing(!newFollowingState); // Rollback
+    setFollowing(!newFollowingState); 
   }
 };
+
 
 
 

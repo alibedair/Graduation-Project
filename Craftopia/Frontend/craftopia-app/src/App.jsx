@@ -28,6 +28,7 @@ import PaymentPage from './pages/PaymentPage';
 import ArtistProfileCustomer from './pages/ArtistProfileCustomer';
 import ScrollToTop from './Components/ScrollToTop';
 import Following from './Components/Following';
+import { Toaster } from 'react-hot-toast';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -124,6 +125,7 @@ export default function App() {
           <Router>
             <ScrollToTop />
             <AppContent />
+            <Toaster position="top-right" reverseOrder={false} />
           </Router>
         </CartProvider>
       </WishlistProvider>

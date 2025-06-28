@@ -103,38 +103,51 @@ exports.updateArtist = async (req, res) => {
 
 exports.getArtist = async (req, res) => {
     try {
-        const { artistId } = req.params; 
-        const userId = req.user.id;
+        const { artistId } = req.params;
+
         const artist = await Artist.findOne({ where: { artistId } });
-        if(!artist){
-            return res.status(404).json({message: 'Artist profile not found'});
+        if (!artist) {
+            return res.status(404).json({ message: 'Artist profile not found' });
         }
-        const user = await User.findOne({where: {userId}});        if(user.role == 'customer'){
-            const customer = await Customer.findOne({where: {userId}});
-            if(customer) {
-                const visitorRecord = await Visitor.findOne({
-                    where: {
-                        artistId: artist.artistId,
-                        customerId: customer.customerId
-                    }
-                });
-                if(visitorRecord==null){
-                    await Visitor.create({
-                        artistId: artist.artistId,
-                        customerId: customer.customerId
+
+        // Only handle visitor tracking if user is authenticated
+        const userId = req.user?.id;
+
+        if (userId) {
+            const user = await User.findOne({ where: { userId } });
+
+            if (user?.role === 'customer') {
+                const customer = await Customer.findOne({ where: { userId } });
+
+                if (customer) {
+                    const existingVisitor = await Visitor.findOne({
+                        where: {
+                            artistId: artist.artistId,
+                            customerId: customer.customerId
+                        }
                     });
-                    await artist.increment('visitors');
+
+                    if (!existingVisitor) {
+                        await Visitor.create({
+                            artistId: artist.artistId,
+                            customerId: customer.customerId
+                        });
+
+                        await artist.increment('visitors');
+                    }
                 }
             }
         }
-        return res.status(200).json({artist});
+
+        return res.status(200).json({ artist });
     } catch (error) {
-        res.status(400).json({
-            status: 'fail',
-            message: error.message
+        console.error('Error fetching artist profile:', error);
+        return res.status(500).json({
+            message: 'Internal server error'
         });
     }
-}
+};
+
 
 exports.getAllArtists = async (req, res) => {
     try {
