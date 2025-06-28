@@ -1,14 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const ESCROW_FEE = 2.5;
 
 const CartOverview = ({ cartItems }) => {
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  const [loading, setLoading] = useState(false); // 👈 loading state
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const total = subtotal + ESCROW_FEE;
   const navigate = useNavigate();
 
@@ -16,31 +14,30 @@ const CartOverview = ({ cartItems }) => {
     navigate('/');
   };
 
- const handleCheckout = async () => {
-  try {
-    const productIds = cartItems.map(item => item.id); 
-    const quantity = cartItems.map(item => item.quantity);
-    console.log('🛒 Product IDs:', productIds);
-    console.log('📦 Quantities:', quantity);
+  const handleCheckout = async () => {
+    setLoading(true); // 👈 start loading
+    try {
+      const productIds = cartItems.map(item => item.id); 
+      const quantity = cartItems.map(item => item.quantity);
 
-    const response = await axios.post('http://localhost:3000/order/placeOrder', {
-      productIds,
-      quantity
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    });
+      const response = await axios.post('http://localhost:3000/order/placeOrder', {
+        productIds,
+        quantity
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
-    console.log('✅ Order placed successfully:', response.data);
-    navigate('/orders');
-
-  } catch (error) {
-    console.error('❌ Error placing order:', error.response?.data || error.message);
-    alert('Failed to place order. Please try again.');
-  }
-};
-
+      console.log('✅ Order placed successfully:', response.data);
+      navigate('/orders');
+    } catch (error) {
+      console.error('❌ Error placing order:', error.response?.data || error.message);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setLoading(false); // 👈 stop loading
+    }
+  };
 
   return (
     <div className="w-full p-6 bg-white rounded-xl shadow-md border border-gray-200">
@@ -68,11 +65,22 @@ const CartOverview = ({ cartItems }) => {
         <span>${total.toFixed(2)}</span>
       </div>
 
-      <button 
+      <button
         onClick={handleCheckout}
-        className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition mb-2"
+        disabled={loading}
+        className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition mb-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Proceed to Checkout
+        {loading ? (
+          <>
+            <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            Processing...
+          </>
+        ) : (
+          'Proceed to Checkout'
+        )}
       </button>
 
       <button

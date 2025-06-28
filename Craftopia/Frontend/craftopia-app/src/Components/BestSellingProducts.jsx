@@ -49,9 +49,17 @@ const BestSellingProducts = () => {
   }, []);
 
   const toggleWishlist = (product) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     const exists = wishlist.find((item) => item.id === product.id);
     exists ? removeFromWishlist(product.id) : addToWishlist(product);
   };
+
 
   const updateScrollButtons = () => {
     const container = scrollRef.current;

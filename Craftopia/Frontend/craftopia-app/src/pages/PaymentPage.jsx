@@ -291,7 +291,7 @@ const PaymentPage = () => {
 
                                 <div className="space-y-2 mb-8 text-lg">
                                     <p className="text-gray-600">
-                                        <span className="font-medium">Date:</span> {new Date(order.orderDate).toLocaleDateString('en-US', {
+                                        <span className="font-medium">Date:</span>  {new Date(order.createdAt).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric',

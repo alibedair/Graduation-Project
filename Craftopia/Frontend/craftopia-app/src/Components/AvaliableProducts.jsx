@@ -30,31 +30,40 @@ const AvaliableProducts = () => {
         },
       })
       .then((res) => {
-        const fetched = res.data.products || [];
-        const formatted = fetched.map((p) => ({
-  id: p.productId,
-  name: p.name,
-  price: p.price,
-  image: p.image, // pass full array here
-  rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-  reviews: Math.floor(Math.random() * 50 + 5),
-  description: p.description,
-  dimensions: p.dimensions,
-  material: p.material,
-  category: p.category?.name || "Uncategorized",
-  artist: p.artist?.name || "Unknown Artist",
-  inStock: p.quantity > 0,
-}));
+  const fetched = res.data.products || [];
+  const formatted = fetched.map((p) => ({
+    id: p.productId,
+    name: p.name,
+    price: p.price,
+    image: p.image,
+    description: p.description,
+    dimensions: p.dimensions,
+    material: p.material,
+    category: p.category?.name || "Uncategorized",
+    artist: p.artist?.name || "Unknown Artist",
+    inStock: p.quantity > 0,
+    averageRating: parseFloat(p.averageRating) || 0,
+    totalReviews: p.totalReviews || 0,
+  }));
 
-        setProducts(formatted);
-      })
+  setProducts(formatted);
+})
+
       .catch((err) => console.error(err));
   }, []);
 
   const toggleWishlist = (product) => {
-    const exists = wishlist.find((item) => item.id === product.id);
-    exists ? removeFromWishlist(product.id) : addToWishlist(product);
-  };
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    navigate("/login"); 
+    return;
+  }
+
+  const exists = wishlist.find((item) => item.id === product.id);
+  exists ? removeFromWishlist(product.id) : addToWishlist(product);
+};
+
 
   const updateScrollButtons = () => {
     const container = scrollRef.current;
@@ -85,7 +94,6 @@ const AvaliableProducts = () => {
   return (
     <section className="py-20 bg-cream overflow-hidden">
       <div className="container mx-auto px-4 relative">
-        {/* Header with motion */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -100,8 +108,6 @@ const AvaliableProducts = () => {
             Browse unique, handmade items crafted by talented artists
           </p>
         </motion.div>
-
-        {/* Arrows */}
         {canScrollLeft && (
           <button
             onClick={() => handleScroll("left")}
@@ -118,8 +124,6 @@ const AvaliableProducts = () => {
             <FiChevronRight className="text-[#921A40] text-2xl" />
           </button>
         )}
-
-        {/* Horizontal Scroll Container */}
         <motion.div
           ref={scrollRef}
           className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"

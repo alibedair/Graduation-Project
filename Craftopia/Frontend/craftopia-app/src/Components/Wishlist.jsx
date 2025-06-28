@@ -1,12 +1,15 @@
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { cartItems, addToCart, incrementItem, decrementItem } = useCart();
   const navigate = useNavigate();
+
+  const getCartItem = (id) => cartItems.find((item) => item.id === id);
 
   return (
     <div className="p-6">
@@ -34,6 +37,10 @@ const Wishlist = () => {
             const mainImage = Array.isArray(product.image)
               ? product.image[0]
               : product.image || "/placeholder.jpg";
+
+            const cartItem = getCartItem(product.id);
+            const quantity = cartItem?.quantity || 0;
+            const isInCart = !!cartItem;
 
             const handleCardClick = () => {
               navigate(`/product/${product.id}`, { state: { product } });
@@ -74,27 +81,26 @@ const Wishlist = () => {
 
                 <div className="pt-2 pb-5 px-4">
                   <div className="mb-1">
-  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-    {typeof product.category === "string"
-      ? product.category
-      : product.category?.name || "Handmade"}
-  </span>
-</div>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {typeof product.category === "string"
+                        ? product.category
+                        : product.category?.name || "Handmade"}
+                    </span>
+                  </div>
 
-<div className="mb-3">
-  <h3 className="font-bold text-lg text-gray-900 group-hover:text-[#E07385] transition-colors duration-200 line-clamp-1">
-    {product.name}
-  </h3>
-  <p className="text-sm text-gray-500 mt-1">
-    by{" "}
-    <span className="font-medium">
-      {typeof product.artist === "string"
-        ? product.artist
-        : product.artist?.name || "Unknown"}
-    </span>
-  </p>
-</div>
-
+                  <div className="mb-3">
+                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-[#E07385] transition-colors duration-200 line-clamp-1">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      by{" "}
+                      <span className="font-medium">
+                        {typeof product.artist === "string"
+                          ? product.artist
+                          : product.artist?.name || "Unknown"}
+                      </span>
+                    </p>
+                  </div>
 
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex items-center gap-1">
@@ -121,16 +127,38 @@ const Wishlist = () => {
                     </div>
 
                     {product.inStock ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart(product);
-                        }}
-                        className="text-sm font-medium rounded-full px-4 py-1 transition text-white"
-                        style={{ backgroundColor: "#E07385" }}
-                      >
-                        Add to Cart
-                      </button>
+                      isInCart ? (
+                        <div
+                          className="flex items-center gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => decrementItem(product)}
+                            className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                          >
+                            <Minus className="w-4 h-4 text-gray-600" />
+                          </button>
+                          <span className="text-sm font-semibold text-gray-800">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() => incrementItem(product)}
+                            className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                          >
+                            <Plus className="w-4 h-4 text-gray-600" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(product);
+                          }}
+                          className="text-sm font-medium rounded-full px-4 py-1 transition text-white bg-[#E07385] hover:bg-[#d15e72]"
+                        >
+                          Add to Cart
+                        </button>
+                      )
                     ) : (
                       <div className="text-sm bg-gray-300 text-gray-500 px-4 py-1 rounded-full cursor-not-allowed">
                         Sold Out
