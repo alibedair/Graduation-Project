@@ -27,7 +27,7 @@ const customizationResponse = sequelize.define('customizationresponse', {
         }
     },
     price: {
-        type: DataTypes.DECIMAL,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
     estimationCompletionTime: {

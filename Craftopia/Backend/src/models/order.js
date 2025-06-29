@@ -29,6 +29,10 @@ const Order = sequelize.define('order', {
     updatedAt: {
         type: DataTypes.DATE,
         allowNull : true
+    },
+    shippedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 });
 

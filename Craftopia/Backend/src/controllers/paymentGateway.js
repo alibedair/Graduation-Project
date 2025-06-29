@@ -50,7 +50,7 @@ exports.createEscrowPayment = async (req, res) => {
                 message: 'You are not authorized to pay for this order'
             });
         }
-
+           // customer can pay only if order is shipped or pending
         if (order.status === 'Completed') {
             return res.status(400).json({
                 success: false,

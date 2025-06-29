@@ -3,6 +3,7 @@ const Artist = require('../models/artist');
 const Customer = require('../models/customer');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const CustomizationResponse = require('../models/customizationResponse');
+const Order = require('../models/order');
 const { validationResult } = require('express-validator');
 const { 
     autoDeclinePendingResponses, 
@@ -11,6 +12,7 @@ const {
 } = require('../utils/customizationUtils');
 const User = require('../models/user');
 const { sendCustomizationResponseEmail } = require('../utils/emailService');
+const Order = require('../models/order');
 
 exports.respondToCustomizationRequest = async (req, res) => {
     try {
@@ -180,6 +182,11 @@ exports.acceptCustomizationResponse = async (req, res) => {
             return res.status(400).send({ message: 'Response has already been processed' });
         }        
         await response.update({ status: 'ACCEPTED' });
+        const order = await Order.create({
+            totalAmount: response.price,
+            customerId: customizationRequest.customerId,
+            createdAt: new Date()
+        });
         await CustomizationRequest.update(
             { status: 'CLOSED' },
             { where: { requestId: response.requestId } }
@@ -190,7 +197,9 @@ exports.acceptCustomizationResponse = async (req, res) => {
             message: 'Customization response accepted successfully',
             responseId: response.responseId,
             status: 'ACCEPTED',
-            autoDeclinedResponses: declinedCount
+            autoDeclinedResponses: declinedCount,
+            message: "order has been created successfully, here we go",
+            order
         });
         
     } catch (error) {

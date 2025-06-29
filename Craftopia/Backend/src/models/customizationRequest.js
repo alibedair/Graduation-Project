@@ -36,6 +36,14 @@ const CustomizationRequest = sequelize.define('customizationrequest', {
         defaultValue: 'OPEN',
         allowNull: false    
     },
+    orderId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'orders',
+            key: 'orderId'
+        }
+    }
 });
 
 module.exports = CustomizationRequest;

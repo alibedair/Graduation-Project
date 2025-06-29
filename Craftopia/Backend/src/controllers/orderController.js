@@ -261,6 +261,7 @@ exports.shipOrder = async (req, res) => {
         const userId = req.user.id;
         const {respondId} = req.params;
         const respond = await CustomizationResponse.findByPk(respondId);
+        const request = await CustomizationRequest.findByPk(respond.requestId);
         if (!respond) {
             return res.status(404).json({ message: 'Customization response not found' });
         }
@@ -272,14 +273,17 @@ exports.shipOrder = async (req, res) => {
         if (artist.artistId !== realArtist.artistId) {
             return res.status(403).json({ message: 'this Artist is not authorized for shipping this order' });
         }
-        const order = await Order.create({
-            createdAt: new Date(),
-            totalAmount: respond.price,
-            status: 'Shipped',
-            customerId: respond.customerId  
-        });
+        let order = await Order.findOne({ where: { orderId: request.orderId } });
+        if(!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        if(order.status === 'Shipped' || order.status === 'Completed') {
+            return res.status(400).json({ message: 'Order has already been shipped or completed' });
+        }
+        order.status = 'Shipped';
+        order.shippedAt = new Date();
+        await order.save();
         try{
-            const request = await CustomizationRequest.findByPk(respond.requestId);
             const customer = await Customer.findByPk(request.customerId);
             const customerUser = await User.findByPk(customer.userId);
 
