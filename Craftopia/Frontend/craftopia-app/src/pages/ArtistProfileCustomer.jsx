@@ -124,17 +124,23 @@ const ArtistProfileCustomer = () => {
   const [reportSuccess, setReportSuccess] = useState("");
   const [reportError, setReportError] = useState("");
   const navigate = useNavigate();
+  const [auctionProducts, setAuctionProducts] = useState([]);
 
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
   useEffect(() => {
     const fetchArtistData = async () => {
       try {
-        const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`);
-        const profileData = await profileRes.json();
 
-        const token = localStorage.getItem('token'); // Only needed for product fetch if required
+
+        const token = localStorage.getItem('token'); 
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
+          headers
+        });
+
+        const profileData = await profileRes.json();
 
         const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
           headers
@@ -192,6 +198,7 @@ const ArtistProfileCustomer = () => {
 
   useEffect(() => {
     const checkFollowStatus = async () => {
+      
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -210,6 +217,28 @@ const ArtistProfileCustomer = () => {
     };
 
     checkFollowStatus();
+
+    const fetchAuctionProducts = async () => {
+  try {
+    const res = await fetch(`http://localhost:3000/auction/artist-product/${id}`);
+    const data = await res.json();
+
+    setAuctionProducts(data.products.map((p) => ({
+      id: p.productId,
+      name: p.name,
+      image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
+      description: p.description,
+      dimensions: p.dimensions,
+      quantity: p.quantity,
+      material: p.material,
+    })));
+  } catch (err) {
+    console.error("Error fetching auction products", err);
+  }
+};
+
+fetchAuctionProducts();
+
   }, [id]);
 
 
@@ -381,48 +410,12 @@ const ArtistProfileCustomer = () => {
         </motion.div>
 
         {/* TABS */}
-        <Tabs defaultValue="products" className="space-y-6">
+        <Tabs defaultValue="gallery" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 bg-card">
-            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="gallery">Gallery</TabsTrigger>
           </TabsList>
-
-          {/* PRODUCTS TAB */}
-          <TabsContent value="products" className="space-y-6">
-            <h2 className="text-2xl font-bold text-burgundy">Products ({artist.stats.products})</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product, index) => (
-                <motion.div
-                  key={product.productId || product.id || index}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -3 }}
-                >
-                  <ProductCard
-                    product={product}
-                    isFavorite={isFavorite(product.id)}
-                    onToggleFavorite={() => toggleFavorite(product)}
-                    isInCart={!!cartItems.find((item) => item.id === product.id)}
-                    quantity={cartItems.find((item) => item.id === product.id)?.cartQuantity || 0}
-                    onAddToCart={() => addToCart(product)}
-                    onIncrement={() => {
-                      const inCart = cartItems.find((item) => item.id === product.id);
-                      if (inCart) incrementQuantity(inCart);
-                    }}
-                    onDecrement={() => {
-                      const inCart = cartItems.find((item) => item.id === product.id);
-                      if (inCart && inCart.cartQuantity > 0) decrementQuantity(inCart);
-                    }}
-                  />
-
-
-                </motion.div>
-              ))}
-            </div>
-          </TabsContent>
 
           {/* ABOUT TAB */}
           <TabsContent value="about" className="space-y-6">
@@ -524,23 +517,45 @@ const ArtistProfileCustomer = () => {
                     {products.length === 0 && !loadingProducts && (
                       <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
                     )}
-                    {products.map((product) => (
-                      <div
-                        key={product._id || product.id}
-                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                      >
-                        <div className="aspect-square relative overflow-hidden">
-                          <img
-                            src={product.image || "https://via.placeholder.com/500"}
-                            alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                          />
-                          <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full">
-                            AUCTION
+                    {auctionProducts.length === 0 && !loadingProducts && (
+                  <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
+                )}
+                {auctionProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  >
+                    <div className="aspect-square relative overflow-hidden">
+                      <img
+                        src={product.image || "https://via.placeholder.com/300"}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+
+                    <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                      AUCTION
+                    </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+                      <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        <h3 className="text-xl font-bold text-[#921A40]">{product.name}</h3>
+                        <div className="mt-2 text-white/90 text-sm">
+                          <p className="line-clamp-2">{product.description}</p>
+                          <div className="flex justify-between mt-2">
+                            <span className="font-medium">Qty: {product.quantity}</span>
+                            {product.dimensions && <span>{product.dimensions}</span>}
                           </div>
+                          {product.material && (
+                            <p className="mt-1"><span className="font-medium">Material:</span> {product.material}</p>
+                          )}
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  </div>
+                ))}
+
+
                   </div>
                 </div>
               )}
