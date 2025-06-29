@@ -214,7 +214,11 @@ exports.getOrderById = async (req, res) => {
             },{
              model: OptionValue,
                 attributes: ['valueofOption'],
-                where: { orderId: orderId }
+                where: { orderId: orderId },
+                include: [{
+                    model: CustomizableOption,
+                    attributes: ['optionName']
+                }]
             }
         ]
         });
