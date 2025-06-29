@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; 
 import {
   Star,
   ChatCircleDots,
   Coins
 } from "phosphor-react";
+
 const GetProfile = ({ setActiveTab }) => {
   const [profile, setProfile] = useState(null);
   const [message, setMessage] = useState("");
@@ -12,6 +13,7 @@ const GetProfile = ({ setActiveTab }) => {
   const [productsError, setProductsError] = useState("");
   const [activeSection, setActiveSection] = useState("gallery");
   const [showFullBio, setShowFullBio] = useState(false);
+  const [auctionProducts, setAuctionProducts] = useState([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -36,6 +38,7 @@ const GetProfile = ({ setActiveTab }) => {
 
     fetchProfile();
   }, []);
+
   useEffect(() => {
     if (!profile || !profile.artistId) return;
 
@@ -66,7 +69,43 @@ const GetProfile = ({ setActiveTab }) => {
     fetchProducts();
   }, [profile]);
 
-  if (message) {
+  useEffect(() => {
+    if (!profile || !profile.artistId) return;
+
+    const fetchAuctionProducts = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/auction/artist-product/${profile.artistId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch auction products");
+
+        const data = await res.json();
+
+        setAuctionProducts(
+          data.products.map((p) => ({
+            id: p.productId,
+            name: p.name,
+            image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
+            description: p.description,
+            dimensions: p.dimensions,
+            quantity: p.quantity,
+            material: p.material,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching auction products", err);
+      }
+    };
+
+    fetchAuctionProducts();
+  }, [profile]);
+
+    if (message) {
     return (
       <div className="flex flex-col items-center justify-center text-center p-10 rounded-[2rem] shadow-[0_8px_30px_rgba(224,115,133,0.2)] bg-[#F6EEEE] border border-[#E07385]/20 animate-fadeIn mt-2">
         <div className="relative mb-6">
@@ -98,13 +137,14 @@ const GetProfile = ({ setActiveTab }) => {
 
   if (!profile) return <p className="text-gray-600">Loading profile...</p>;
 
+
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex flex-col md:flex-row gap-6 mb-6 items-start">
         <div className="flex-1">
           <div className="flex items-start gap-4 mb-4">
             <img
-              src={profile.profilePicture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
+              src={profile?.profilePicture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover border-2 border-[#E07385] shadow-md"
             />
@@ -253,13 +293,13 @@ const GetProfile = ({ setActiveTab }) => {
                   No auction products found.
                 </p>
               )}
-              {products.map((product) => (
+              {auctionProducts.map((product) => (
                 <div
                   key={product._id || product.id}
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="aspect-square relative overflow-hidden">
-                    <img
+                     <img
                       src={product.image || "https://via.placeholder.com/500"}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"

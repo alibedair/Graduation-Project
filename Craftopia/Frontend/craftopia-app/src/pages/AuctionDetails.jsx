@@ -196,7 +196,7 @@ const AuctionDetails = () => {
   const [error, setError] = useState('');
   
 
-const [following, setFollowing] = useState(false); // initially false
+const [following, setFollowing] = useState(false); 
 
   const token = localStorage.getItem("token");
   const isLoggedIn = !!token;

@@ -10,7 +10,6 @@ import { toast } from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 
 
-
 const Card = ({ children, className = '' }) => {
   return (
     <div className={`bg-card border border-burgundy/10 rounded-lg shadow-sm ${className}`}>
@@ -125,6 +124,7 @@ const ArtistProfileCustomer = () => {
   const [reportError, setReportError] = useState("");
   const navigate = useNavigate();
   const [auctionProducts, setAuctionProducts] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
@@ -241,11 +241,42 @@ fetchAuctionProducts();
 
   }, [id]);
 
+  useEffect(() => {
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch(`http://localhost:3000/review/artist-reviews/${id}`);
+      const data = await res.json();
+      
+      const allReviews = [];
+      data.productReviews.forEach(product => {
+        product.reviews.forEach(r => {
+          allReviews.push({
+            id: r.reviewId,
+            rating: r.rating,
+            comment: r.review,
+            user: r.customerName || r.customerUsername,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`, // Placeholder avatar
+            product: product.productName,
+            date: new Date(r.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            verified: true,
+          });
+        });
+      });
+
+      setReviews(allReviews);
+    } catch (err) {
+      console.error("Failed to fetch reviews", err);
+    }
+  };
+
+  fetchReviews();
+}, [id]);
 
   if (loading || !artist) return <div className="text-center py-10 text-burgundy font-medium">Loading artist profile...</div>;
-
-
-
 
   const isFavorite = (productId) => {
     return wishlist.some((item) => item.id === productId);
@@ -291,18 +322,6 @@ fetchAuctionProducts();
   };
 
 
-  const reviews = [
-    {
-      id: 1,
-      user: "Sarah Johnson",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=50&h=50&fit=crop",
-      rating: 5,
-      date: "2 weeks ago",
-      product: "Handwoven Ceramic Vase",
-      comment: "Absolutely beautiful craftsmanship!",
-      verified: true
-    }
-  ];
   const handleReportSubmit = async () => {
     if (!reportMessage.trim()) {
       setReportError("Please enter a message.");
@@ -411,8 +430,9 @@ fetchAuctionProducts();
 
         {/* TABS */}
         <Tabs defaultValue="gallery" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-card">
+            <TabsList className="grid w-full grid-cols-4 bg-card">
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
+            <TabsTrigger value="auctionProducts">Auction Products</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
           </TabsList>
@@ -443,27 +463,7 @@ fetchAuctionProducts();
 
             <div className="mt-4">
               <div className="flex justify-start gap-6 mb-8">
-                <button
-                  onClick={() => setActiveSection("gallery")}
-                  className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
-                    ? "bg-[#E07385] text-white shadow-md"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                >
-                  Gallery Products
-                </button>
-                <button
-                  onClick={() => setActiveSection("auction")}
-                  className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "auction"
-                    ? "bg-[#E07385] text-white shadow-md"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                >
-                  Auction Products
-                </button>
-              </div>
 
-              {activeSection === "gallery" && (
                 <div>
                   {loadingProducts && <p className="text-center py-8">Loading products...</p>}
                   {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
@@ -475,7 +475,8 @@ fetchAuctionProducts();
                     {products.map((product) => (
                       <div
                         key={product.productId}
-                        className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        onClick={() => navigate(`/product/${product.productId}`)}
+                        className=" cursor-pointer relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                       >
                         <div className="aspect-square relative overflow-hidden">
                           <img
@@ -505,11 +506,13 @@ fetchAuctionProducts();
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {activeSection === "auction" && (
-                <div>
+                </div>            
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="auctionProducts" className="space-y-6">
+            <h2 className="text-2xl font-bold text-burgundy">Auction Products</h2>
+                  <div>
                   {loadingProducts && <p className="text-center py-8">Loading auction products...</p>}
                   {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
@@ -517,48 +520,105 @@ fetchAuctionProducts();
                     {products.length === 0 && !loadingProducts && (
                       <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
                     )}
-                    {auctionProducts.length === 0 && !loadingProducts && (
-                  <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
-                )}
-                {auctionProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                  >
-                    <div className="aspect-square relative overflow-hidden">
-                      <img
-                        src={product.image || "https://via.placeholder.com/300"}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                      />
-                    </div>
+{auctionProducts.length === 0 && !loadingProducts ? (
+  <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
+) : (
+  auctionProducts.map((product) => (
+    <div
+      key={product.id}
+      onClick={() => navigate(`/auction/${product.id}`)}
+      className="cursor-pointer relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+    >
+      <div className="aspect-square relative overflow-hidden">
+        <img
+          src={product.image || "https://via.placeholder.com/300"}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+        />
+      </div>
 
-                    <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                      AUCTION
-                    </div>
+      <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+        AUCTION
+      </div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                      <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                        <h3 className="text-xl font-bold text-[#921A40]">{product.name}</h3>
-                        <div className="mt-2 text-white/90 text-sm">
-                          <p className="line-clamp-2">{product.description}</p>
-                          <div className="flex justify-between mt-2">
-                            <span className="font-medium">Qty: {product.quantity}</span>
-                            {product.dimensions && <span>{product.dimensions}</span>}
-                          </div>
-                          {product.material && (
-                            <p className="mt-1"><span className="font-medium">Material:</span> {product.material}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+          <h3 className="text-xl font-bold text-[#921A40]">{product.name}</h3>
+          <div className="mt-2 text-white/90 text-sm">
+            <p className="line-clamp-2">{product.description}</p>
+            <div className="flex justify-between mt-2">
+              <span className="font-medium">Qty: {product.quantity}</span>
+              {product.dimensions && <span>{product.dimensions}</span>}
+            </div>
+            {product.material && (
+              <p className="mt-1"><span className="font-medium">Material:</span> {product.material}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ))
+)}
+
 
 
                   </div>
                 </div>
+          </TabsContent>
+           <TabsContent value="reviews" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-burgundy">
+                Customer Reviews ({artist.stats.reviews})
+              </h2>
+              <div className="flex items-center space-x-2">
+                <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                <span className="text-xl font-bold text-burgundy">{artist.stats.rating}</span>
+                <span className="text-burgundy/70">average rating</span>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {reviews.length === 0 && (
+                <p className="text-burgundy/60">No reviews yet.</p>
               )}
+              {reviews.map((review) => (
+                <Card key={review.id} className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <img 
+                      src={review.avatar} 
+                      alt={review.user}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-3">
+                          <span className="font-medium text-burgundy">{review.user}</span>
+                          {review.verified && (
+                            <Badge variant="outline" className="text-xs">
+                              Verified Purchase
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-sm text-burgundy/60">{review.date}</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-burgundy/70">for {review.product}</span>
+                      </div>
+                      
+                      <p className="text-burgundy/80">{review.comment}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           </TabsContent>
 
