@@ -116,14 +116,20 @@ const handleApproveRequest = async () => {
     return;
   }
 
-const durationInDays = scheduledDuration
-  ? parseInt(scheduledDuration)
-  : selectedRequest.suggestedDuration;
+  const durationInDays = scheduledDuration
+    ? parseInt(scheduledDuration)
+    : selectedRequest.suggestedDuration;
+
   const requestId = selectedRequest.requestId;
-  const startDate = new Date(scheduledStartDate).toISOString().split("T")[0];
+
+  const [datePart, timePart] = scheduledStartDate.split('T');
+
   const approvalBody = {
-    startDate,
-     Duration: durationInDays * 24, 
+    startDate: {
+      date: datePart,
+      time: timePart?.slice(0, 5), 
+    },
+    Duration: durationInDays * 24,
     adminNotes: adminNotes || "No notes provided.",
   };
 
@@ -147,6 +153,7 @@ const durationInDays = scheduledDuration
     setFeedbackMessage(`Error: ${err.message}`);
   }
 };
+
 
 
 const handleDeclineRequest = async () => {
