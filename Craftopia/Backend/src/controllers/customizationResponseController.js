@@ -187,7 +187,9 @@ exports.acceptCustomizationResponse = async (req, res) => {
             createdAt: new Date()
         });
         await CustomizationRequest.update(
-            { status: 'CLOSED' },
+            { status: 'CLOSED',
+                orderId: order.orderId
+             },
             { where: { requestId: response.requestId } }
         );
         const declinedCount = await autoDeclinePendingResponses(response.requestId);
