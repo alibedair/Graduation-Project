@@ -9,7 +9,7 @@ const CustomizableOption = require('../models/customizableOption');
 const OptionValue = require('../models/optionValue');
 const { sendOrderConfirmationEmail, sendShipAuctionEmail, sendCustomizationShipEmail } = require('../utils/emailService');
 const { firebase_db } = require('../config/firebase');
-
+const Review = require('../models/Review'); 
 exports.placeOrder = async (req, res) => {
     try {
         const userId = req.user.id; 
@@ -112,10 +112,9 @@ exports.placeOrder = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
-
 exports.getmyOrders = async (req, res) => {
     try {
-        const userId = req.user.id; 
+        const userId = req.user.id;
 
         const customer = await Customer.findOne({ where: { userId } });
         if (!customer) {
@@ -132,18 +131,29 @@ exports.getmyOrders = async (req, res) => {
                 }
             }]
         });
+        for (const order of orders) {
+            for (const prod of order.products) {
+                const existingReview = await Review.findOne({
+                    where: {
+                        productId: prod.productId,
+                        customerId: customer.customerId
+                    }
+                });
+                prod.dataValues.reviewed = !!existingReview;
+            }
+        }
 
         return res.status(200).json({
             message: 'Orders retrieved successfully',
             orders
-
         });
 
     } catch (error) {
         console.error('Error retrieving orders:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
+
 
 exports.cancelOrder = async (req, res) => {
     try {
