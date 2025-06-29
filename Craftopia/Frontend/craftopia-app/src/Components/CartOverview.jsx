@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+const ESCROW_FEE = 0;
 
-const ESCROW_FEE = 2.5;
 
 const CartOverview = ({ cartItems }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  // FIXED: use item.cartQuantity instead of item.quantity
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.cartQuantity, 0);
   const total = subtotal + ESCROW_FEE;
 
