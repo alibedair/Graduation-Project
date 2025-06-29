@@ -12,7 +12,6 @@ const {
 } = require('../utils/customizationUtils');
 const User = require('../models/user');
 const { sendCustomizationResponseEmail } = require('../utils/emailService');
-const Order = require('../models/order');
 
 exports.respondToCustomizationRequest = async (req, res) => {
     try {
