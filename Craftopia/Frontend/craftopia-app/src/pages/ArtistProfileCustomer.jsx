@@ -154,7 +154,7 @@ const ArtistProfileCustomer = () => {
           name: a.name,
           username: a.username,
           avatar: a.profilePicture || 'https://placehold.co/200x200?text=No+Image',
-          coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
+          coverImage: 'https://images.unsplash.com/photo-1508615121316-fe792af62a63?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           bio: a.biography,
           joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
           specialties: ['Handmade', 'Artisan'],
@@ -164,7 +164,7 @@ const ArtistProfileCustomer = () => {
             sales: Number(a.sales),
             rating: parseFloat(a.averageRating || 0).toFixed(1),
             reviews: a.totalRatings,
-            followers: 0,
+            followers: a.numberOfFollowers,
             views: a.visitors
           }
         });
