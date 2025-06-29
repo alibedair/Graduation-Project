@@ -5,39 +5,42 @@ import axios from 'axios';
 const ESCROW_FEE = 2.5;
 
 const CartOverview = ({ cartItems }) => {
-  const [loading, setLoading] = useState(false); // 👈 loading state
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const total = subtotal + ESCROW_FEE;
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // FIXED: use item.cartQuantity instead of item.quantity
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.cartQuantity, 0);
+  const total = subtotal + ESCROW_FEE;
 
   const handleContinueShopping = () => {
     navigate('/');
   };
 
   const handleCheckout = async () => {
-    setLoading(true); // 👈 start loading
-    try {
-      const productIds = cartItems.map(item => item.id); 
-      const quantity = cartItems.map(item => item.quantity);
+  setLoading(true);
+  try {
+    const productIds = cartItems.map(item => item.id);
+    const quantity = cartItems.map(item => item.cartQuantity);
 
-      const response = await axios.post('http://localhost:3000/order/placeOrder', {
-        productIds,
-        quantity
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+    const response = await axios.post('http://localhost:3000/order/placeOrder', {
+      productIds,
+      quantity
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
 
-      console.log('✅ Order placed successfully:', response.data);
-      navigate('/orders');
-    } catch (error) {
-      console.error('❌ Error placing order:', error.response?.data || error.message);
-      alert('Failed to place order. Please try again.');
-    } finally {
-      setLoading(false); // 👈 stop loading
-    }
-  };
+    console.log('✅ Order placed successfully:', response.data);
+    navigate('/orders');
+  } catch (error) {
+    console.error('❌ Error placing order:', error.response?.data || error.message);
+    alert('Failed to place order. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="w-full p-6 bg-white rounded-xl shadow-md border border-gray-200">
