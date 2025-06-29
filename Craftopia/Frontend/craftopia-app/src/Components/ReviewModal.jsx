@@ -25,19 +25,19 @@ const ReviewModal = ({
 
     if (!isOpen || !product) return null;
 
-    const handleSubmit = async () => {
-        if (artistRating === 0) {
-            alert("Please rate the artist before publishing your review.");
-            return;
-        }
+   const handleSubmit = async () => {
+    if (artistRating === 0 && activeTab === 'artist') {
+        const confirmSkip = confirm("You didn't rate the artist. Do you want to publish without rating the artist?");
+        if (!confirmSkip) return;
+    }
 
-        setIsSubmitting(true);
-        try {
-            await onSubmit();
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    setIsSubmitting(true);
+    try {
+        await onSubmit();
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
 
     return (

@@ -103,46 +103,51 @@ const MyOrders = () => {
         setArtistComment('');
     };
 
-    const submitReview = async () => {
-        if (rating === 0) {
-            alert('Please select a rating');
-            return;
-        }
+   const submitReview = async () => {
+    if (rating === 0) {
+        alert('Please select a rating');
+        return;
+    }
 
-        if (!review || review.trim().length < 20) {
-            alert('Please write a review with at least 20 characters');
-            return;
-        }
+    if (!review || review.trim().length < 20) {
+        alert('Please write a review with at least 20 characters');
+        return;
+    }
 
-        try {
-            const response = await axios.post(
-                'http://localhost:3000/review/create',
-                {
-                    productId: currentProduct.productId || currentProduct.id,
-                    rating: rating,
-                    review: review.trim(),
-                    artistRating: artistRating || 0,
-                    artistComment: artistComment?.trim() || ""
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            if (response.status === 201) {
-                alert('Thank you for your review!');
-                closeReviewModal();
-            } else {
-                alert('Something went wrong. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            alert(error.response?.data?.message || error.message || 'Failed to submit review. Please try again.');
-        }
+    const reviewData = {
+        productId: currentProduct.productId || currentProduct.id,
+        rating: rating,
+        review: review.trim()
     };
+    if (artistRating > 0) {
+        reviewData.artistRating = artistRating;
+        reviewData.artistComment = artistComment?.trim() || "";
+    }
+
+    try {
+        const response = await axios.post(
+            'http://localhost:3000/review/create',
+            reviewData,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (response.status === 201) {
+            alert('Thank you for your review!');
+            closeReviewModal();
+        } else {
+            alert('Something went wrong. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        alert(error.response?.data?.message || error.message || 'Failed to submit review. Please try again.');
+    }
+};
+
 
     if (isLoading) {
         return (
@@ -190,7 +195,7 @@ const MyOrders = () => {
                     <div className="inline-flex gap-3 min-w-max px-2 py-1 rounded-xl bg-white shadow-inner border border-[var(--color-coral)/30]">
                         {[
                             { label: 'All Orders', value: 'all', icon: null },
-                            { label: 'Shipping', value: 'shipping', icon: <FiTruck className="mr-1" /> },
+                           { label: 'Shipped', value: 'shipped', icon: <FiTruck className="mr-1" /> },
                             { label: 'Completed', value: 'completed', icon: <FiCheckCircle className="mr-1" /> },
                             { label: 'Cancelled', value: 'cancelled', icon: <FiXCircle className="mr-1" /> },
                             { label: 'Pending', value: 'pending', icon: <FiClock className="mr-1" /> },
@@ -273,7 +278,6 @@ const MyOrders = () => {
                                                 )}
                                                 <div className="p-2 h-1/3 flex flex-col justify-between">
                                                     <h4 className="text-sm font-semibold text-gray-800 truncate">{item.name}</h4>
-                                                    <p className="text-xs text-gray-600 truncate">{item.description}</p>
                                                     <p className="text-xs text-gray-700">
                                                         Price: <span className="font-medium">{parseFloat(item.price).toLocaleString()} LE</span>
                                                     </p>
@@ -281,7 +285,7 @@ const MyOrders = () => {
                                                         Qty: <span className="font-medium">{item.productorder?.quantity}</span>
                                                     </p>
                                                 </div>
-                                                {order.status === 'Completed' && (
+                                               {order.status === 'Completed' && !item.reviewed && (
                                                     <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn">
                                                         <p className="text-xs text-[var(--color-burgundy)] font-semibold mb-1">
                                                             Enjoyed this product? Leave a review!
