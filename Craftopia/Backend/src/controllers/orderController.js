@@ -190,52 +190,61 @@ exports.cancelOrder = async (req, res) => {
     }
 }
 exports.getOrderById = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { orderId } = req.params;
-        const customer = await Customer.findOne({ where: { userId } });
-        if (!customer) {
-            return res.status(403).json({ message: 'Customer not found' });
-        }
-        if(!orderId) {
-            return res.status(400).json({ message: 'Order ID is required' });
-        }
-        const order = await Order.findOne({
-            where: { 
-                orderId: orderId,
-                customerId: customer.customerId
-            },
-             include: [{ 
-                model: product,
-                attributes: ['productId', 'name', 'price', 'description', 'image'],
-                through: { 
-                    attributes: ['quantity']
-                }
-            },{
-             model: OptionValue,
-                attributes: ['valueofOption'],
-                where: { orderId: orderId },
-                include: [{
-                    model: CustomizableOption,
-                    attributes: ['optionName']
-                }]
-            }
-        ]
-        });
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
+  try {
+    const userId = req.user.id;
+    const { orderId } = req.params;
 
-        return res.status(200).json({
-            message: 'Order retrieved successfully',
-            order
-        });
-
-    } catch (error) {
-        console.error('Error retrieving order:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+    if (!orderId) {
+      return res.status(400).json({ message: 'Order ID is required' });
     }
-}
+
+    const customer = await Customer.findOne({ where: { userId } });
+    if (!customer) {
+      return res.status(403).json({ message: 'Customer not found' });
+    }
+
+    const order = await Order.findOne({
+      where: {
+        orderId,
+        customerId: customer.customerId,
+      },
+      include: [
+        {
+          model: product,
+          attributes: ['productId', 'name', 'price', 'description', 'image'],
+          through: {
+            attributes: ['quantity']
+          }
+        },
+        {
+          model: OptionValue,
+          attributes: ['valueofOption'],
+          required: false, 
+          include: [
+            {
+              model: CustomizableOption,
+              attributes: ['optionName']
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    return res.status(200).json({
+      message: 'Order retrieved successfully',
+      order
+    });
+
+  } catch (error) {
+    console.error('Error retrieving order:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 exports.shipOrder = async (req, res) => {
     try {
         const userId = req.user.id;
