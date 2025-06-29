@@ -4,6 +4,7 @@ const product = require('../models/product');
 const Product_Order = require('../models/Product_Order');
 const User = require('../models/user');
 const CustomizationResponse = require('../models/customizationResponse');
+const CustomizationRequest = require('../models/customizationRequest');
 const Artist = require('../models/artist');
 const CustomizableOption = require('../models/customizableOption');
 const OptionValue = require('../models/optionValue');
@@ -278,9 +279,10 @@ exports.shipOrder = async (req, res) => {
             customerId: respond.customerId  
         });
         try{
-            const customer = await Customer.findByPk(respond.customerId);
+            const request = await CustomizationRequest.findByPk(respond.requestId);
+            const customer = await Customer.findByPk(request.customerId);
             const customerUser = await User.findByPk(customer.userId);
-            
+
             if (customerUser && customerUser.email) {
                 const orderDetails = {
                     orderId: order.orderId,
