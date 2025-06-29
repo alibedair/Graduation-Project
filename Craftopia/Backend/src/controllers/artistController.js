@@ -106,10 +106,40 @@ exports.getArtist = async (req, res) => {
     try {
         const { artistId } = req.params;
 
-        const artist = await Artist.findOne({ where: { artistId } });
+        const artist = await Artist.findOne({ 
+            where: { artistId },
+            include:[{
+                model: Product,
+                attributes:['categoryId'],
+                include: [{
+                    model: Category,
+                    attributes: ['categoryId', 'name'],
+                }],
+                required: false
+            }]
+        });
+
         if (!artist) {
             return res.status(404).json({ message: 'Artist profile not found' });
         }
+        const categoryMap = new Map();
+        if(artist.products){
+            artist.products.forEach(product => {
+                if(product.category) {
+                    const categoryId = product.category.categoryId;
+                    if(categoryMap.has(categoryId)) {
+                        categoryMap.get(categoryId).productCount++;
+                    } else {
+                        categoryMap.set(categoryId, {
+                            categoryId: product.category.categoryId,
+                            name: product.category.name,
+                            productCount: 1
+                        });
+                    }
+                }
+            });
+        }
+        const categories = Array.from(categoryMap.values());
         const numberOfFollowers = await ArtistFollow.count({
             where: { artistId: artist.artistId }
         });
@@ -145,11 +175,14 @@ exports.getArtist = async (req, res) => {
                 }
             }
         }
+        const artistData = artist.toJSON();
+        delete artistData.products;
 
         return res.status(200).json({ artist:{
-            ...artist.toJSON(),
+            ...artistData,
             numberOfFollowers,
             numberOfProducts,
+            categories
         } });
     } catch (error) {
         console.error('Error fetching artist profile:', error);
