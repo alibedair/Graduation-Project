@@ -23,7 +23,7 @@ const ArtistsSection = () => {
           id: artist.artistId,
           name: artist.name,
           specialty: artist.categories?.join(', ') || 'N/A',
-          image: artist.profilePicture || 'https://via.placeholder.com/150',
+          image: artist.profilePicture || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png',
           rating: parseFloat(artist.averageRating || 0).toFixed(1),
           products: artist.numberOfProducts || 0,
           followers: artist.numberOfFollowers || 0,

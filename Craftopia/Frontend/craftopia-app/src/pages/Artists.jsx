@@ -80,38 +80,38 @@ const Artists = () => {
   };
 
   const handleToggleFollow = async (artistId) => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  const targetArtist = artists.find(a => a.artistId === artistId);
-  const isCurrentlyFollowing = targetArtist?.isFollowing;
+    const targetArtist = artists.find(a => a.artistId === artistId);
+    const isCurrentlyFollowing = targetArtist?.isFollowing;
 
-  const url = isCurrentlyFollowing
-    ? `http://localhost:3000/customer/unfollow/${artistId}`
-    : `http://localhost:3000/customer/follow/${artistId}`;
+    const url = isCurrentlyFollowing
+      ? `http://localhost:3000/customer/unfollow/${artistId}`
+      : `http://localhost:3000/customer/follow/${artistId}`;
 
-  try {
-    const res = await fetch(url, {
-      method: isCurrentlyFollowing ? "DELETE" : "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const res = await fetch(url, {
+        method: isCurrentlyFollowing ? "DELETE" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (res.ok) {
-      const updated = artists.map((artist) =>
-        artist.artistId === artistId
-          ? { ...artist, isFollowing: !isCurrentlyFollowing }
-          : artist
-      );
-      setArtists(updated);
-    } else {
-      console.error("Failed to toggle follow state");
+      if (res.ok) {
+        const updated = artists.map((artist) =>
+          artist.artistId === artistId
+            ? { ...artist, isFollowing: !isCurrentlyFollowing }
+            : artist
+        );
+        setArtists(updated);
+      } else {
+        console.error("Failed to toggle follow state");
+      }
+    } catch (err) {
+      console.error("Error during follow/unfollow:", err);
     }
-  } catch (err) {
-    console.error("Error during follow/unfollow:", err);
-  }
-};
+  };
 
   return (
     <>
@@ -168,21 +168,24 @@ const Artists = () => {
           {/* Artist Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sortedArtists.map((artist) => (
-            <ArtistCard
-              key={artist.artistId}
-              artistId={artist.artistId}
-              name={artist.name}
-              avatar={artist.profilePicture}
-              rating={parseFloat(artist.averageRating)}
-              followersCount={parseInt(artist.numberOfFollowers)}
-              productCount={parseInt(artist.numberOfProducts)}
-              specialties={artist.categories || []}
-              isFollowing={artist.isFollowing}
-              totalReviews={artist.totalReviews}
-              isVerified={true}
-              onViewGallery={() => handleViewGallery(artist.artistId)}
-              onToggleFollow={() => handleToggleFollow(artist.artistId)}
-            />
+              <ArtistCard
+                key={artist.artistId}
+                artistId={artist.artistId}
+                name={artist.name}
+                avatar={
+                  artist.profilePicture ||
+                  'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'
+                }
+                rating={parseFloat(artist.averageRating)}
+                followersCount={parseInt(artist.numberOfFollowers)}
+                productCount={parseInt(artist.numberOfProducts)}
+                specialties={artist.categories || []}
+                isFollowing={artist.isFollowing}
+                totalReviews={artist.totalReviews}
+                isVerified={true}
+                onViewGallery={() => handleViewGallery(artist.artistId)}
+                onToggleFollow={() => handleToggleFollow(artist.artistId)}
+              />
 
             ))}
           </div>
