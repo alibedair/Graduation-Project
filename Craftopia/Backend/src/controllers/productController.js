@@ -5,6 +5,7 @@ const CustomizableOption = require('../models/customizableOption');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const Review = require('../models/Review');
 const { Sequelize } = require('sequelize');
+const AuctionRequest = require('../models/auctionRequest');
 
 exports.createProduct = async (req, res) => {
     try {
@@ -97,8 +98,19 @@ exports.getProducts = async (req, res) => {
             ],
             attributes: ['productId', 'name', 'price', 'description', 'image', 'sellingNumber', 'quantity', 'dimensions', 'material','createdAt']
         });
+
+        const filteredProducts= [];
+        for (const product of products) {
+            const auctionRequest = await AuctionRequest.findOne({
+                where: { productId: product.productId},
+            });
+            if(!auctionRequest){
+                filteredProducts.push(product);
+            }
+        }
+
         const productsWithStats = await Promise.all(
-            products.map(async (product) => {
+            filteredProducts.map(async (product) => {
                 const reviewStats = await Review.findOne({
                     where: { productId: product.productId },
                     attributes: [
@@ -182,8 +194,19 @@ exports.getArtistProducts = async (req, res) => {
             where: {artistId: artist.artistId},
             attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material']
         });
+
+        filteredProducts = [];
+        for (const product of products) {
+            const auctionRequest = await AuctionRequest.findOne({
+                where: { productId: product.productId },
+            });
+            if(!auctionRequest){
+                filteredProducts.push(product);
+            }
+        }
+
         const productsWithStats = await Promise.all(
-            products.map(async (product) => {
+            filteredProducts.map(async (product) => {
                 const reviewStats = await Review.findOne({
                     where: { productId: product.productId },
                     attributes: [
