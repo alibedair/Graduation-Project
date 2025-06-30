@@ -113,7 +113,8 @@ exports.getAllAuctionRequests = async (req, res) => {
                                 WHERE "productorder"."productId" = "product"."productId"
                             )`),
                             'totalSales'
-                        ]
+                        ],
+                        'description'
                     ]
                 },                {
                     model: Artist,
