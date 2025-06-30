@@ -185,7 +185,7 @@ const ArtistProfileCustomer = () => {
           rating: p.averageRating || 0,
           reviews: p.totalReviews || 0,
           isOnSale: false,
-          category: p.category || 'Handmade',
+          category: p.category.name || 'Handmade',
           artist: { username: a.name }
         })));
 
@@ -400,7 +400,7 @@ fetchAuctionProducts();
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {artist.specialties.map(s => <Badge className='bg-white shadow-sm' key={s} variant="outline">{s.name}</Badge>)}
+                  {artist.specialties.map(s => <Badge className='bg-white shadow-sm' key={s.categoryId} variant="outline">{s.name}</Badge>)}
                 </div>
 
                 <div className="flex flex-wrap gap-6 text-sm ">
