@@ -17,7 +17,7 @@ router.post('/create',
         body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
         body('dimensions').optional().isString().withMessage('Dimensions must be a string'),
         body('material').optional().isString().withMessage('Material must be a string'),
-        body('customizableOptions').optional().isArray().withMessage('Customizable options must be an array')
+        body('type').isIn(['auction', 'normal','customizable']).optional().withMessage('Type must be one of: auction, normal, customizable'),
     ],  
     productController.createProduct
 );

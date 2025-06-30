@@ -52,16 +52,16 @@ const Product = sequelize.define('product', {
         type: DataTypes.STRING,
         allowNull: true
     },
-    isCustomizable:{
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: false
-    },
     sellingNumber:{
         type: DataTypes.INTEGER,
         defaultValue: 0,
         allowNull: false
-    }
+    },
+    type: {
+        type: DataTypes.ENUM('auction', 'normal', 'customizable'),
+        allowNull: false,
+        defaultValue: 'normal'
+    },
 
 });
 

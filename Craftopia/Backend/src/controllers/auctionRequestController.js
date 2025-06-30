@@ -30,6 +30,9 @@ exports.createAuctionRequest = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
+        if (product.type !== 'auction') {
+            return res.status(400).json({ message: 'Product must be of type auction' });
+        }
         
         if (product.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'You can only request auctions for your own products' });

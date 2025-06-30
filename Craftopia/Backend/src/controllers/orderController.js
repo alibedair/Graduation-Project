@@ -6,8 +6,6 @@ const User = require('../models/user');
 const CustomizationResponse = require('../models/customizationResponse');
 const CustomizationRequest = require('../models/customizationRequest');
 const Artist = require('../models/artist');
-const CustomizableOption = require('../models/customizableOption');
-const OptionValue = require('../models/optionValue');
 const { sendOrderConfirmationEmail, sendShipAuctionEmail, sendCustomizationShipEmail } = require('../utils/emailService');
 const { firebase_db } = require('../config/firebase');
 const Review = require('../models/Review'); 
@@ -51,7 +49,6 @@ exports.placeOrder = async (req, res) => {
         });
 
         const productOrderData = [];
-        const optionValueData = [];
         
         for (let i = 0; i < products.length; i++) {
             productOrderData.push({
@@ -60,29 +57,11 @@ exports.placeOrder = async (req, res) => {
                 quantity: quantity[i]
             });
             
-            if(products[i].isCustomizable) {
-                const optionValues = req.body.optionValues;
-                const options = await CustomizableOption.findAll({
-                    where: { productId: products[i].productId }
-                });
-                
-                for (const option of options) {
-                    if (optionValues && optionValues[option.optionId]) {
-                        optionValueData.push({
-                            orderId: order.orderId,
-                            optionId: option.optionId,
-                            valueofOption: optionValues[option.optionId]
-                        });
-                    }
-                }
-            }
         }
         
         await Product_Order.bulkCreate(productOrderData);
         
-        if (optionValueData.length > 0) {
-            await OptionValue.bulkCreate(optionValueData);
-        }
+
         try {
             const user = await User.findByPk(userId);
             if (user && user.email) {
@@ -227,17 +206,6 @@ exports.getOrderById = async (req, res) => {
             attributes: ['quantity']
           }
         },
-        {
-          model: OptionValue,
-          attributes: ['valueofOption'],
-          required: false, 
-          include: [
-            {
-              model: CustomizableOption,
-              attributes: ['optionName']
-            }
-          ]
-        }
       ]
     });
 
