@@ -249,14 +249,17 @@ exports.getAuctionProductsByArtist = async (req, res) => {
 
         const auctionSnapshot = await firebase_db.ref("auctions").once("value");
         const auctionsData = auctionSnapshot.val() || {};
-        const auctionsProductIds = Object.values(auctionsData)
-            .filter(auction => auction.artistId.toString() === artistId.toString())
-            .map(auction => auction.productId);
-        if(auctionsProductIds.length === 0) {
+        const artistAuctions = Object.entries(auctionsData)
+            .filter(([id, auction]) => auction.artistId.toString() === artistId.toString())
+            .map(([id, auction]) => ({ id, ...auction }));
+            
+        if (artistAuctions.length === 0) {
             return res.status(404).json({ message: "No auctions found for this artist" });
         }
+        const auctionsProductIds = artistAuctions.map(auction => auction.productId);
         const products = await Product.findAll({
-            where: { artistId,
+            where: { 
+                artistId,
                 productId: auctionsProductIds
             },
             include: [
@@ -271,8 +274,19 @@ exports.getAuctionProductsByArtist = async (req, res) => {
         if (products.length === 0) {
             return res.status(404).json({ message: "No products found for this artist" });
         }
+        const productMap = {};
+        products.forEach(product => {
+            productMap[product.productId] = product;
+        });
+        const auctionsWithProducts = artistAuctions.map(auction => ({
+            auction,
+            product: productMap[auction.productId] || null
+        }));
         
-        return res.status(200).json({ products });
+        return res.status(200).json({ 
+            auctions: auctionsWithProducts,
+            products 
+        });
     } catch (error) {
         console.error("Error fetching products by artist:", error);
         return res.status(500).json({ message: "Internal Server Error" });
