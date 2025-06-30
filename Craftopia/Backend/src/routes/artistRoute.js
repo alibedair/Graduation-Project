@@ -6,7 +6,6 @@ const roleMiddleware = require('../middlewares/roleMiddleware');
 const { body, param } = require('express-validator');
 
 router.get('/getprofile/:artistId',
-    authMiddleware,
     param('artistId').isInt().withMessage('Artist ID must be an integer'),
     artistController.getArtist
 );

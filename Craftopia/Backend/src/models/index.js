@@ -21,7 +21,6 @@ const Payment = require('./payment');
 const AuctionRequest = require('./auctionRequest');
 const categoryRequests = require('./categoriesRequests');
 const Rating = require('./rating');
-const Visitor = require('./visitor');
 const OTP = require('./otp');
 const Message = require('./message');
 const Cart = require('./cart');
@@ -226,16 +225,7 @@ Rating.belongsTo(Customer, { foreignKey: 'customerId' });
 Artist.hasMany(Rating, { foreignKey: 'artistId' });
 Rating.belongsTo(Artist, { foreignKey: 'artistId' });
 
-// Visitor associations (Customer visits Artist)
-Artist.belongsToMany(Customer, { through: Visitor, foreignKey: 'artistId', as: 'visitorCustomers' });
-Customer.belongsToMany(Artist, { through: Visitor, foreignKey: 'customerId', as: 'visitedArtists' });
 
-// Direct associations for Visitor
-Artist.hasMany(Visitor, { foreignKey: 'artistId', as: 'visitorRecords' });
-Visitor.belongsTo(Artist, { foreignKey: 'artistId' });
-
-Customer.hasMany(Visitor, { foreignKey: 'customerId', as: 'visitRecords' });
-Visitor.belongsTo(Customer, { foreignKey: 'customerId' });
 
 // OTP & User Relationship
 User.hasMany(OTP, { foreignKey: 'userId' });
@@ -278,7 +268,6 @@ module.exports = {
   AuctionRequest,
   categoryRequests,
   Rating,
-  Visitor,
   OTP,
   Message,
   Cart,

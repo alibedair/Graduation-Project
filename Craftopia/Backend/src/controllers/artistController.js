@@ -7,7 +7,6 @@ const Product = require('../models/product');
 const ArtistFollow = require('../models/artistFollow');
 const Customer = require('../models/customer');
 const Category = require('../models/category');
-const Visitor = require('../models/visitor');
 const Review = require('../models/Review');
 const sequelize = require('../config/db');
 
@@ -147,33 +146,13 @@ exports.getArtist = async (req, res) => {
             where: { artistId: artist.artistId }
         });
 
-        // Only handle visitor tracking if user is authenticated
-        const userId = req.user?.id;
-
-        if (userId) {
-            const user = await User.findOne({ where: { userId } });
-
-            if (user?.role === 'customer') {
-                const customer = await Customer.findOne({ where: { userId } });
-
-                if (customer) {
-                    const existingVisitor = await Visitor.findOne({
-                        where: {
-                            artistId: artist.artistId,
-                            customerId: customer.customerId
-                        }
-                    });
-
-                    if (!existingVisitor) {
-                        await Visitor.create({
-                            artistId: artist.artistId,
-                            customerId: customer.customerId
-                        });
-
-                        await artist.increment('visitors');
-                    }
-                }
+       const userId = req.user?.id;
+       const user = await User.findOne({ where: { userId } });
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
             }
+        if(user.role == 'customer'){
+        await artist.increment('visitors');
         }
         const artistData = artist.toJSON();
         delete artistData.products;
