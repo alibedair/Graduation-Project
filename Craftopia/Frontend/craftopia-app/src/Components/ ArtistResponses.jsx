@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { EnvelopeIcon, FlagIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import Messages from "./Messages";
+import { EllipsisVerticalIcon, TruckIcon } from '@heroicons/react/24/outline';
 
 const ArtistResponses = () => {
     const [responses, setResponses] = useState([]);
@@ -16,6 +17,7 @@ const ArtistResponses = () => {
     const [reportToast, setReportToast] = useState({ show: false, message: "", success: true });
     const [attachment, setAttachment] = useState(null);
     const [reportSuccess, setReportSuccess] = useState(false);
+    const [shippingToast, setShippingToast] = useState({ show: false, message: "", success: true });
 
     const getUnreadCount = (responseId) => {
         return unreadMessages.filter(msg => msg.responseId === responseId).length;
@@ -119,6 +121,30 @@ const ArtistResponses = () => {
             alert("An error occurred while submitting the report.");
         }
     };
+    const handleShipOrder = async (responseId) => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`http://localhost:3000/order/ship/${responseId}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setShippingToast({ show: true, message: "Order shipped successfully!", success: true });
+            } else {
+                throw new Error(data.message || "Shipping failed.");
+            }
+        } catch (error) {
+            setShippingToast({ show: true, message: error.message, success: false });
+        } finally {
+            setTimeout(() => setShippingToast({ show: false, message: "", success: true }), 4000);
+        }
+    };
+
 
     return (
         <>
@@ -137,6 +163,18 @@ const ArtistResponses = () => {
             )}
 
 
+            {shippingToast.show && (
+                <motion.div
+                    initial={{ y: -40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -40, opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg text-sm font-medium
+      ${shippingToast.success ? "bg-green-100 text-green-800" : "bg-red-100 text-red-700"}`}
+                >
+                    {shippingToast.message}
+                </motion.div>
+            )}
             <div className="max-w-5xl mx-auto px-6 py-8 bg-[#FAF9F6]">
                 {newMessageNotification && (
                     <motion.div
@@ -285,61 +323,91 @@ const ArtistResponses = () => {
                         {responses.map((response) => (
                             <div key={response.responseId} className="bg-[#F6EEEE] p-6 pr-15 rounded-lg shadow-md relative">
                                 {response.status === "ACCEPTED" && (
-                                    <>
+                                    <motion.div
+                                        className="absolute -top-4 -right-4"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                    >
                                         <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={() => setActiveMessageId(response.responseId)}
-                                            className="absolute -top-5 -right-5 bg-[#921A40] p-4 rounded-full shadow-lg cursor-pointer group"
-                                            title="Message customer"
+                                            className="relative group"
+                                            whileHover="hover"
+                                            initial={false}
                                         >
-                                            <div className="relative">
-                                                <EnvelopeIcon className="h-6 w-6 text-white" />
-                                                {getUnreadCount(response.responseId) > 0 && (
-                                                    <motion.span
-                                                        className="absolute -top-1 -right-1 h-5 w-5 bg-white text-[#E07385] text-xs font-bold rounded-full flex items-center justify-center border-2 border-white"
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: 1 }}
-                                                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                            <motion.div
+                                                className="w-11 h-11 bg-[#921A40] rounded-full shadow-lg flex items-center justify-center cursor-pointer z-20"
+                                                whileTap={{ scale: 0.95 }}
+                                            >
+                                                <EllipsisVerticalIcon className="h-5 w-5 text-white" />
+                                            </motion.div>
+                                            <motion.div
+                                                className="absolute right-0 mt-2 flex flex-col space-y-3 origin-top z-10"
+                                                variants={{
+                                                    hover: {
+                                                        opacity: 1,
+                                                        y: 0,
+                                                        transition: { staggerChildren: 0.1 }
+                                                    }
+                                                }}
+                                                initial={{ opacity: 0, y: -10 }}
+                                            >
+                                                <motion.div
+                                                    variants={{ hover: { x: 0, opacity: 1 } }}
+                                                    initial={{ x: 20, opacity: 0 }}
+                                                    className="flex items-center justify-end"
+                                                >
+                                                    <div
+                                                        onClick={() => setActiveMessageId(response.responseId)}
+                                                        className="w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 flex items-center justify-center transition"
+                                                        title="Message"
                                                     >
-                                                        {getUnreadCount(response.responseId)}
-                                                    </motion.span>
-                                                )}
-                                            </div>
-                                            <motion.span
-                                                className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        <div className="relative">
+                                                            <EnvelopeIcon className="h-5 w-5 text-[#921A40]" />
+                                                            {getUnreadCount(response.responseId) > 0 && (
+                                                                <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#921A40] text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
+                                                                    {getUnreadCount(response.responseId)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                                <motion.div
+                                                    variants={{ hover: { x: 0, opacity: 1 } }}
+                                                    initial={{ x: 20, opacity: 0 }}
+                                                    className="flex items-center justify-end"
+                                                >
+                                                    <div
+                                                        onClick={() => {
+                                                            setReportingUsername(response.customizationrequest.customer.username);
+                                                            setShowReportModal(true);
+                                                        }}
+                                                        className="w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 flex items-center justify-center transition"
+                                                        title="Report"
+                                                    >
+                                                        <FlagIcon className="h-5 w-5 text-[#921A40]" />
+                                                    </div>
+                                                </motion.div>
+                                                <motion.div
+                                                    variants={{ hover: { x: 0, opacity: 1 } }}
+                                                    initial={{ x: 20, opacity: 0 }}
+                                                    className="flex items-center justify-end"
+                                                >
+                                                    <div
+                                                        onClick={() => handleShipOrder(response.responseId)}
+                                                        className="w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 flex items-center justify-center transition"
+                                                        title="Ship"
+                                                    >
+                                                        <TruckIcon className="h-5 w-5 text-emerald-600" />
+                                                    </div>
+                                                </motion.div>
+                                            </motion.div>
+                                            <motion.div
+                                                className="absolute right-14 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2.5 py-1.5 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                             >
-                                                {getUnreadCount(response.responseId) > 0
-                                                    ? `${getUnreadCount(response.responseId)} new messages`
-                                                    : "Message customer"}
-                                            </motion.span>
+                                                Quick Actions
+                                            </motion.div>
                                         </motion.div>
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={() => {
-                                                setReportingUsername(response.customizationrequest.customer.username);
-                                                setShowReportModal(true);
-                                            }}
-                                            className="absolute top-12 -right-3 bg-cream p-2 rounded-full shadow-md cursor-pointer group "
-
-                                            title="Report customer"
-                                        >
-                                            <FlagIcon className="h-5 w-5 text-[#921A40]" />
-                                            <motion.span
-                                                className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                Report customer
-                                            </motion.span>
-                                        </motion.div>
-
-                                    </>
+                                    </motion.div>
                                 )}
-
                                 <div className="flex flex-col md:flex-row gap-6">
                                     {response.customizationrequest.image && (
                                         <div className="md:w-1/4">
