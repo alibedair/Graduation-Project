@@ -146,13 +146,12 @@ exports.getArtist = async (req, res) => {
             where: { artistId: artist.artistId }
         });
 
-       const userId = req.user?.id;
-       const user = await User.findOne({ where: { userId } });
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
+        const userId = req.user?.id;
+        if (userId) {
+            const user = await User.findOne({ where: { userId } });
+            if (user && user.role === 'customer') {
+                await artist.increment('visitors');
             }
-        if(user.role == 'customer'){
-        await artist.increment('visitors');
         }
         const artistData = artist.toJSON();
         delete artistData.products;
