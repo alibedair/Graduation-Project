@@ -66,5 +66,23 @@ router.put('/review/:id',
     reportController.ReviewReport
 );
 
+router.put('/ban/:id', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    [
+        param('id').isInt().withMessage('User ID must be a valid integer')
+    ],
+    reportController.BanUser
+);
+
+router.put('/unban/:id', 
+    authMiddleware,
+    roleMiddleware('admin'),
+    [
+        param('id').isInt().withMessage('User ID must be a valid integer')
+    ],
+    reportController.UnbanUser
+);
+
 module.exports = router;
 

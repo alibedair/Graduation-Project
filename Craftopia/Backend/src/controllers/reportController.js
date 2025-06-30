@@ -434,3 +434,97 @@ exports.ReviewReport = async (req, res) => {
         });
     }
 };
+
+exports.BanUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (isNaN(id) || !Number.isInteger(Number(id))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID. Must be a valid integer.'
+            });
+        }
+        
+         if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admins can ban users'
+            });
+        }
+
+        const user = await User.findOne({
+            where: { userId: id }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        user.isBanned = true;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'User banned successfully',
+            data: user
+        });
+    } catch (error) {
+        console.error('Error banning user:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+}
+
+exports.UnbanUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (isNaN(id) || !Number.isInteger(Number(id))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID. Must be a valid integer.'
+            });
+        }
+        
+         if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admins can unban users'
+            });
+        }
+
+        const user = await User.findOne({
+            where: { userId: id }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        user.isBanned = false;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'User unbanned successfully',
+            data: user
+        });
+    } catch (error) {
+        console.error('Error unbanning user:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
