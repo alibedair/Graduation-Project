@@ -165,19 +165,20 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
   };
 
   return (
-    <div className="space-y-10">
-      <h2 className="text-3xl font-semibold text-[#921A40]">Customer Reviews</h2>
-
-      <div className="space-y-6">
-        {reviews.map((r) => {
+  <div className="space-y-10">
+    <div className="space-y-6">
+      {reviews.length === 0 ? (
+        <div className="text-center py-12 text-coral italic text-lg border border-dashed border-coral rounded-xl bg-cream">
+          <p>This product hasn't been reviewed yet. Be the first to share your experience!</p>
+        </div>
+      ) : (
+        reviews.map((r) => {
           const isMine = r.customerId === userId;
           return (
             <div
               key={r.reviewId}
               className="border border-[#ab5a68] hover:border-[#c3576d] transition duration-200 rounded-xl p-5 bg-white relative"
-
             >
-
               <div className="flex gap-4 items-start">
                 <div className="shrink-0 w-12 h-12 bg-[#FAE3E5] rounded-full flex items-center justify-center text-[#E07385] font-bold text-lg">
                   {r.customer?.username?.[0]?.toUpperCase() || "U"}
@@ -194,7 +195,6 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
                           month: "short",
                           year: "numeric",
                         })}
-
                         {r.verified && (
                           <span className="flex items-center text-green-600 ml-2">
                             <CheckCircle className="w-4 h-4 mr-1" />
@@ -257,75 +257,77 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
               </div>
             </div>
           );
-        })}
-      </div>
-
-      {showReportModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl relative">
-            {reportSuccess ? (
-              <div className="text-center py-10">
-                <h2 className="text-xl font-bold text-green-600 mb-3">
-                  ✅ Report Submitted!
-                </h2>
-                <p className="text-gray-700">
-                  Thank you for helping us keep the community safe.
-                </p>
-              </div>
-            ) : (
-              <>
-                <button
-                  className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                  onClick={() => setShowReportModal(false)}
-                >
-                  ✕
-                </button>
-                <h3 className="text-lg font-semibold mb-3 text-[#E07385]">
-                  Report @{reportingUsername}'s review
-                </h3>
-                <textarea
-                  rows={4}
-                  placeholder="Describe the issue..."
-                  className="w-full border rounded-md p-2 text-sm hover:border-[#E07385] focus:ring-[#E07385] focus:ring-1 outline-none"
-                  value={reportContent}
-                  onChange={(e) => setReportContent(e.target.value)}
-                />
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Attach Screenshot (optional)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <label className="cursor-pointer inline-block px-4 py-2 bg-[#FCEEEF] text-[#E07385] rounded-md border border-[#F5C1C8] hover:bg-[#fddce3] transition text-sm font-medium">
-                      Choose File
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setAttachment(e.target.files[0])}
-                        className="hidden"
-                      />
-                    </label>
-                    {attachment && (
-                      <span className="text-sm text-gray-700 truncate max-w-[180px]">
-                        {attachment.name}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleReportSubmit}
-                  className="mt-4 w-full bg-[#E07385] text-white py-2 rounded-md hover:bg-[#c85e6d]"
-                >
-                  Submit Report
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+        })
       )}
     </div>
-  );
+
+    {showReportModal && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl relative">
+          {reportSuccess ? (
+            <div className="text-center py-10">
+              <h2 className="text-xl font-bold text-green-600 mb-3">
+                ✅ Report Submitted!
+              </h2>
+              <p className="text-gray-700">
+                Thank you for helping us keep the community safe.
+              </p>
+            </div>
+          ) : (
+            <>
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                onClick={() => setShowReportModal(false)}
+              >
+                ✕
+              </button>
+              <h3 className="text-lg font-semibold mb-3 text-[#E07385]">
+                Report @{reportingUsername}'s review
+              </h3>
+              <textarea
+                rows={4}
+                placeholder="Describe the issue..."
+                className="w-full border rounded-md p-2 text-sm hover:border-[#E07385] focus:ring-[#E07385] focus:ring-1 outline-none"
+                value={reportContent}
+                onChange={(e) => setReportContent(e.target.value)}
+              />
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Attach Screenshot (optional)
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="cursor-pointer inline-block px-4 py-2 bg-[#FCEEEF] text-[#E07385] rounded-md border border-[#F5C1C8] hover:bg-[#fddce3] transition text-sm font-medium">
+                    Choose File
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setAttachment(e.target.files[0])}
+                      className="hidden"
+                    />
+                  </label>
+                  {attachment && (
+                    <span className="text-sm text-gray-700 truncate max-w-[180px]">
+                      {attachment.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={handleReportSubmit}
+                className="mt-4 w-full bg-[#E07385] text-white py-2 rounded-md hover:bg-[#c85e6d]"
+              >
+                Submit Report
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default ProductReview;
