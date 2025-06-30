@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Share2, Eye, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Heart, Box, ChartColumnStacked, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '../Components/Footer';
 import { toast } from 'react-hot-toast';
 
 
-const CountdownTimer = ({ endTime }) => {
+const CountdownTimer = ({ endTime, status}) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: '00', minutes: '00', seconds: '00' });
   useEffect(() => {
     const timer = setInterval(() => {
@@ -21,8 +21,18 @@ const CountdownTimer = ({ endTime }) => {
     return () => clearInterval(timer);
   }, [endTime]);
   return (
-    <div className="flex items-center gap-4 bg-black text-white px-6 py-4 rounded-xl">
-      <Clock className="h-5 w-5 text-red-400" />
+    <div className="flex items-center gap-3 bg-black text-white px-6 py-4 rounded-xl">
+      
+      
+      <div className="flex items-center gap-2">
+      {status === "scheduled" ? (
+        <span className="text-sm font-semibold text-yellow-300">Starting in</span>
+      ) : (
+        <span className="text-sm font-semibold text-green-400">Time left</span>
+      )}
+      
+    </div>
+    <Clock className="h-5 w-6 text-red-400" />
       {timeLeft.days > 0 && (
         <div className="text-center">
           <div className="text-2xl font-bold">{timeLeft.days}</div>
@@ -120,12 +130,18 @@ const ArtistInfo = ({ artist,handleFollow, isFollowed}) => {
 };
 
 // Embedded Image Gallery Component
-const ImageGallery = ({ images, title }) => {
+const ImageGallery = ({ images, title , status}) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <div className="space-y-4">
+        <div className="space-y-4 relative">
+      {/* Coming Soon Badge */}
+      {status === "scheduled" && (
+        <div className="absolute top-4 left-4 bg-yellow-400 text-black font-semibold px-4 py-1 rounded-full z-10 shadow-lg">
+          Coming Soon
+        </div>
+      )}
       <div className="relative">
         <motion.img
           key={currentImage}
@@ -222,8 +238,9 @@ useEffect(() => {
       const artistId = auctionData.auction.artist.artistId;
 
       const resArtist = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+
       if (!resArtist.ok) throw new Error("Failed to fetch artist");
       const artistData = await resArtist.json();
       setArtist(artistData.artist);
@@ -357,6 +374,31 @@ const handleFollowClick = async () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Images */}
           <div className="lg:col-span-2">
+            <div className="relative">
+              {/* Status Badges */}
+              <div className="absolute top-4 left-4 flex gap-2 flex-wrap z-10">
+                {auction.status === 'active' && new Date(auction.endDate) > new Date() && (
+                  <span className="bg-red-600 text-white animate-pulse px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 bg-white rounded-full animate-ping"></span>
+                    LIVE
+                  </span>
+                )}
+
+                {auction.status === 'scheduled' && (
+                  <span className="bg-yellow-400 text-black px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 bg-black rounded-full animate-bounce"></span>
+                    COMING SOON
+                  </span>
+                )}
+
+                {auction.status === 'active' &&
+                  new Date(auction.endDate) - new Date() < 24 * 60 * 60 * 1000 && (
+                    <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                      ⏳ Ending Soon
+                    </span>
+                )}
+              </div>
+            </div>
             <ImageGallery images={auction.productDetails.image} title={auction.name} />
           </div>
 
@@ -367,7 +409,8 @@ const handleFollowClick = async () => {
               <h1 className="text-3xl font-bold mb-2">{auction.title}</h1>
               <div className="flex items-center px-2 gap-10 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
+                  <Box className="h-4 w-4" />
+                  
                   {auction.product?.category?.name || 'Handmade'}
                 </div>
                 <div className="flex items-center gap-1">
@@ -392,36 +435,41 @@ const handleFollowClick = async () => {
                 </div>
               </div>
 
-              <CountdownTimer endTime={auction.status === "scheduled" ? auction.startDate : auction.endDate} />
+              {/* <CountdownTimer endTime={auction.status === "scheduled" ? auction.startDate : auction.endDate} /> */}
+              <CountdownTimer
+                endTime={auction.status === "scheduled" ? auction.startDate : auction.endDate}
+                status={auction.status}
+              />
+
 
               {/* Bid Input */}
               <div className="mt-6 space-y-3">
                       {error && <div className="text-sm text-red-600 mt-1 font-medium">{error}</div>}
 
-      {auction.status === 'active' && !auctionHasEnded && (
-        
-        <div className="flex gap-3">
+                {auction.status === 'active' && !auctionHasEnded && (
+                  
+                  <div className="flex gap-3">
 
-                            <input
-                              type="number"
-                              min={minBid}
-                              step={minIncrement}
-                              placeholder={`Min: $${minBid.toFixed(2)}`}
-                              value={bidAmount}
-                              onChange={(e) => setBidAmount(e.target.value)}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                            />
-                  <button
-                    onClick={handleBidSubmit}
-                    className={`px-8 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors ${
-                      auction.status === 'scheduled' ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
-                    }`}
-                      disabled={auction.status === 'scheduled'}
-                  >
-                    {auction.status === 'scheduled' ? 'Not Started' : 'Bid'}
-                  </button>
-                </div>
-)}
+                                      <input
+                                        type="number"
+                                        min={minBid}
+                                        step={minIncrement}
+                                        placeholder={`Min: $${minBid.toFixed(2)}`}
+                                        value={bidAmount}
+                                        onChange={(e) => setBidAmount(e.target.value)}
+                                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                                      />
+                            <button
+                              onClick={handleBidSubmit}
+                              className={`px-8 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors ${
+                                auction.status === 'scheduled' ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
+                              }`}
+                                disabled={auction.status === 'scheduled'}
+                            >
+                              {auction.status === 'scheduled' ? 'Not Started' : 'Bid'}
+                            </button>
+                          </div>
+                )}
                       
                 <div className="text-sm text-gray-600">
                   Minimum bid: ${minBid.toLocaleString()}
