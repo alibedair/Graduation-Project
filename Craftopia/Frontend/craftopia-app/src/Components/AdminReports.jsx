@@ -69,7 +69,7 @@ const AdminReports = () => {
   return (
     <div className="p-6 w-4/5 min-h-screen flex flex-col bg-[#FAF9F6] mt-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Customer Reports</h2>
+        <h2 className="text-2xl font-semibold">Customer Reports</h2>
         <div className="flex gap-3">
           {["submitted", "reviewed"].map((tab) => (
             <button

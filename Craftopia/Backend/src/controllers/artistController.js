@@ -18,29 +18,29 @@ exports.updateArtist = async (req, res) => {
         }
 
         const userId = req.user.id;
-        
-        const {name, username, phone, biography} = req.body;
-        
+
+        const { name, username, phone, biography } = req.body;
+
         if (username) {
             const existingArtist = await Artist.findOne({
                 where: {
                     username,
-                    userId: {[Op.ne]: userId}
+                    userId: { [Op.ne]: userId }
                 }
             });
 
-            if(existingArtist){
-                return res.status(400).json({message: 'Username already exists'});
+            if (existingArtist) {
+                return res.status(400).json({ message: 'Username already exists' });
             }
         }
 
         let profilePicture = '';
         let profileVideo = '';
-        
+
         const uploadPromises = [];
-        
-        if(req.files){
-            if(req.files.profilePicture && req.files.profilePicture[0]){
+
+        if (req.files) {
+            if (req.files.profilePicture && req.files.profilePicture[0]) {
                 const pictureFile = req.files.profilePicture[0];
                 uploadPromises.push(
                     uploadBuffer(pictureFile.buffer, {
@@ -51,8 +51,8 @@ exports.updateArtist = async (req, res) => {
                     })
                 );
             }
-            
-            if(req.files.profileVideo && req.files.profileVideo[0]){
+
+            if (req.files.profileVideo && req.files.profileVideo[0]) {
                 const videoFile = req.files.profileVideo[0];
                 uploadPromises.push(
                     uploadBuffer(videoFile.buffer, {
@@ -69,7 +69,7 @@ exports.updateArtist = async (req, res) => {
         }
 
         const [artist, created] = await Artist.findOrCreate({
-            where: {userId},
+            where: { userId },
             defaults: {
                 name: name || '',
                 username: username || '',
@@ -80,7 +80,7 @@ exports.updateArtist = async (req, res) => {
                 userId
             }
         });
-        
+
         if (!created) {
             const updates = {};
             if (name) updates.name = name;
@@ -89,15 +89,15 @@ exports.updateArtist = async (req, res) => {
             if (biography) updates.biography = biography;
             if (profilePicture) updates.profilePicture = profilePicture;
             if (profileVideo) updates.profileVideo = profileVideo;
-            
+
             await artist.update(updates);
         }
-        
-        return res.status(created ? 201 : 200).json({artist});
+
+        return res.status(created ? 201 : 200).json({ artist });
 
     } catch (error) {
         console.error('Error updating artist:', error);
-        res.status(500).json({message: 'Internal server error'});
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
 
@@ -105,11 +105,11 @@ exports.getArtist = async (req, res) => {
     try {
         const { artistId } = req.params;
 
-        const artist = await Artist.findOne({ 
+        const artist = await Artist.findOne({
             where: { artistId },
-            include:[{
+            include: [{
                 model: Product,
-                attributes:['categoryId'],
+                attributes: ['categoryId'],
                 include: [{
                     model: Category,
                     attributes: ['categoryId', 'name'],
@@ -122,11 +122,11 @@ exports.getArtist = async (req, res) => {
             return res.status(404).json({ message: 'Artist profile not found' });
         }
         const categoryMap = new Map();
-        if(artist.products){
+        if (artist.products) {
             artist.products.forEach(product => {
-                if(product.category) {
+                if (product.category) {
                     const categoryId = product.category.categoryId;
-                    if(categoryMap.has(categoryId)) {
+                    if (categoryMap.has(categoryId)) {
                         categoryMap.get(categoryId).productCount++;
                     } else {
                         categoryMap.set(categoryId, {
@@ -156,12 +156,14 @@ exports.getArtist = async (req, res) => {
         const artistData = artist.toJSON();
         delete artistData.products;
 
-        return res.status(200).json({ artist:{
-            ...artistData,
-            numberOfFollowers,
-            numberOfProducts,
-            categories
-        } });
+        return res.status(200).json({
+            artist: {
+                ...artistData,
+                numberOfFollowers,
+                numberOfProducts,
+                categories
+            }
+        });
     } catch (error) {
         console.error('Error fetching artist profile:', error);
         return res.status(500).json({
@@ -173,82 +175,107 @@ exports.getArtist = async (req, res) => {
 
 exports.getAllArtists = async (req, res) => {
     try {
-        const errors = validationResult(req);        
+        const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
-        }        
+        }
+
         const userId = req.user?.id;
         const customer = userId ? await Customer.findOne({ where: { userId } }) : null;
-        let artists = await Artist.findAll({            
+
+        let artists = await Artist.findAll({
             attributes: [
-                'artistId', 
-                'name', 
+                'artistId',
+                'name',
                 'username',
                 'profilePicture',
                 'biography',
                 'createdAt',
-                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT',Sequelize.col('products.productId'))), 'numberOfProducts'],
-                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT',Sequelize.col('artistfollows.customerId'))), 'numberOfFollowers'],
+                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.col('products.productId'))), 'numberOfProducts'],
+                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.col('artistfollows.customerId'))), 'numberOfFollowers'],
                 'averageRating',
                 [
                     Sequelize.literal(`(
-                        SELECT COALESCE(MIN("products"."price"), 0)
-                        FROM "products" AS "products"
-                        WHERE "products"."artistId" = "artist"."artistId"
-                    )`),
+            SELECT COALESCE(MIN("products"."price"), 0)
+            FROM "products" AS "products"
+            WHERE "products"."artistId" = "artist"."artistId"
+          )`),
                     'lowestPrice'
                 ]
             ],
-            include: [{
-                model: User,
-                attributes: ['email']
-            },
-            {
-                model: Product,
-                attributes: [],
-                required: false
-            },
-            {
-                model: ArtistFollow,
-                attributes: [],
-                required: false
-            }
+            include: [
+                {
+                    model: User,
+                    attributes: ['userId', 'email', 'isBanned'],
+                },
+                {
+                    model: Product,
+                    attributes: [],
+                    required: false
+                },
+                {
+                    model: ArtistFollow,
+                    attributes: [],
+                    required: false
+                }
             ],
             group: ['artist.artistId', 'user.userId'],
             order: [['artistId', 'DESC']]
         });
-        const artistsWithFollowingStatus = await Promise.all(
+
+        const artistsWithExtras = await Promise.all(
             artists.map(async (artist) => {
-                const isFollowing = customer ? await ArtistFollow.findOne({
-                    where: {
-                        artistId: artist.artistId,
-                        customerId: customer.customerId
-                    }
-                }) !== null : false;
+
+                const isFollowing = customer
+                    ? await ArtistFollow.findOne({
+                        where: {
+                            artistId: artist.artistId,
+                            customerId: customer.customerId
+                        }
+                    }) !== null
+                    : false;
+
                 const artistCategories = await Product.findAll({
                     where: { artistId: artist.artistId },
-                    include: [{
-                        model: Category,
-                        attributes: ['categoryId', 'name'],
-                        required: true
-                    }],
+                    include: [
+                        {
+                            model: Category,
+                            attributes: ['categoryId', 'name'],
+                            required: true
+                        }
+                    ],
                     attributes: ['categoryId'],
                     group: ['product.categoryId', 'category.categoryId', 'category.name']
                 });
 
-                const categoryNames = artistCategories.map(product => 
-                    product.category ? product.category.name : null
-                ).filter(name => name !== null);
-                const totalReviews = await Review.count({
-                    include: [{
-                        model: Product,
-                        where: { artistId: artist.artistId },
-                        attributes: []
-                    }]
-                });
+                const categoryNames = artistCategories
+                    .map((product) => (product.category ? product.category.name : null))
+                    .filter((name) => name !== null);
 
+                const totalReviews = await Review.count({
+                    include: [
+                        {
+                            model: Product,
+                            where: { artistId: artist.artistId },
+                            attributes: []
+                        }
+                    ]
+                });
+                const user = artist.user || {};
                 return {
-                    ...artist.toJSON(),
+                    artistId: artist.artistId,
+                    name: artist.name,
+                    username: artist.username,
+                    profilePicture: artist.profilePicture,
+                    biography: artist.biography,
+                    createdAt: artist.createdAt,
+                    averageRating: artist.averageRating,
+                    numberOfProducts: artist.dataValues.numberOfProducts,
+                    numberOfFollowers: artist.dataValues.numberOfFollowers,
+                    lowestPrice: artist.dataValues.lowestPrice,
+                    email: user.email,
+                    userId: user.userId,
+                    banned: user.isBanned || false,
                     isFollowing,
                     categories: categoryNames,
                     totalReviews: totalReviews || 0
@@ -256,17 +283,18 @@ exports.getAllArtists = async (req, res) => {
             })
         );
 
-        return res.status(200).json({artists: artistsWithFollowingStatus});
+        return res.status(200).json({ artists: artistsWithExtras });
     } catch (error) {
         console.error('Error fetching artists:', error);
-        res.status(500).json({message: 'Internal server error'});
+        res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
+
 
 exports.getArtistFollowers = async (req, res) => {
     try {
         const { artistId } = req.params;
-        
+
         const artist = await Artist.findByPk(artistId);
         if (!artist) {
             return res.status(404).json({ message: 'Artist not found' });
@@ -284,7 +312,7 @@ exports.getArtistFollowers = async (req, res) => {
             }]
         });
 
-        return res.status(200).json({ 
+        return res.status(200).json({
             followersCount,
             followers: followers.map(follow => follow.customer)
         });
@@ -295,15 +323,15 @@ exports.getArtistFollowers = async (req, res) => {
 };
 
 exports.getProfile = async (req, res) => {
-    try{
+    try {
         const userId = req.user.id;
-        const ArtistProfile = await Artist.findOne({where: {userId}});
-        if(!ArtistProfile){
-            return res.status(404).json({message: "Artist profile not found"});
+        const ArtistProfile = await Artist.findOne({ where: { userId } });
+        if (!ArtistProfile) {
+            return res.status(404).json({ message: "Artist profile not found" });
         }
-        return res.status(200).json({ArtistProfile});
-    }catch(error){
+        return res.status(200).json({ ArtistProfile });
+    } catch (error) {
         console.error("Error getting Artist profile:", error);
-        return res.status(500).json({message: "Internal server error"});
+        return res.status(500).json({ message: "Internal server error" });
     }
 };

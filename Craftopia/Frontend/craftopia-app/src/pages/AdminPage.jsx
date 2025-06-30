@@ -7,8 +7,9 @@ import AdminCategory from "../Components/AdminCategory";
 import AddCategory from "../Components/AddCategory";
 import AdminAuctionManagement from "./AdminAuctionManagement";
 import ReleasePayment from "../Components/ReleasePayment";
+import UserManagement from "../Components/UserManagement";
 
-const tabOptions = ["Home", "Reports", "Categories", "Add Category", "Auctions", "Payments"];
+const tabOptions = ["Home", "Reports", "Categories", "Add Category", "Auctions", "Payments", "User Management"];
 
 const AdminPage = () => {
   const [selected, setSelected] = useState(() => {
@@ -46,6 +47,8 @@ const AdminPage = () => {
         return <AdminAuctionManagement />;
       case "Payments":
         return <ReleasePayment />;
+      case "User Management":
+        return <UserManagement />;
       default:
         return <AdminDashboard />;
     }

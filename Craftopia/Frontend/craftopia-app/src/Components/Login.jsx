@@ -5,12 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { User, Heart, ShoppingCart } from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail]           = useState('');
-  const [password, setPassword]     = useState('');
-  const [error, setError]           = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const { login }                   = useAuth();
-  const navigate                    = useNavigate();
+  const [popupMessage, setPopupMessage] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,15 +33,27 @@ const Login = () => {
       } else {
         navigate('/');
       }
-
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Login failed');
+      if (err.response?.status === 403) {
+        setPopupMessage("Your account has been banned. You will not be able to sign in.");
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 4000);
+      } else {
+        setError(err.response?.data?.message || 'Login failed');
+      }
     }
   };
 
+
   return (
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-8">
+      {showPopup && (
+        <div className="fixed top-5 right-5 bg-burgundy text-white px-6 py-3 rounded shadow-lg z-50">
+          {popupMessage}
+        </div>
+      )}
+
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-black/90">Welcome Back</h2>
@@ -57,63 +71,62 @@ const Login = () => {
           )}
 
           <form onSubmit={handleLogin} className="space-y-6">
-  <div>
-    <label htmlFor="email" className="block text-sm font-medium text-burgundy mb-2">
-      Email Address <span className="text-red-500">*</span>
-    </label>
-    <input
-      id="email"
-      type="email"
-      value={email}
-      onChange={e => setEmail(e.target.value)}
-      required
-      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coral focus:border-coral"
-      placeholder="Enter your email"
-    />
-  </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-burgundy mb-2">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-coral focus:border-coral"
+                placeholder="Enter your email"
+              />
+            </div>
 
-  <div>
-    <label htmlFor="password" className="block text-sm font-medium text-burgundy mb-2">
-      Password <span className="text-red-500">*</span>
-    </label>
-    <input
-      id="password"
-      type="password"
-      value={password}
-      onChange={e => setPassword(e.target.value)}
-      required
-      className="w-full px-4 py-2 border bg-white border-gray-300 rounded-md focus:ring-2 focus:outline-none focus:ring-coral focus:border-coral"
-      placeholder="Enter your password"
-    />
-  </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-burgundy mb-2">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-2 border bg-white border-gray-300 rounded-md focus:ring-2 focus:outline-none focus:ring-coral focus:border-coral"
+                placeholder="Enter your password"
+              />
+            </div>
 
-  <div className="flex items-center justify-between">
-    <div className="flex items-center">
-      <input
-        id="remember-me"
-        type="checkbox"
-        className="h-4 w-4 text-coral focus:ring-coral border-gray-300 rounded"
-      />
-      <label
-        htmlFor="remember-me"
-        className="ml-2 block text-sm text-muted-foreground"
-      >
-        Remember me
-      </label>
-    </div>
-    <Link to="#" className="text-sm text-coral hover:text-burgundy">
-      Forgot your password?
-    </Link>
-  </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-coral focus:ring-coral border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-muted-foreground"
+                >
+                  Remember me
+                </label>
+              </div>
+              <Link to="#" className="text-sm text-coral hover:text-burgundy">
+                Forgot your password?
+              </Link>
+            </div>
 
-  <button
-    type="submit"
-    className="w-full bg-coral text-white py-2 px-4 rounded-md font-semibold hover:bg-burgundy transition-colors"
-  >
-    Sign In
-  </button>
-</form>
-
+            <button
+              type="submit"
+              className="w-full bg-coral text-white py-2 px-4 rounded-md font-semibold hover:bg-burgundy transition-colors"
+            >
+              Sign In
+            </button>
+          </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">

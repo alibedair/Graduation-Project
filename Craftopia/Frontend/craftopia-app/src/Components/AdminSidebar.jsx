@@ -9,6 +9,7 @@ import {
   FaExclamation,
   FaPlus, FaMoneyCheckAlt
 } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 
@@ -85,7 +86,12 @@ const AdminSidebar = ({ selected, setSelected }) => {
           selected={selected === "Payments"}
           onClick={() => setSelected("Payments")}
         />
-
+        <SidebarButton
+          icon={<FaUsers />}
+          text="User Management"
+          selected={selected === "User Management"}
+          onClick={() => setSelected("User Management")}
+        />
         {/* <SidebarButton
           icon={<FaExclamation />}
           text="Auction Requests"

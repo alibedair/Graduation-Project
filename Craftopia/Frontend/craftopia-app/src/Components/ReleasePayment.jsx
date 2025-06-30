@@ -71,7 +71,7 @@ const ReleasePayment = () => {
     return (
         <div className="flex justify-start pl-7 pt-10 w-full pr-6">
             <div className="w-[82%] max-w-6xl">
-                <h2 className="text-3xl font-semibold text-gray-800 mb-6">Escrow Payments</h2>
+                <h2 className="text-2xl font-semibold text-black mb-6">Escrow Payments</h2>
 
                 {message.text && (
                     <div

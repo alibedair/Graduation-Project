@@ -399,7 +399,7 @@ const AdminDashboard = () => {
             <button onClick={handlePrev} className="text-[#E07385]">
               <FaChevronLeft />
             </button>
-            <h3 className="font-semibold text-sm text-gray-800">Popular Products</h3>
+            <h3 className="font-semibold text-sm text-gray-800">Best Selling Products</h3>
             <button onClick={handleNext} className="text-[#E07385]">
               <FaChevronRight />
             </button>
