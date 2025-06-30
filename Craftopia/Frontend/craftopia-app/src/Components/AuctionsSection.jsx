@@ -37,6 +37,7 @@ const AuctionsSection = () => {
             bidCount: a.bidCount,
             timeLeft: formatTimeLeft(a.endDate),
             // rating: 4.8,
+            status: a.status,
             category: a.product?.category?.name || 'Handmade',
           }));
         setAuctions(mapped.slice(0, 10)); // Limit to 10

@@ -93,11 +93,11 @@ const Auctions = () => {
   return (
 
       <motion.div
-    initial={{ opacity: 0, scale: 0.97 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5, ease: "easeInOut" }}
-    className="min-h-screen bg-cream"
-  >
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="min-h-screen bg-cream"
+      >
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -107,12 +107,12 @@ const Auctions = () => {
 
         {/* Filters */}
         <motion.div
-  initial={{ opacity: 0, y: -20 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6 }}
-  viewport={{ once: true }}
-  className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between"
->
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between"
+          >
 
           <div className="flex flex-wrap gap-4">
             <div className="relative">
