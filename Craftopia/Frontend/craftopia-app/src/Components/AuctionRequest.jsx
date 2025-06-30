@@ -17,6 +17,7 @@ const AuctionRequest = () => {
     dimensions: '',
     notes: '',
     duration: '7',
+    type:'auction',
     images: [],
   });
 
@@ -166,7 +167,7 @@ const AuctionRequest = () => {
     productFormData.append('quantity', 1);
     productFormData.append('dimension', dimensions);
     productFormData.append('material', materials);
-
+    productFormData.append('type', 'auction');
     images.forEach((file) => {
       productFormData.append('image', file);
     });
