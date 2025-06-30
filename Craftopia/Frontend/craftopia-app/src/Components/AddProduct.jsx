@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Upload } from "lucide-react";
 import AllProducts from "../Components/AllProducts";
-import { motion, AnimatePresence } from "framer-motion";
 
 const AddProduct = () => {
   const [formData, setFormData] = useState({
@@ -45,27 +44,6 @@ const AddProduct = () => {
       data.append(key, value)
     );
     images.forEach((image) => data.append("image", image));
-    // Merge standard + other attributes
-    const otherObject = otherAttributes.reduce((acc, attr) => {
-      if (attr.name && attr.values) {
-        acc[attr.name] = attr.values.split(",").map((v) => v.trim());
-      }
-      return acc;
-    }, {});
-
-    const filteredCustom = Object.fromEntries(
-      Object.entries(customAttributes).filter(([key]) =>
-        selectedAttributes.includes(key)
-      )
-    );
-
-    const finalCustomAttributes = {
-      ...filteredCustom,
-      ...otherObject,
-    };
-
-    data.append("isCustomizable", isCustomizable);
-    data.append("customAttributes", JSON.stringify(finalCustomAttributes));
 
     setLoading(true);
     setMessage("");
@@ -126,34 +104,6 @@ const AddProduct = () => {
 
     fetchCategories();
   }, []);
-  const [isCustomizable, setIsCustomizable] = useState(false);
-  const [customAttributes, setCustomAttributes] = useState({
-    color: [],
-    material: [],
-    size: [],
-    engraving: [],
-  });
-  const [selectedAttributes, setSelectedAttributes] = useState([]);
-  const [otherAttributes, setOtherAttributes] = useState([]);
-const [otherInput, setOtherInput] = useState({});
-
-
-  const [customInput, setCustomInput] = useState({
-    color: "",
-    material: "",
-    size: "",
-  });
-
-  const addCustomValue = (key) => {
-    if (customInput[key] && !customAttributes[key].includes(customInput[key])) {
-      setCustomAttributes((prev) => ({
-        ...prev,
-        [key]: [...prev[key], customInput[key]],
-      }));
-      setCustomInput((prev) => ({ ...prev, [key]: "" }));
-    }
-  };
-
 
   return (
     <div className="p-2 sm:p-6 md:p-10 bg-cream min-h-screen">
@@ -196,7 +146,7 @@ const [otherInput, setOtherInput] = useState({});
                   onChange={handleChange}
                   placeholder="Enter product name"
                   required
-                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700"
                 />
               </div>
               <div>
@@ -209,7 +159,7 @@ const [otherInput, setOtherInput] = useState({});
                   onChange={handleChange}
                   placeholder="Enter product description"
                   required
-                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm resize-none h-32 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 resize-none h-32"
                 />
               </div>
               <div>
@@ -225,7 +175,7 @@ const [otherInput, setOtherInput] = useState({});
                   step="0.01"
                   placeholder="Enter product price"
                   required
-                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700"
                 />
               </div>
             </div>
@@ -240,8 +190,10 @@ const [otherInput, setOtherInput] = useState({});
                     value={formData.categoryName}
                     onChange={handleChange}
                     required
-                    className={`appearance-none w-full px-4 py-3 border border-[#f3c7ce] rounded-lg bg-white placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385] 
-      ${formData.categoryName === "" ? "text-gray-400" : "text-gray-700"}`}
+                    className={`appearance-none w-full px-4 py-3 border border-[#f3c7ce] rounded-lg bg-white ${formData.categoryName === ""
+                        ? "text-gray-400"
+                        : "text-gray-700"
+                      }`}
                   >
                     <option value="" disabled>
                       {loadingCategories
@@ -258,21 +210,7 @@ const [otherInput, setOtherInput] = useState({});
                         </option>
                       ))}
                   </select>
-
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#7a162e]">
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fillRule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.293l3.71-4.06a.75.75 0 111.08 1.04l-4.25 4.65a.75.75 0 01-1.08 0l-4.25-4.65a.75.75 0 01.02-1.06z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
                 </div>
-
-                {categoriesError && (
-                  <p className="text-sm text-red-500 mt-1">{categoriesError}</p>
-                )}
               </div>
               <div>
                 <label className="block font-semibold text-sm text-[#7a162e] mb-2">
@@ -286,7 +224,7 @@ const [otherInput, setOtherInput] = useState({});
                   min="0"
                   placeholder="Enter quantity"
                   required
-                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700"
                 />
               </div>
               <div>
@@ -299,7 +237,7 @@ const [otherInput, setOtherInput] = useState({});
                   onChange={handleChange}
                   placeholder="Enter material"
                   required
-                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700"
                 />
               </div>
               <div>
@@ -310,9 +248,9 @@ const [otherInput, setOtherInput] = useState({});
                   name="dimension"
                   value={formData.dimension}
                   onChange={handleChange}
-                  placeholder="eg. 10 x 10 x 10 inches"
+                  placeholder="e.g. 10 x 10 x 10 inches"
                   required
-                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+                  className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700"
                 />
               </div>
             </div>
@@ -321,9 +259,8 @@ const [otherInput, setOtherInput] = useState({});
                 Upload Product Images <span className="text-red-500">*</span>
               </label>
 
-              <div className="relative border-4 border-dashed border-[#E07385] rounded-xl p-6 text-center bg-[#fff0f3] hover:bg-[#ffe6eb] transition cursor-pointer">
+              <div className="relative border-4 border-dashed border-[#E07385] rounded-xl p-6 text-center bg-[#fff0f3]">
                 <input
-                  id="file-upload"
                   type="file"
                   accept="image/*"
                   multiple
@@ -347,7 +284,7 @@ const [otherInput, setOtherInput] = useState({});
                   {images.map((file, index) => (
                     <div
                       key={index}
-                      className="relative group overflow-hidden rounded-xl shadow-md border-2 border-[#E07385] bg-white hover:scale-105 transition transform"
+                      className="relative group overflow-hidden rounded-xl shadow-md border-2 border-[#E07385] bg-white"
                     >
                       <img
                         src={URL.createObjectURL(file)}
@@ -359,8 +296,7 @@ const [otherInput, setOtherInput] = useState({});
                         onClick={() =>
                           setImages((prev) => prev.filter((_, i) => i !== index))
                         }
-                        className="absolute top-2 right-2 bg-white text-[#E07385] border border-[#E07385] rounded-full px-2 py-0.5 text-xs font-bold hover:bg-[#E07385] hover:text-white transition"
-                        title="Remove"
+                        className="absolute top-2 right-2 bg-white text-[#E07385] border border-[#E07385] rounded-full px-2 py-0.5 text-xs font-bold hover:bg-[#E07385] hover:text-white"
                       >
                         ✕
                       </button>
@@ -368,245 +304,8 @@ const [otherInput, setOtherInput] = useState({});
                   ))}
                 </div>
               )}
-              <div className="md:col-span-2 mt-4">
-  <div className="flex items-center justify-start gap-3 mb-5">
-    <label className="text-[#7a162e] font-semibold">Allow Personalization</label>
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        checked={isCustomizable}
-        onChange={(e) => {
-          setIsCustomizable(e.target.checked);
-          if (!e.target.checked) {
-            setSelectedAttributes([]);
-            setCustomAttributes({ color: [], material: [], size: [], engraving: [] });
-          }
-        }}
-        className="sr-only peer"
-      />
-      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#E07385] rounded-full peer dark:bg-gray-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#E07385] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#E07385]"></div>
-    </label>
-  </div>
-
-  <AnimatePresence>
-    {isCustomizable && (
-      <motion.div
-        key="personalization"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3 }}
-        className="bg-[#fff6f7] border border-[#fbd5db] p-6 rounded-xl shadow-inner space-y-6"
-      >
-        <h3 className="text-xl font-semibold text-[#7a162e] mb-6">
-          Select Personalization Options
-        </h3>
-
-        <div className="flex flex-wrap gap-4 sm:gap-6">
-          {["color", "material", "size", "engraving", "other"].map((attr) => (
-            <label
-              key={attr}
-              className={`cursor-pointer border rounded-full px-6 py-1 text-sm font-medium transition-all ${
-                selectedAttributes.includes(attr)
-                  ? "bg-[#E07385] text-white border-[#E07385]"
-                  : "bg-white border-[#f3c7ce] text-[#7a162e] hover:bg-[#ffe6eb]"
-              }`}
-            >
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={selectedAttributes.includes(attr)}
-                onChange={(e) => {
-                  const newSelected = e.target.checked
-                    ? [...selectedAttributes, attr]
-                    : selectedAttributes.filter((a) => a !== attr);
-
-                  setSelectedAttributes(newSelected);
-                  if (attr === "other" && !e.target.checked) setOtherAttributes([]);
-                }}
-              />
-              {attr === "other"
-                ? "Other"
-                : attr.charAt(0).toUpperCase() + attr.slice(1)}
-            </label>
-          ))}
-        </div>
-
-        {/* Main personalization input loop */}
-        <div className="space-y-6">
-          {selectedAttributes
-            .filter((attr) => attr !== "other")
-            .map((attr) => (
-              <motion.div
-                key={attr}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                <label className="block font-semibold text-sm text-[#7a162e] mb-2">
-                  {attr.charAt(0).toUpperCase() + attr.slice(1)} Options
-                </label>
-
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {customAttributes[attr]?.map((value, index) => (
-                    <span
-                      key={index}
-                      className="flex items-center gap-2 bg-[#E07385] text-white px-3 py-1 rounded-full text-sm"
-                    >
-                      {value}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setCustomAttributes((prev) => ({
-                            ...prev,
-                            [attr]: prev[attr].filter((_, i) => i !== index),
-                          }))
-                        }
-                        className="hover:text-gray-200"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                <div className="grid sm:grid-cols-[1fr_auto] gap-2">
-                  <input
-                    type="text"
-                    value={customInput[attr] || ""}
-                    onChange={(e) =>
-                      setCustomInput((prev) => ({
-                        ...prev,
-                        [attr]: e.target.value,
-                      }))
-                    }
-                    placeholder={`Add new ${attr}`}
-                    className="px-4 py-2 border border-[#f3c7ce] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385] bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addCustomValue(attr)}
-                    className="bg-[#E07385] text-white px-4 py-2 rounded-lg hover:bg-[#7a162e] transition text-sm"
-                  >
-                    Add
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-        </div>
-        {selectedAttributes.includes("other") && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-6"
-          >
-            <label className="block font-semibold text-sm text-[#7a162e] mb-1">
-              Other Options
-            </label>
-
-            {otherAttributes.map((attr, index) => (
-              <div
-                key={index}
-                className="space-y-2 border border-[#f9d2d9] p-4 rounded-lg bg-white"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                  <input
-                    type="text"
-                    placeholder="Attribute name"
-                    value={attr.name}
-                    onChange={(e) => {
-                      const updated = [...otherAttributes];
-                      updated[index].name = e.target.value;
-                      setOtherAttributes(updated);
-                    }}
-                    className="flex-grow px-4 py-2 border border-[#f3c7ce] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E07385] bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = [...otherAttributes];
-                      updated.splice(index, 1);
-                      setOtherAttributes(updated);
-                    }}
-                    className="text-sm text-red-600 hover:underline mt-2 sm:mt-0"
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {attr.values.map((val, valIdx) => (
-                    <span
-                      key={valIdx}
-                      className="flex items-center gap-2 bg-[#E07385] text-white px-3 py-1 rounded-full text-sm"
-                    >
-                      {val}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = [...otherAttributes];
-                          updated[index].values = updated[index].values.filter(
-                            (_, i) => i !== valIdx
-                          );
-                          setOtherAttributes(updated);
-                        }}
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                <div className="grid sm:grid-cols-[1fr_auto] gap-2">
-                  <input
-                    type="text"
-                    placeholder="Add value"
-                    value={otherInput[index] || ""}
-                    onChange={(e) =>
-                      setOtherInput({ ...otherInput, [index]: e.target.value })
-                    }
-                    className="px-4 py-2 border border-[#f3c7ce] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385] bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const val = (otherInput[index] || "").trim();
-                      if (val) {
-                        const updated = [...otherAttributes];
-                        if (!updated[index].values.includes(val)) {
-                          updated[index].values.push(val);
-                          setOtherAttributes(updated);
-                        }
-                        setOtherInput({ ...otherInput, [index]: "" });
-                      }
-                    }}
-                    className="bg-[#E07385] text-white px-4 py-2 rounded-lg hover:bg-[#7a162e] transition text-sm"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={() =>
-                setOtherAttributes([...otherAttributes, { name: "", values: [] }])
-              }
-              className="text-sm text-[#E07385] hover:underline"
-            >
-              + Add another custom attribute
-            </button>
-          </motion.div>
-        )}
-      </motion.div>
-    )}
-  </AnimatePresence>
-</div>
-
             </div>
-            <div className="md:col-span-2  mt-4">
+            <div className="md:col-span-2 mt-4">
               <button
                 type="submit"
                 disabled={loading}
@@ -619,7 +318,6 @@ const [otherInput, setOtherInput] = useState({});
         </>
       )}
     </div>
-
   );
 };
 
