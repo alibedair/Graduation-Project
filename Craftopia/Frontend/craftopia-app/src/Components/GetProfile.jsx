@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import {
   Star,
   ChatCircleDots,
@@ -14,6 +14,8 @@ const GetProfile = ({ setActiveTab }) => {
   const [activeSection, setActiveSection] = useState("gallery");
   const [showFullBio, setShowFullBio] = useState(false);
   const [auctionProducts, setAuctionProducts] = useState([]);
+  const [customizedProducts, setCustomizedProducts] = useState([]);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -57,6 +59,7 @@ const GetProfile = ({ setActiveTab }) => {
 
         const data = await res.json();
         setProducts(data.products || []);
+        setCustomizedProducts(data.customizableProducts || []);
         setProductsError("");
       } catch (err) {
         console.error(err);
@@ -87,15 +90,17 @@ const GetProfile = ({ setActiveTab }) => {
         const data = await res.json();
 
         setAuctionProducts(
-          data.products.map((p) => ({
-            id: p.productId,
-            name: p.name,
-            image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
-            description: p.description,
-            dimensions: p.dimensions,
-            quantity: p.quantity,
-            material: p.material,
-          }))
+          data.products
+            .filter(p => p.type === 'auction')
+            .map((p) => ({
+              id: p.productId,
+              name: p.name,
+              image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
+              description: p.description,
+              dimensions: p.dimensions,
+              quantity: p.quantity,
+              material: p.material,
+            }))
         );
       } catch (err) {
         console.error("Error fetching auction products", err);
@@ -105,7 +110,7 @@ const GetProfile = ({ setActiveTab }) => {
     fetchAuctionProducts();
   }, [profile]);
 
-    if (message) {
+  if (message) {
     return (
       <div className="flex flex-col items-center justify-center text-center p-10 rounded-[2rem] shadow-[0_8px_30px_rgba(224,115,133,0.2)] bg-[#F6EEEE] border border-[#E07385]/20 animate-fadeIn mt-2">
         <div className="relative mb-6">
@@ -214,26 +219,38 @@ const GetProfile = ({ setActiveTab }) => {
       </div>
 
       <div className="mt-15">
-        <div className="flex justify-start gap-45 mb-8 mr-50">
+        <div className="flex flex-wrap justify-start gap-10 mb-8">
           <button
             onClick={() => setActiveSection("gallery")}
-            className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
-              ? "bg-[#E07385] text-white shadow-md"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            className={`px-6 py-3 text-base rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
+                ? "bg-[#E07385] text-white shadow-md"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
           >
             Gallery Products
           </button>
+
           <button
             onClick={() => setActiveSection("auction")}
-            className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${activeSection === "auction"
-              ? "bg-[#E07385] text-white shadow-md"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            className={`px-6 py-3 text-base rounded-full font-semibold transition duration-200 ${activeSection === "auction"
+                ? "bg-[#E07385] text-white shadow-md"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
           >
             Auction Products
           </button>
+
+          <button
+            onClick={() => setActiveSection("customized")}
+            className={`px-6 py-3 text-base rounded-full font-semibold transition duration-200 ${activeSection === "customized"
+                ? "bg-[#E07385] text-white shadow-md"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+          >
+            Customized Products
+          </button>
         </div>
+
 
         {activeSection === "gallery" && (
           <div>
@@ -241,22 +258,33 @@ const GetProfile = ({ setActiveTab }) => {
             {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {products.length === 0 && !loadingProducts && (
-                <p className="col-span-full  text-gray-500 py-8">
+              {products.length + auctionProducts.length + customizedProducts.length === 0 && !loadingProducts && (
+                <p className="col-span-full text-gray-500 py-8">
                   No products found in your gallery.
                 </p>
               )}
-              {products.map((product) => (
+
+              {[...products, ...auctionProducts, ...customizedProducts].map((product, index) => (
                 <div
-                  key={product.productId}
+                  key={product.productId || product._id || index}
                   className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="aspect-square relative overflow-hidden">
                     <img
-                      src={product.image?.[0] || "https://via.placeholder.com/300"}
+                      src={Array.isArray(product.image) ? product.image[0] : product.image || "https://via.placeholder.com/300"}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
+                    {product.type === "auction" && (
+                      <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        AUCTION
+                      </div>
+                    )}
+                    {customizedProducts.some(p => p.productId === product.productId) && (
+                      <div className="absolute top-3 left-3 bg-yellow-500/90 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        CUSTOMIZED
+                      </div>
+                    )}
                   </div>
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
@@ -271,7 +299,9 @@ const GetProfile = ({ setActiveTab }) => {
                           )}
                         </div>
                         {product.material && (
-                          <p className="mt-1"><span className="font-medium">Material:</span> {product.material}</p>
+                          <p className="mt-1">
+                            <span className="font-medium">Material:</span> {product.material}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -281,6 +311,7 @@ const GetProfile = ({ setActiveTab }) => {
             </div>
           </div>
         )}
+
 
         {activeSection === "auction" && (
           <div>
@@ -299,7 +330,7 @@ const GetProfile = ({ setActiveTab }) => {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="aspect-square relative overflow-hidden">
-                     <img
+                    <img
                       src={product.image || "https://via.placeholder.com/500"}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
@@ -313,6 +344,40 @@ const GetProfile = ({ setActiveTab }) => {
             </div>
           </div>
         )}
+        {activeSection === "customized" && (
+          <div>
+            {loadingProducts && <p className="text-center py-8">Loading customized products...</p>}
+            {customizedProducts.length === 0 && !loadingProducts && (
+              <p className="col-span-full text-gray-500 py-8">
+                No customized products found.
+              </p>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {customizedProducts.map((product) => (
+                <div
+                  key={product.productId}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <div className="aspect-square relative overflow-hidden">
+                    <img
+                      src={product.image?.[0] || "https://via.placeholder.com/300"}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                    <div className="absolute top-3 right-3 bg-yellow-500/90 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      CUSTOMIZED
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-[#921A40]">{product.name}</h3>
+                    <p className="text-sm text-gray-600">{product.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
