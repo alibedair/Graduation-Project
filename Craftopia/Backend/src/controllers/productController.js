@@ -165,55 +165,78 @@ exports.updateProduct = async (req, res) => {
 }
 
 exports.getArtistProducts = async (req, res) => {
-    try {
-        const artistId = req.params.artistId
-        const artist = await Artist.findOne({where:{artistId}});
-        if(!artist) {
-            return res.status(403).json({message: 'Artist not found'});
-        }
-        const products = await Product.findAll({
-            where: {artistId: artist.artistId},
-            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material'],
-            include: [
-                {
-                    model: Category,
-                    attributes: ['categoryId', 'name']
-                }
-            ]
-        });
+  try {
+    const artistId = req.params.artistId;
+    const artist = await Artist.findOne({ where: { artistId } });
 
-        filteredProducts = [];
-        for (const product of products) {
-            const auctionRequest = await AuctionRequest.findOne({
-                where: { productId: product.productId },
-            });
-            if(!auctionRequest){
-                filteredProducts.push(product);
-            }
-        }
-
-        const productsWithStats = await Promise.all(
-            filteredProducts.map(async (product) => {
-                const reviewStats = await Review.findOne({
-                    where: { productId: product.productId },
-                    attributes: [
-                        [Sequelize.fn('COUNT', Sequelize.col('reviewId')), 'totalReviews'],
-                        [Sequelize.fn('AVG', Sequelize.col('rating')), 'averageRating']
-                    ],
-                    raw: true
-                });
-
-                const productData = product.toJSON();
-                return {
-                    ...productData,
-                    totalReviews: parseInt(reviewStats?.totalReviews) || 0,
-                    averageRating: reviewStats?.averageRating ? parseFloat(reviewStats.averageRating).toFixed(2) : null
-                };
-            })
-        );
-
-        res.status(200).json({products: productsWithStats});
-    } catch (error) {
-        res.status(500).json({message: error.message});
+    if (!artist) {
+      return res.status(403).json({ message: 'Artist not found' });
     }
-}
+
+    const products = await Product.findAll({
+      where: { artistId: artist.artistId },
+      attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material', 'type'],
+      include: [
+        {
+          model: Category,
+          attributes: ['categoryId', 'name'],
+        },
+      ],
+    });
+
+    const normalProducts = [];
+    const auctionProducts = [];
+    const customizableProducts = [];
+
+    for (const product of products) {
+      if (product.type === 'auction') {
+        const auctionRequest = await AuctionRequest.findOne({ where: { productId: product.productId } });
+        if (auctionRequest) {
+          auctionProducts.push(product);
+        } else {
+          normalProducts.push(product); 
+        }
+      } else if (product.type === 'customizable') {
+        customizableProducts.push(product);
+      } else {
+        normalProducts.push(product);
+      }
+    }
+
+    const addReviewStats = async (products) => {
+      return await Promise.all(
+        products.map(async (product) => {
+          const reviewStats = await Review.findOne({
+            where: { productId: product.productId },
+            attributes: [
+              [Sequelize.fn('COUNT', Sequelize.col('reviewId')), 'totalReviews'],
+              [Sequelize.fn('AVG', Sequelize.col('rating')), 'averageRating'],
+            ],
+            raw: true,
+          });
+
+          const productData = product.toJSON();
+          return {
+            ...productData,
+            totalReviews: parseInt(reviewStats?.totalReviews) || 0,
+            averageRating: reviewStats?.averageRating ? parseFloat(reviewStats.averageRating).toFixed(2) : null,
+          };
+        })
+      );
+    };
+
+    const [productsWithStats, auctionWithStats, customizableWithStats] = await Promise.all([
+      addReviewStats(normalProducts),
+      addReviewStats(auctionProducts),
+      addReviewStats(customizableProducts),
+    ]);
+
+    res.status(200).json({
+      products: productsWithStats,
+      auctionProducts: auctionWithStats,
+      customizableProducts: customizableWithStats,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
