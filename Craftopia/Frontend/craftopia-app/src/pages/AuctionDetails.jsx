@@ -261,6 +261,21 @@ useEffect(() => {
   fetchAuctionAndArtist();
 }, [id]);
 
+useEffect(() => {
+  const interval = setInterval(async () => {
+    try {
+      const res = await fetch(`http://localhost:3000/auction/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setAuction(data.auction);
+    } catch (err) {
+      console.error('Failed to update auction:', err);
+    }
+  }, 5000); 
+
+  return () => clearInterval(interval);
+}, [id, token]);
 
   // ✅ PLACE THIS CHECK **AFTER** useEffect
   if (!auction) {
