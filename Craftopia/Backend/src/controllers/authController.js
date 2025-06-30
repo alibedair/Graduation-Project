@@ -73,6 +73,9 @@ exports.login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
+        if (user.isBanned) {
+            return res.status(403).json({ message: 'Your account has been banned. Please contact support.' });
+        }
         
         const token = jwt.sign(
             { id: user.userId, role: user.role, email: user.email},

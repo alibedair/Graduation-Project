@@ -35,7 +35,11 @@ const User = sequelize.define('user', {
     isEmailVerified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
-    }
+    },
+    isBanned: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
 }, {
     timestamps: true,
     indexes: [
