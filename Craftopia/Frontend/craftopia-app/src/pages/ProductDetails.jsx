@@ -1,29 +1,56 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ProductInfo from "../Components/ProductInfo";
 import ProductReview from "../Components/ProductReview";
 import Footer from "../Components/Footer";
+import axios from "axios";
 
 const ProductDetails = () => {
   const { state } = useLocation();
+  const { id } = useParams();
+  const [product, setProduct] = useState(state?.product || null);
+  const [loading, setLoading] = useState(!state?.product);
+  const [error, setError] = useState(null);
   const [reviewStats, setReviewStats] = useState({
     averageRating: state?.product?.averageRating || 0,
     totalReviews: state?.product?.totalReviews || 0,
   });
 
-  const product = state?.product;
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  if (!product) {
+  useEffect(() => {
+    if (!product && id) {
+      // Fetch product only if we don't have it in state
+      setLoading(true);
+      axios
+        .get(`http://localhost:3000/product/get/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((res) => {
+          const p = res.data.product;
+          setProduct(p);
+          setReviewStats({
+            averageRating: p.averageRating || 0,
+            totalReviews: p.totalReviews || 0,
+          });
+        })
+        .catch(() => setError("Failed to load product."))
+        .finally(() => setLoading(false));
+    }
+  }, [id, product]);
+
+  if (loading) return <div className="text-center mt-20">Loading…</div>;
+
+  if (error || !product)
     return (
       <div className="text-center mt-20 text-2xl font-semibold text-red-500">
-        Product not found
+        {error || "Product not found"}
       </div>
     );
-  }
 
   return (
     <>
@@ -36,7 +63,7 @@ const ProductDetails = () => {
           }}
         />
         <ProductReview
-          productId={product.id}
+          productId={product.productId || product.id}
           onStatsUpdate={({ averageRating, totalReviews }) =>
             setReviewStats({ averageRating, totalReviews })
           }
