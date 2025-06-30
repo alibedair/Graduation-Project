@@ -8,7 +8,8 @@ const CustomizationRequest = require('../models/customizationRequest');
 const Artist = require('../models/artist');
 const { sendOrderConfirmationEmail, sendShipAuctionEmail, sendCustomizationShipEmail } = require('../utils/emailService');
 const { firebase_db } = require('../config/firebase');
-const Review = require('../models/Review'); 
+const Review = require('../models/Review');
+const Product = require('../models/product'); 
 exports.placeOrder = async (req, res) => {
     try {
         const userId = req.user.id; 
@@ -241,6 +242,17 @@ exports.shipOrder = async (req, res) => {
         if (artist.artistId !== realArtist.artistId) {
             return res.status(403).json({ message: 'this Artist is not authorized for shipping this order' });
         }
+        const product = await Product.create({
+            name: request.title,
+            price: respond.price,
+            description: request.requestDescription,
+            image: request.image ? [request.image] : [],
+            quantity: 0,
+            sellingNumber: 1,
+            artistId: realArtist.artistId,
+            type : 'customizable'
+
+        });
         let order = await Order.findOne({ where: { orderId: request.orderId } });
         if(!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -251,6 +263,11 @@ exports.shipOrder = async (req, res) => {
         order.status = 'Shipped';
         order.shippedAt = new Date();
         await order.save();
+        const productOrder = await Product_Order.create({
+            orderId: order.orderId,
+            productId: product.productId,
+            quantity: 1
+        });
         try{
             const customer = await Customer.findByPk(request.customerId);
             const customerUser = await User.findByPk(customer.userId);
