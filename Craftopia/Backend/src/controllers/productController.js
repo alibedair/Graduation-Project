@@ -173,7 +173,13 @@ exports.getArtistProducts = async (req, res) => {
         }
         const products = await Product.findAll({
             where: {artistId: artist.artistId},
-            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material']
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'dimensions', 'material'],
+            include: [
+                {
+                    model: Category,
+                    attributes: ['categoryId', 'name']
+                }
+            ]
         });
 
         filteredProducts = [];
