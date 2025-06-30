@@ -5,8 +5,26 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const { body, param } = require('express-validator');
 
+// Optional auth middleware - doesn't require authentication but populates user if present
+const optionalAuth = (req, res, next) => {
+    // If no authorization header, continue without user
+    if (!req.headers.authorization) {
+        return next();
+    }
+    
+    // If authorization header exists, try to authenticate
+    authMiddleware(req, res, (err) => {
+        // If auth fails, continue without user (don't block the request)
+        if (err) {
+            req.user = null;
+        }
+        next();
+    });
+};
+
 router.get('/getprofile/:artistId',
     param('artistId').isInt().withMessage('Artist ID must be an integer'),
+    optionalAuth,
     artistController.getArtist
 );
 router.get('/all',artistController.getAllArtists);
