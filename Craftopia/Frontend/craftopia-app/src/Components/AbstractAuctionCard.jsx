@@ -22,6 +22,44 @@ const AbstractAuctionCard = ({ auction, index }) => {
     if (auction.artistId) fetchArtistRating();
   }, [auction.artistId]);
 
+    const renderBadge = () => {
+      const isEnded = auction.timeLeft === 'Ended';
+      const isLive = auction.status === 'active' && !isEnded;
+      const isScheduled = auction.status === 'scheduled';
+      const isEndingSoon = isLive && auction.timeLeft?.startsWith('0d');
+
+      if (isLive && isEndingSoon) {
+        return (
+          <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+            ⏳ ENDING SOON
+          </div>
+        );
+      } else if (isLive) {
+        return (
+          <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+            LIVE
+          </div>
+        );
+      } else if (isScheduled) {
+        return (
+          <div className="bg-yellow-400 text-black px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+            <div className="w-2 h-2 bg-black rounded-full animate-bounce" />
+            COMING SOON
+          </div>
+        );
+      } else if (isEnded) {
+        return (
+          <div className="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+            ENDED
+          </div>
+        );
+      }
+
+      return null;
+    };
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -44,19 +82,22 @@ const AbstractAuctionCard = ({ auction, index }) => {
                 className="w-full h-full object-cover"
               />
             </div>
+
+            {/* Hover gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="absolute top-4 right-4">
-              <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                LIVE
+
+            {/* Status Badge */}
+            <div className="absolute top-4 right-4">{renderBadge()}</div>
+
+            {/* Time Left */}
+            {auction.timeLeft && (
+              <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1.5 rounded-lg text-sm font-medium backdrop-blur-sm">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {auction.timeLeft}
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1.5 rounded-lg text-sm font-medium backdrop-blur-sm">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {auction.timeLeft}
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Card Content */}

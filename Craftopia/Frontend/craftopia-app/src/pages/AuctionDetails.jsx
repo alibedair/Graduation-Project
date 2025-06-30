@@ -483,11 +483,21 @@ const handleFollowClick = async () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowBidHistory(!showBidHistory)}
-                className="flex-1 py-3 shadow-sm font-semibold bg-white text-coral rounded-lg hover:text-white hover:bg-black"
+                disabled={auction.status === 'scheduled'}
+                className={`flex-1 py-3 shadow-sm font-semibold rounded-lg ${
+                          auction.status === 'scheduled'
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'text-coral bd-white hover:text-white hover:bg-black'
+                        }`}
               >
                 View Bid History
               </button>
             </div>
+            {auction.status === 'scheduled' && (
+              <p className="text-xs px-2 text-black/50 mt-1">Bid history will be available once the auction starts.</p>
+            )}
+
+
 
            
           </div>
