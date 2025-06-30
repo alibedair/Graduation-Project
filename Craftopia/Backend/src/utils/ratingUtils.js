@@ -1,4 +1,4 @@
-const { Rating, Artist } = require('../models');
+const { Review, Artist, Product } = require('../models');
 
 const updateArtistRating = async (artistId) => {
     try {
@@ -6,14 +6,18 @@ const updateArtistRating = async (artistId) => {
             throw new Error('Artist ID is required for updating rating');
         }
         
-        const ratings = await Rating.findAll({
-            where: { artistId },
+        const productReviews = await Review.findAll({
+            include:[{
+                model: Product,
+                where: { artistId },
+                attributes: []
+            }],
             attributes: ['rating']
         });
 
-        const totalRatings = ratings.length;
+        const totalRatings = productReviews.length;
         const averageRating = totalRatings > 0 
-            ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings 
+            ? productReviews.reduce((sum, r) => sum + r.rating, 0) / totalRatings 
             : 0;
 
         await Artist.update(
