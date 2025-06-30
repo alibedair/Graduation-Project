@@ -18,7 +18,7 @@ const Navbar = () => {
     <nav className="flex justify-between items-center px-6 py-3 bg-[#FAF9F6] shadow-md sticky top-0 z-50">
       <Link
         to="/"
-        className="text-3xl font-bold text-black"
+        className="text-3xl font-bold text-black ml-25"
         style={{ fontFamily: "'Lily Script One', cursive" }}
       >
         Craftopia
