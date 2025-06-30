@@ -108,6 +108,7 @@ const AvaliableProducts = () => {
             Browse unique, handmade items crafted by talented artists
           </p>
         </motion.div>
+
         {canScrollLeft && (
           <button
             onClick={() => handleScroll("left")}
@@ -116,6 +117,7 @@ const AvaliableProducts = () => {
             <FiChevronLeft className="text-[#921A40] text-2xl" />
           </button>
         )}
+
         {canScrollRight && (
           <button
             onClick={() => handleScroll("right")}
@@ -124,6 +126,7 @@ const AvaliableProducts = () => {
             <FiChevronRight className="text-[#921A40] text-2xl" />
           </button>
         )}
+
         <motion.div
           ref={scrollRef}
           className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"
@@ -138,45 +141,45 @@ const AvaliableProducts = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          {products.map((product, index) => {
-            const isFavorite = wishlist.some((item) => item.id === product.id);
-            const inCart = cartItems.find((item) => item.id === product.id);
-            const quantity = inCart?.cartQuantity || 0;
+          {products
+            .filter((product) => product.inStock)
+            .map((product, index) => {
+              const isFavorite = wishlist.some((item) => item.id === product.id);
+              const inCart = cartItems.find((item) => item.id === product.id);
+              const quantity = inCart?.cartQuantity || 0;
 
-            return (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, rotateY: 5 }}
-                viewport={{ once: true }}
-                className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
-              >
-                <ProductCard
-                  product={product}
-                  isFavorite={isFavorite}
-                  onToggleFavorite={() => toggleWishlist(product)}
-                  isInCart={!!inCart}
-                  quantity={quantity}
-                  onAddToCart={() => addToCart(product, navigate)}
-                  onIncrement={() => {
-                    if (inCart) incrementQuantity(inCart);
-                  }}
-
-                  onDecrement={() => {
-                    if (inCart) decrementQuantity(inCart);
-                  }}
-
-                />
-
-              </motion.div>
-            );
-          })}
+              return (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05, rotateY: 5 }}
+                  viewport={{ once: true }}
+                  className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
+                >
+                  <ProductCard
+                    product={product}
+                    isFavorite={isFavorite}
+                    onToggleFavorite={() => toggleWishlist(product)}
+                    isInCart={!!inCart}
+                    quantity={quantity}
+                    onAddToCart={() => addToCart(product, navigate)}
+                    onIncrement={() => {
+                      if (inCart) incrementQuantity(inCart);
+                    }}
+                    onDecrement={() => {
+                      if (inCart) decrementQuantity(inCart);
+                    }}
+                  />
+                </motion.div>
+              );
+            })}
         </motion.div>
       </div>
     </section>
   );
+
 };
 
 export default AvaliableProducts;
