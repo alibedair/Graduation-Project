@@ -125,6 +125,7 @@ const ArtistProfileCustomer = () => {
   const navigate = useNavigate();
   const [auctionProducts, setAuctionProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
+  
 
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
@@ -133,9 +134,10 @@ const ArtistProfileCustomer = () => {
       try {
 
 
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token'); 
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+        console.log("Fetching profile");
         const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
           headers
         });
@@ -157,7 +159,7 @@ const ArtistProfileCustomer = () => {
           coverImage: 'https://images.unsplash.com/photo-1508615121316-fe792af62a63?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           bio: a.biography,
           joinedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          specialties: ['Handmade', 'Artisan'],
+          specialties: a.categories,
           video: a.profileVideo,
           stats: {
             products: productData.products.length,
@@ -183,10 +185,8 @@ const ArtistProfileCustomer = () => {
           rating: p.averageRating || 0,
           reviews: p.totalReviews || 0,
           isOnSale: false,
-
-          category: p.category?.name ?? "Uncategorized",
-          artist: p.artist?.name ?? "Unknown Artist",
-
+          category: p.category || 'Handmade',
+          artist: { username: a.name }
         })));
 
 
@@ -203,7 +203,7 @@ const ArtistProfileCustomer = () => {
 
   useEffect(() => {
     const checkFollowStatus = async () => {
-
+      
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -224,62 +224,62 @@ const ArtistProfileCustomer = () => {
     checkFollowStatus();
 
     const fetchAuctionProducts = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/auction/artist-product/${id}`);
-        const data = await res.json();
+  try {
+    const res = await fetch(`http://localhost:3000/auction/artist-product/${id}`);
+    const data = await res.json();
 
-        setAuctionProducts(data.products.map((p) => ({
-          id: p.productId,
-          name: p.name,
-          image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
-          description: p.description,
-          dimensions: p.dimensions,
-          quantity: p.quantity,
-          material: p.material,
-        })));
-      } catch (err) {
-        console.error("Error fetching auction products", err);
-      }
-    };
+    setAuctionProducts(data.products.map((p) => ({
+      id: p.productId,
+      name: p.name,
+      image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
+      description: p.description,
+      dimensions: p.dimensions,
+      quantity: p.quantity,
+      material: p.material,
+    })));
+  } catch (err) {
+    console.error("Error fetching auction products", err);
+  }
+};
 
-    fetchAuctionProducts();
+fetchAuctionProducts();
 
   }, [id]);
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/review/artist-reviews/${id}`);
-        const data = await res.json();
-
-        const allReviews = [];
-        data.productReviews.forEach(product => {
-          product.reviews.forEach(r => {
-            allReviews.push({
-              id: r.reviewId,
-              rating: r.rating,
-              comment: r.review,
-              user: r.customerName || r.customerUsername,
-              avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`,
-              product: product.productName,
-              date: new Date(r.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              }),
-              verified: true,
-            });
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch(`http://localhost:3000/review/artist-reviews/${id}`);
+      const data = await res.json();
+      
+      const allReviews = [];
+      data.productReviews.forEach(product => {
+        product.reviews.forEach(r => {
+          allReviews.push({
+            id: r.reviewId,
+            rating: r.rating,
+            comment: r.review,
+            user: r.customerName || r.customerUsername,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`, // Placeholder avatar
+            product: product.productName,
+            date: new Date(r.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            verified: true,
           });
         });
+      });
 
-        setReviews(allReviews);
-      } catch (err) {
-        console.error("Failed to fetch reviews", err);
-      }
-    };
+      setReviews(allReviews);
+    } catch (err) {
+      console.error("Failed to fetch reviews", err);
+    }
+  };
 
-    fetchReviews();
-  }, [id]);
+  fetchReviews();
+}, [id]);
 
   if (loading || !artist) return <div className="text-center py-10 text-burgundy font-medium">Loading artist profile...</div>;
 
@@ -294,6 +294,10 @@ const ArtistProfileCustomer = () => {
       addToWishlist(product);
     }
   };
+
+  const goToProduct = (id) => {
+  navigate(`/product/${id}`);
+};
 
 
   const handleToggleFollow = async () => {
@@ -396,7 +400,7 @@ const ArtistProfileCustomer = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {artist.specialties.map(s => <Badge key={s} variant="outline">{s}</Badge>)}
+                  {artist.specialties.map(s => <Badge className='bg-white shadow-sm' key={s} variant="outline">{s.name}</Badge>)}
                 </div>
 
                 <div className="flex flex-wrap gap-6 text-sm ">
@@ -434,8 +438,9 @@ const ArtistProfileCustomer = () => {
         </motion.div>
 
         {/* TABS */}
-        <Tabs defaultValue="gallery" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-card">
+        <Tabs defaultValue="products" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 bg-card">
+              <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="auctionProducts">Auction Products</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
@@ -463,6 +468,42 @@ const ArtistProfileCustomer = () => {
             </div>
           </TabsContent>
 
+        
+          <TabsContent value="products" className="space-y-6">
+            <h2 className="text-2xl font-bold text-burgundy">Products ({artist.stats.products})</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product, index) => (
+                <motion.div
+                  key={product.productId || product.id || index}
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -3 }}
+                >
+                  <ProductCard
+                    product={product}
+                    isFavorite={isFavorite(product.id)}
+                    onToggleFavorite={() => toggleFavorite(product)}
+                    isInCart={!!cartItems.find((item) => item.id === product.id)}
+                    quantity={cartItems.find((item) => item.id === product.id)?.cartQuantity || 0}
+                    onAddToCart={() => addToCart(product)}
+                    onIncrement={() => {
+                      const inCart = cartItems.find((item) => item.id === product.id);
+                      if (inCart) incrementQuantity(inCart);
+                    }}
+                    onDecrement={() => {
+                      const inCart = cartItems.find((item) => item.id === product.id);
+                      if (inCart && inCart.cartQuantity > 0) decrementQuantity(inCart);
+                    }}
+                  />
+
+{console.log("Rendering product:", product)}
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+
+
           <TabsContent value="gallery" className="space-y-6">
             <h2 className="text-2xl font-bold text-burgundy">Gallery</h2>
 
@@ -480,8 +521,7 @@ const ArtistProfileCustomer = () => {
                     {products.map((product) => (
                       <div
                         key={product.id}
-                        onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
-                        className=" cursor-pointer relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                       >
                         <div className="aspect-square relative overflow-hidden">
                           <img
@@ -491,86 +531,79 @@ const ArtistProfileCustomer = () => {
                           />
                         </div>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                          <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                            <h3 className="text-xl font-bold text-[#921A40]">{product.name}</h3>
-                            <div className="mt-2 text-white/90 text-sm">
-                              <p className="line-clamp-2">{product.description}</p>
-                              <div className="flex justify-between mt-2">
-                                <span className="font-medium">Qty: {product.quantity}</span>
-                                {product.dimensions && (
-                                  <span>{product.dimensions}</span>
-                                )}
-                              </div>
-                              {product.material && (
-                                <p className="mt-1"><span className="font-medium">Material:</span> {product.material}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     ))}
+                    {auctionProducts.length === 0 && !loadingProducts ? (
+                      <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
+                    ) : (
+                      auctionProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                          <div className="aspect-square relative overflow-hidden">
+                            <img
+                              src={product.image || "https://via.placeholder.com/300"}
+                              alt={product.name}
+                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            />
+                          </div>
+
+                          <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                            AUCTION
+                          </div>
+
+                          
+                        </div>
+                      ))
+                    )}
                   </div>
-                </div>
+                </div>            
               </div>
             </div>
           </TabsContent>
           <TabsContent value="auctionProducts" className="space-y-6">
             <h2 className="text-2xl font-bold text-burgundy">Auction Products</h2>
-            <div>
-              {loadingProducts && <p className="text-center py-8">Loading auction products...</p>}
-              {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
+                  <div>
+                  {loadingProducts && <p className="text-center py-8">Loading auction products...</p>}
+                  {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.length === 0 && !loadingProducts && (
-                  <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
-                )}
-                {auctionProducts.length === 0 && !loadingProducts ? (
-                  <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
-                ) : (
-                  auctionProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      onClick={() => navigate(`/auction/${product.id}`)}
-                      className="cursor-pointer relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                    >
-                      <div className="aspect-square relative overflow-hidden">
-                        <img
-                          src={product.image || "https://via.placeholder.com/300"}
-                          alt={product.name}
-                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                        />
-                      </div>
-
-                      <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                        AUCTION
-                      </div>
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                          <h3 className="text-xl font-bold text-[#921A40]">{product.name}</h3>
-                          <div className="mt-2 text-white/90 text-sm">
-                            <p className="line-clamp-2">{product.description}</p>
-                            <div className="flex justify-between mt-2">
-                              <span className="font-medium">Qty: {product.quantity}</span>
-                              {product.dimensions && <span>{product.dimensions}</span>}
-                            </div>
-                            {product.material && (
-                              <p className="mt-1"><span className="font-medium">Material:</span> {product.material}</p>
-                            )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {products.length === 0 && !loadingProducts && (
+                      <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
+                    )}
+                    {auctionProducts.length === 0 && !loadingProducts ? (
+                      <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
+                    ) : (
+                      auctionProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => navigate(`/auction/${product.id}`)}
+                          className="cursor-pointer relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                          <div className="aspect-square relative overflow-hidden">
+                            <img
+                              src={product.image || "https://via.placeholder.com/300"}
+                              alt={product.name}
+                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            />
                           </div>
+
+                          <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                            AUCTION
+                          </div>
+
+                          
                         </div>
-                      </div>
-                    </div>
-                  ))
-                )}
+                      ))
+                    )}
 
 
 
-              </div>
-            </div>
+                  </div>
+                </div>
           </TabsContent>
-          <TabsContent value="reviews" className="space-y-6">
+           <TabsContent value="reviews" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-burgundy">
                 Customer Reviews ({artist.stats.reviews})
@@ -589,8 +622,8 @@ const ArtistProfileCustomer = () => {
               {reviews.map((review) => (
                 <Card key={review.id} className="p-6">
                   <div className="flex items-start space-x-4">
-                    <img
-                      src={review.avatar}
+                    <img 
+                      src={review.avatar} 
                       alt={review.user}
                       className="w-12 h-12 rounded-full object-cover"
                     />
@@ -606,19 +639,19 @@ const ArtistProfileCustomer = () => {
                         </div>
                         <span className="text-sm text-burgundy/60">{review.date}</span>
                       </div>
-
+                      
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                            <Star 
+                              key={i} 
+                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
                             />
                           ))}
                         </div>
                         <span className="text-sm text-burgundy/70">for {review.product}</span>
                       </div>
-
+                      
                       <p className="text-burgundy/80">{review.comment}</p>
                     </div>
                   </div>
