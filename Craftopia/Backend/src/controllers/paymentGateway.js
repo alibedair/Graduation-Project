@@ -154,7 +154,7 @@ exports.createEscrowPayment = async (req, res) => {
          for (const productOrder of productOrders) {
             const product = await Product.findByPk(productOrder.productId);
             if (product) {
-                product.stock -= productOrder.quantity;
+                product.quantity -= productOrder.quantity;
                 await product.save();
             }
         }
