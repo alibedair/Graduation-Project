@@ -72,9 +72,18 @@ const EditProfile = () => {
                 body: formData,
             });
 
-            if (!response.ok) throw new Error("Update failed");
-
             const data = await response.json();
+
+            if (!response.ok) {
+                if (data.message === "Username already exists") {
+                    setMessage("Username already exists. Please choose a different one.");
+                } else {
+                    setMessage("Failed to update profile.");
+                }
+                setLoading(false);
+                return;
+            }
+
             if (data.artist && data.artist.artistId) {
                 localStorage.setItem("artistId", data.artist.artistId);
             }
@@ -86,6 +95,7 @@ const EditProfile = () => {
         } finally {
             setLoading(false);
         }
+
     };
 
 

@@ -41,11 +41,20 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
       },
       body: JSON.stringify(profileData),
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to update profile");
-        return res.json();
-      })
-      .then((data) => {
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (data.message === "Username already exists") {
+            setFieldErrors({ username: "Username already exists. Please choose another one." });
+            setError("Username already exists.");
+          } else {
+            setError("Failed to update profile.");
+          }
+          setSuccessMessage("");
+          return;
+        }
+
         setSuccessMessage("Profile updated successfully!");
         setError("");
         setFieldErrors({});
@@ -59,10 +68,11 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
         setError("Failed to update profile.");
         setSuccessMessage("");
       });
+
   };
 
   return (
-   <div className="p-2 sm:p-4 md:p-6 bg-[#F6EEEE]">
+    <div className="p-2 sm:p-4 md:p-6 bg-[#F6EEEE]">
       <div className="grid md:grid-cols-2 gap-8 items-start bg-white p-8 rounded-2xl shadow-xl border border-[#f9d2d9] max-w-6xl mx-auto">
         <div>
           <h2 className="text-3xl font-bold text-black mb-6">
@@ -150,7 +160,7 @@ const CompleteProfile = ({ onClose, onProfileComplete, initialProfile }) => {
 
         <div className="hidden md:flex justify-center mt-10">
           <motion.img
-           src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"//https://cdn-icons-png.flaticon.com/512/1077/1077114.png
+            src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"//https://cdn-icons-png.flaticon.com/512/1077/1077114.png
             alt="Profile Illustration"
             className="w-full max-w-sm"
             initial={{ opacity: 0, scale: 0.8 }}
