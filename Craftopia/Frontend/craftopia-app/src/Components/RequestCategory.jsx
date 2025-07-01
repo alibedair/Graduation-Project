@@ -4,6 +4,7 @@ const RequestCategory = () => {
   const [categoryName, setCategoryName] = useState("");
   const [message, setMessage] = useState(null);
   const [existingCategories, setExistingCategories] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -19,6 +20,13 @@ const RequestCategory = () => {
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    if (message) {
+      const timeout = setTimeout(() => setMessage(null), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [message]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -33,6 +41,8 @@ const RequestCategory = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const res = await fetch("http://localhost:3000/category/createrequest", {
         method: "POST",
@@ -46,15 +56,28 @@ const RequestCategory = () => {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.message === "Artist profile not found") {
+          throw new Error("Please complete your artist profile first.");
+        }
         throw new Error(data.message || "Failed to request category");
       }
 
-      setMessage({ type: "success", text: data.message });
+      setMessage({
+        type: "success",
+        text:
+          data.message.includes("updated. Counter incremented")
+            ? "This category has been requested by another artist. Your request has been added."
+            : data.message,
+      });
+
       setCategoryName("");
     } catch (error) {
       setMessage({ type: "error", text: error.message });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="max-w-md">
@@ -74,9 +97,13 @@ const RequestCategory = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#E07385] text-white font-medium py-2 rounded-md hover:bg-[#c15f70] transition"
+            disabled={isSubmitting}
+            className={`w-full font-medium py-2 rounded-md transition ${isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#E07385] text-white hover:bg-[#c15f70]"
+              }`}
           >
-            Submit Request
+            {isSubmitting ? "Submitting..." : "Submit Request"}
           </button>
 
           {message && (
