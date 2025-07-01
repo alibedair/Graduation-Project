@@ -233,32 +233,19 @@ exports.shipOrder = async (req, res) => {
         if (artist.artistId !== realArtist.artistId) {
             return res.status(403).json({ message: 'this Artist is not authorized for shipping this order' });
         }
-        const product = await Product.create({
-            name: request.title,
-            price: respond.price,
-            description: request.requestDescription,
-            image: request.image ? [request.image] : [],
-            quantity: 0,
-            sellingNumber: 1,
-            artistId: realArtist.artistId,
-            type : 'customizable'
-
-        });
         let order = await Order.findOne({ where: { orderId: request.orderId } });
         if(!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
-        if(order.status === 'Shipped' || order.status === 'Completed') {
-            return res.status(400).json({ message: 'Order has already been shipped or completed' });
+        if( order.status !== 'Completed') {
+            return res.status(400).json({ message: 'Customer should pay first,before shipping the order' });
+        }
+        if( order.status === 'Shipped') {
+            return res.status(400).json({ message: 'Order is already shipped' });
         }
         order.status = 'Shipped';
         order.shippedAt = new Date();
         await order.save();
-        await Product_Order.create({
-            orderId: order.orderId,
-            productId: product.productId,
-            quantity: 1
-        });
         try{
             const customer = await Customer.findByPk(request.customerId);
             const customerUser = await User.findByPk(customer.userId);

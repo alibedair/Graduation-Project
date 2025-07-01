@@ -4,6 +4,8 @@ const Customer = require('../models/customer');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const CustomizationResponse = require('../models/customizationResponse');
 const Order = require('../models/order');
+const Product = require('../models/product');
+const Product_Order = require('../models/Product_Order');
 const { validationResult } = require('express-validator');
 const { 
     autoDeclinePendingResponses, 
@@ -185,6 +187,22 @@ exports.acceptCustomizationResponse = async (req, res) => {
             totalAmount: response.price,
             customerId: customizationRequest.customerId,
             createdAt: new Date()
+        });
+        const product = await Product.create({
+            name: customizationRequest.title,
+            price: response.price,
+            description: customizationRequest.requestDescription,
+            image: customizationRequest.image ? [customizationRequest.image] : [],
+            quantity: 0,
+            sellingNumber: 1,
+            artistId: response.artistId,
+            type : 'customizable'
+
+        });
+         await Product_Order.create({
+            orderId: order.orderId,
+            productId: product.productId,
+            quantity: 1
         });
         await CustomizationRequest.update(
             { status: 'CLOSED',
