@@ -22,8 +22,17 @@ const AddCategory = () => {
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       setMessage("Category name is required!");
+      return;
+    }
+
+    const isDuplicate = categories.some(
+      (cat) => cat.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+    if (isDuplicate) {
+      setMessage("This category already exists!");
       return;
     }
 
@@ -38,7 +47,7 @@ const AddCategory = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name: trimmedName }),
       });
 
       const result = await res.json();
@@ -55,10 +64,10 @@ const AddCategory = () => {
     }
   };
 
+
   return (
     <div className="max-h-screen bg-[#FAF9F6] p-20 pl-0 flex items-center justify-center mr-33">
       <div className="w-full max-w-4xl bg-white border border-[#e4cfcf] rounded-3xl shadow-xl p-10 flex flex-col md:flex-row gap-8">
-        {/* Left: Form (3/4 width) */}
         <div className="md:w-1/2 w-full pt-20">
           <div className="flex items-center gap-2 mb-6">
             <PlusCircle className="text-[#E07385]" size={26} />
@@ -67,11 +76,10 @@ const AddCategory = () => {
 
           {message && (
             <div
-              className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium shadow-sm ${
-                message.includes("success")
+              className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium shadow-sm ${message.includes("success")
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-700 border border-red-200"
-              }`}
+                }`}
             >
               {message}
             </div>
@@ -98,18 +106,15 @@ const AddCategory = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-2 text-white font-semibold rounded-xl transition-all ${
-                loading
+              className={`w-full py-2 text-white font-semibold rounded-xl transition-all ${loading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-[#E07385] hover:bg-[#c75c6f] shadow-lg"
-              }`}
+                }`}
             >
               {loading ? "Adding..." : "Add Category"}
             </button>
           </form>
         </div>
-
-        {/* Right: Category List (1/4 width) */}
         <div className="md:w-1/2 w-full bg-[#FFF3F5] rounded-xl border border-[#ecc9cf] p-4 h-fit max-h-[400px] overflow-y-auto scrollbar-hide">
           <h3 className="text-lg font-semibold text-[#4B2E2E] mb-3 flex items-center gap-2">
             <Tag size={20} className="text-[#E07385]" />
