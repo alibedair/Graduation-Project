@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Star, Package, Ruler, Palette } from "lucide-react";
 import { useCart } from "../context/CartContext";
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+
 const ProductInfo = ({ product }) => {
     const {
         cartItems,
         addToCart,
-        updateQuantity,
-        removeFromCart,
+        incrementQuantity,
+        decrementQuantity,
     } = useCart();
 
     const cartItem = cartItems.find((item) => item.id === product.id);
@@ -22,49 +22,41 @@ const ProductInfo = ({ product }) => {
             ? product.inStock
             : Number(product.quantity ?? 0) > 0;
 
-useEffect(() => {
-    setQuantity(cartItem?.cartQuantity || 0);
-}, [cartItem]);
+    useEffect(() => {
+        setQuantity(cartItem?.cartQuantity || 0);
+    }, [cartItem]);
+
     useEffect(() => {
         setReviewsCount(product.totalReviews || 0);
     }, [product.totalReviews]);
 
     const handleAddToCart = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    setQuantity(1);
-    addToCart(product);
-  };
-   const handleIncrease = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    const newQty = quantity + 1;
-    setQuantity(newQty);
-    updateQuantity(product.id, newQty);
-  };
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        setQuantity(1);
+        addToCart(product);
+    };
 
-  const handleDecrease = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    const newQty = quantity - 1;
-    if (newQty <= 0) {
-      setQuantity(0);
-      removeFromCart(product.id);
-    } else {
-      setQuantity(newQty);
-      updateQuantity(product.id, newQty);
-    }
-  };
+    const handleIncrease = () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        incrementQuantity(product);
+    };
 
+    const handleDecrease = () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        decrementQuantity(product);
+    };
 
     const productImages = useMemo(() => {
         if (Array.isArray(product.image)) return product.image;
@@ -77,14 +69,20 @@ useEffect(() => {
         if (productImages.length) setSelectedImage(productImages[0]);
     }, [productImages]);
 
-
     const renderStars = (rating) =>
         [...Array(5)].map((_, i) => (
             <Star
                 key={i}
-                className={`w-4 h-4 ${i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                className={`w-4 h-4 ${i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                    }`}
             />
         ));
+    const maxQty = Math.max(
+        0,
+        Number(product.quantity || 0) - Number(product.sellingNumber || 0)
+    );
+
+    const isMaxReached = !isNaN(maxQty) && quantity >= maxQty;
 
 
     return (
@@ -111,6 +109,7 @@ useEffect(() => {
                     ))}
                 </div>
             </div>
+
             <div className="space-y-5">
                 <div className="space-y-1">
                     <p className="text-sm font-semibold uppercase text-[#e07385] tracking-wide">
@@ -119,25 +118,25 @@ useEffect(() => {
                             : product.category?.name || "Handmade"}
                     </p>
 
-
                     <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                     <p className="text-sm text-gray-500">
                         by{" "}
                         <span className="font-medium text-[#E07385]">
                             {product.artist?.username ||
-                                (typeof product.artist === "string" ? product.artist : product.artist?.name) ||
+                                (typeof product.artist === "string"
+                                    ? product.artist
+                                    : product.artist?.name) ||
                                 "Unknown Artist"}
                         </span>
-
                     </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                     {renderStars(product.rating || 0)}
                     <span className="font-medium text-gray-800 text-sm">
-                        {Number(product.rating || 0).toFixed(1)} ({reviewsCount} {reviewsCount === 1 ? "review" : "reviews"})
+                        {Number(product.rating || 0).toFixed(1)} ({reviewsCount}{" "}
+                        {reviewsCount === 1 ? "review" : "reviews"})
                     </span>
-
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
@@ -149,8 +148,6 @@ useEffect(() => {
                             {isAvailable ? "In Stock" : "Out of Stock"}
                         </span>
                     </div>
-
-
                 </div>
 
                 <div className="bg-[#f3e1e4] rounded-xl p-6">
@@ -185,6 +182,7 @@ useEffect(() => {
                         </p>
                     </div>
                 </div>
+
                 <div className="flex justify-center sm:justify-start mt-6">
                     {quantity > 0 ? (
                         <div className="flex items-center border rounded-full overflow-hidden w-full sm:w-1/2">
@@ -199,7 +197,11 @@ useEffect(() => {
                             </span>
                             <button
                                 onClick={handleIncrease}
-                                className="w-1/3 py-2 bg-[#fce7ea] text-[#E07385] font-bold hover:bg-[#f9d8e0] transition"
+                                disabled={isMaxReached}
+                                className={`w-1/3 py-2 text-[#E07385] font-bold transition ${isMaxReached
+                                        ? "bg-gray-300 cursor-not-allowed"
+                                        : "bg-[#fce7ea] hover:bg-[#f9d8e0]"
+                                    }`}
                             >
                                 +
                             </button>

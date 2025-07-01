@@ -1,12 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const RequestCategory = () => {
   const [categoryName, setCategoryName] = useState("");
   const [message, setMessage] = useState(null);
+  const [existingCategories, setExistingCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/category/all");
+        const data = await res.json();
+        setExistingCategories(data.categories || []);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err.message);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
+    const trimmedName = categoryName.trim().toLowerCase();
+
+    const nameExists = existingCategories.some(
+      (cat) => cat.name.trim().toLowerCase() === trimmedName
+    );
+
+    if (nameExists) {
+      setMessage({ type: "error", text: "This category already exists." });
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:3000/category/createrequest", {
@@ -56,11 +81,10 @@ const RequestCategory = () => {
 
           {message && (
             <p
-              className={`text-sm font-medium border-l-4 pl-3 py-2 rounded ${
-                message.type === "success"
+              className={`text-sm font-medium border-l-4 pl-3 py-2 rounded ${message.type === "success"
                   ? "text-green-700 bg-green-50 border-green-400"
                   : "text-[#E07385] bg-[#FFF3F4] border-[#E07385]"
-              }`}
+                }`}
             >
               {message.text}
             </p>
