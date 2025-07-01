@@ -72,20 +72,33 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
     try {
+        const { type } = req.query;
+        const whereClause = {};
+        if (type) {
+            whereClause.type = type;
+        }
         const products = await Product.findAll({
+            where: whereClause,
             include: [
                 { model: Category, attributes: ['name'] },
                 { model: Artist, attributes: ['artistId','name'] }
             ],
-            attributes: ['productId', 'name', 'price', 'description', 'image', 'sellingNumber', 'quantity', 'dimensions', 'material','createdAt']
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'sellingNumber', 'quantity', 'dimensions', 'material','createdAt','type']
         });
 
         const filteredProducts= [];
         for (const product of products) {
-            const auctionRequest = await AuctionRequest.findOne({
-                where: { productId: product.productId},
-            });
-            if(!auctionRequest){
+            if (product.type === 'auction') {
+                const auctionRequest = await AuctionRequest.findOne({ 
+                    where: { 
+                        productId: product.productId,
+                        status: 'scheduled'
+                    } 
+                });
+                if (auctionRequest) {
+                    filteredProducts.push(product);
+                }
+            } else {
                 filteredProducts.push(product);
             }
         }

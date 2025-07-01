@@ -3,7 +3,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const upload = require('../middlewares/upload');
 const productController = require('../controllers/productController');
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 
 router.post('/create', 
     authMiddleware,
@@ -22,7 +22,11 @@ router.post('/create',
     productController.createProduct
 );
 
-router.get('/get', productController.getProducts);
+router.get('/get', 
+    [
+        query('type').optional().isIn(['auction', 'normal', 'customizable']).withMessage('Type must be one of: auction, normal, customizable'),
+    ]
+    ,productController.getProducts);
 
 router.put('/update/:productId',
     authMiddleware,
