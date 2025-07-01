@@ -6,6 +6,7 @@ const User = require('../models/user');
 const CreditCard = require('../models/creditCard');
 const Product = require('../models/product');
 const Sales = require('../models/sales');
+const ProductOrder = require('../models/Product_Order');
 const { sendPaymentConfirmationEmail } = require('../utils/emailService');
 
 exports.createEscrowPayment = async (req, res) => {
@@ -50,7 +51,7 @@ exports.createEscrowPayment = async (req, res) => {
                 message: 'You are not authorized to pay for this order'
             });
         }
-           // customer can pay only if order is shipped or pending
+        // customer can pay only if order is pending
         if (order.status === 'Completed') {
             return res.status(400).json({
                 success: false,
@@ -113,7 +114,30 @@ exports.createEscrowPayment = async (req, res) => {
                 message: 'Insufficient funds in credit card, payment failed',
             });
         }
-
+        const productOrders = await ProductOrder.findAll({
+            where: { orderId: order.orderId }
+        });
+       if(!productOrders || productOrders.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No products found in the order'
+            });
+        }
+        for (const productOrder of productOrders) {
+            const product = await Product.findByPk(productOrder.productId);
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Product not found'
+                });
+            }
+            if (product.stock < productOrder.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient stock for product ${product.name}, you can try again later when the stock is updated`
+                });
+            }
+        }
         const payment = await Payment.create({
             orderId: order.orderId,
             customerId: customer.customerId,
@@ -127,7 +151,13 @@ exports.createEscrowPayment = async (req, res) => {
         await creditCard.update({
             amount: creditCard.amount - order.totalAmount
         });
-
+         for (const productOrder of productOrders) {
+            const product = await Product.findByPk(productOrder.productId);
+            if (product) {
+                product.stock -= productOrder.quantity;
+                await product.save();
+            }
+        }
         await order.update({
             status: 'Completed',
             paymentId: payment.paymentId,
