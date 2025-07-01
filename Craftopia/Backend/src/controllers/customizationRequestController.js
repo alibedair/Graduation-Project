@@ -3,7 +3,6 @@ const Artist = require('../models/artist');
 const Customer = require('../models/customer');
 const CustomizationResponse = require('../models/customizationResponse');
 const User = require('../models/user');
-const Order = require('../models/order');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const { autoDeclinePendingResponses } = require('../utils/customizationUtils');
 const { sendCustomizationRequestReceivedEmail } = require('../utils/emailService');
@@ -149,31 +148,12 @@ exports.getCustomerCustomizationRequests = async (req, res) => {
                             attributes: ['username', 'profilePicture']
                         }
                     ]
-                },
-                {
-                    model: Order,
-                    attributes: ['orderId', 'status'],
-                    where: {
-                        status: 'Pending'
-                    },
-                    required: true 
                 }
             ],
             order: [['createdAt', 'DESC']]
         });
 
-        
-        if (requests.length === 0) {
-            return res.status(200).json({
-                message: 'No customization requests with pending orders found',
-                data: []
-            });
-        }
-
-        return res.status(200).json({
-            message: 'Customization requests with pending orders retrieved successfully',
-            data: requests
-        });
+        return res.status(200).json(requests);
     } catch (error) {
         console.error('Error getting customer customization requests:', error);
         res.status(500).send({ message: 'Internal server error' });

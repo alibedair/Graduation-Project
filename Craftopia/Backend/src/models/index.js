@@ -169,10 +169,6 @@ CustomizationResponse.belongsTo(Artist, { foreignKey: 'artistId' });
 CustomizationRequest.hasMany(CustomizationResponse, { foreignKey: 'requestId' });
 CustomizationResponse.belongsTo(CustomizationRequest, { foreignKey: 'requestId' });
 
-// CustomizationRequest & Order Relationship
-CustomizationRequest.belongsTo(Order, { foreignKey: 'orderId' });
-Order.hasMany(CustomizationRequest, { foreignKey: 'orderId' });
-
 // Many-to-Many Artist & Customer Relationship (Through ArtistFollow)
 Artist.belongsToMany(Customer, { through: ArtistFollow, foreignKey: 'artistId' });
 Customer.belongsToMany(Artist, { through: ArtistFollow, foreignKey: 'customerId' });
