@@ -7,7 +7,7 @@ const User = require('../models/user');
 const uploadBuffer = require('../utils/cloudinaryUpload');
 const { Op, where } = require('sequelize');
 const { validationResult } = require('express-validator');
-
+const socketService = require('../services/socketService');
 
 const { validateMessageContent } = require('../utils/validateMsg');
 
@@ -116,12 +116,45 @@ exports.sendMessage = async (req, res) => {
             receiverId,
             receiverType,
             messageContent,
-            attachmentUrl: attachmentUrl || ''
+            attachmentUrl: attachmentUrl || '',
+            deliveryStatus: 'sent',
+            isOfflineMessage: false
         });
+
+        let receiverUserId;
+        if (receiverType === 'customer') {
+            const receiverCustomer = await Customer.findByPk(receiverId);
+            receiverUserId = receiverCustomer?.userId;
+        } else {
+            const receiverArtist = await Artist.findByPk(receiverId);
+            receiverUserId = receiverArtist?.userId;
+        }
+
+        const messageData = {
+            ...message.toJSON(),
+            senderName: user.role === 'customer' ? 
+                (await Customer.findByPk(senderId))?.name : 
+                (await Artist.findByPk(senderId))?.name
+        };
+
+        const isReceiverOnline = socketService.isUserOnline(receiverUserId);
+        
+        if (isReceiverOnline) {
+            socketService.sendToUser(receiverUserId, 'new_message', messageData);
+            await message.update({ deliveryStatus: 'delivered' });
+            socketService.sendMessageStatusUpdate(userId, message.messageId, 'delivered');
+        } else {
+            await message.update({ isOfflineMessage: true });
+        }
+        socketService.broadcastMessage(responseId, messageData, userId);
 
         return res.status(201).json({
             message: 'Message sent successfully',
-            data: message
+            data: {
+                ...messageData,
+                isReceiverOnline,
+                deliveryStatus: isReceiverOnline ? 'delivered' : 'sent'
+            }
         });
 
     } catch (error) {
@@ -166,9 +199,25 @@ exports.getUnreadMessages = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
         await Message.update(
-            { isRead: true,
-                readAt: new Date()
-             },
+            { 
+                deliveryStatus: 'delivered',
+                isOfflineMessage: false
+            },
+            {
+                where: {
+                    receiverId: userRecord[userIdField],
+                    receiverType: userType,
+                    isOfflineMessage: true,
+                    deliveryStatus: 'sent'
+                }
+            }
+        );
+        await Message.update(
+            { 
+                isRead: true,
+                readAt: new Date(),
+                deliveryStatus: 'read'
+            },
             {
                 where: {
                     receiverId: userRecord[userIdField],
@@ -269,6 +318,214 @@ exports.getMessagesByRespondId = async (req, res) => {
 
     } catch (error) {
         console.error('Error getting messages by response ID:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.markMessageAsRead = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const userId = req.user.id;
+
+        const message = await Message.findByPk(messageId);
+        if (!message) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+
+        const user = await User.findByPk(userId);
+        let userRecord;
+        let userType;
+        let userIdField;
+
+        if (user.role === 'customer') {
+            userRecord = await Customer.findOne({ where: { userId } });
+            userType = 'customer';
+            userIdField = 'customerId';
+        } else if (user.role === 'artist') {
+            userRecord = await Artist.findOne({ where: { userId } });
+            userType = 'artist';
+            userIdField = 'artistId';
+        }
+
+        if (message.receiverId !== userRecord[userIdField] || message.receiverType !== userType) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        await message.update({
+            isRead: true,
+            readAt: new Date(),
+            deliveryStatus: 'read'
+        });
+
+        let senderUserId;
+        if (message.senderType === 'customer') {
+            const senderCustomer = await Customer.findByPk(message.senderId);
+            senderUserId = senderCustomer?.userId;
+        } else {
+            const senderArtist = await Artist.findByPk(message.senderId);
+            senderUserId = senderArtist?.userId;
+        }
+
+        if (senderUserId) {
+            socketService.sendMessageStatusUpdate(senderUserId, messageId, 'read');
+        }
+
+        return res.status(200).json({
+            message: 'Message marked as read',
+            data: message
+        });
+
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getUserOnlineStatus = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const isOnline = socketService.isUserOnline(parseInt(userId));
+
+        return res.status(200).json({
+            message: 'User status retrieved',
+            data: {
+                userId: parseInt(userId),
+                isOnline,
+                timestamp: new Date()
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting user status:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getConversationStatus = async (req, res) => {
+    try {
+        const { responseId } = req.params;
+        const userId = req.user.id;
+
+        const customizationResponse = await CustomizationResponse.findByPk(responseId);
+        if (!customizationResponse) {
+            return res.status(404).json({ message: 'Customization response not found' });
+        }
+
+        const customizationRequest = await CustomizationRequest.findByPk(customizationResponse.requestId);
+        const customer = await Customer.findByPk(customizationRequest.customerId);
+        const artist = await Artist.findByPk(customizationResponse.artistId);
+
+        const customerUser = await User.findByPk(customer.userId);
+        const artistUser = await User.findByPk(artist.userId);
+
+        const conversationStatus = {
+            responseId: parseInt(responseId),
+            customer: {
+                id: customer.customerId,
+                userId: customer.userId,
+                name: customer.name,
+                isOnline: socketService.isUserOnline(customer.userId)
+            },
+            artist: {
+                id: artist.artistId,
+                userId: artist.userId,
+                name: artist.name,
+                isOnline: socketService.isUserOnline(artist.userId)
+            },
+            timestamp: new Date()
+        };
+
+        return res.status(200).json({
+            message: 'Conversation status retrieved',
+            data: conversationStatus
+        });
+
+    } catch (error) {
+        console.error('Error getting conversation status:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getOfflineMessages = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findByPk(userId);
+
+        let userRecord;
+        let userType;
+        let userIdField;
+
+        if (user.role === 'customer') {
+            userRecord = await Customer.findOne({ where: { userId } });
+            userType = 'customer';
+            userIdField = 'customerId';
+        } else if (user.role === 'artist') {
+            userRecord = await Artist.findOne({ where: { userId } });
+            userType = 'artist';
+            userIdField = 'artistId';
+        }
+
+        const offlineMessages = await Message.findAll({
+            where: {
+                receiverId: userRecord[userIdField],
+                receiverType: userType,
+                isOfflineMessage: true,
+                deliveryStatus: 'sent'
+            },
+            order: [['createdAt', 'ASC']]
+        });
+        if (offlineMessages.length > 0) {
+            await Message.update(
+                { 
+                    deliveryStatus: 'delivered',
+                    isOfflineMessage: false
+                },
+                {
+                    where: {
+                        receiverId: userRecord[userIdField],
+                        receiverType: userType,
+                        isOfflineMessage: true,
+                        deliveryStatus: 'sent'
+                    }
+                }
+            );
+            const messagesWithSenderName = await Promise.all(offlineMessages.map(async (message) => {
+                const messageData = message.toJSON();
+                
+                if (message.senderType === 'customer') {
+                    const customer = await Customer.findByPk(message.senderId, {
+                        attributes: ['name']
+                    });
+                    messageData.senderName = customer ? customer.name : 'Unknown Customer';
+                } else if (message.senderType === 'artist') {
+                    const artist = await Artist.findByPk(message.senderId, {
+                        attributes: ['name']
+                    });
+                    messageData.senderName = artist ? artist.name : 'Unknown Artist';
+                }
+                
+                return messageData;
+            }));
+
+            return res.status(200).json({
+                message: 'Offline messages retrieved',
+                data: {
+                    messages: messagesWithSenderName,
+                    count: messagesWithSenderName.length
+                }
+            });
+        }
+
+        return res.status(200).json({
+            message: 'No offline messages',
+            data: {
+                messages: [],
+                count: 0
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting offline messages:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

@@ -35,4 +35,37 @@ router.get('/conversation/:responseId',
     messageController.getMessagesByRespondId
 );
 
+router.patch('/read/:messageId',
+    authMiddleware,
+    roleMiddleware(['customer', 'artist']),
+    [
+        param('messageId').isInt().withMessage('Message ID must be an integer')
+    ],
+    messageController.markMessageAsRead
+);
+
+router.get('/status/:userId',
+    authMiddleware,
+    roleMiddleware(['customer', 'artist']),
+    [
+        param('userId').isInt().withMessage('User ID must be an integer')
+    ],
+    messageController.getUserOnlineStatus
+);
+
+router.get('/conversation-status/:responseId',
+    authMiddleware,
+    roleMiddleware(['customer', 'artist']),
+    [
+        param('responseId').isInt().withMessage('Response ID must be an integer')
+    ],
+    messageController.getConversationStatus
+);
+
+router.get('/offline',
+    authMiddleware,
+    roleMiddleware(['customer', 'artist']),
+    messageController.getOfflineMessages
+);
+
 module.exports = router;

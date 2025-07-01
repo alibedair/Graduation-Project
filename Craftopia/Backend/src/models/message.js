@@ -57,6 +57,16 @@ const Message = sequelize.define('message', {
     readAt: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    deliveryStatus: {
+        type: DataTypes.ENUM('sent', 'delivered', 'read'),
+        defaultValue: 'sent',
+        allowNull: false
+    },
+    isOfflineMessage: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
     }
 }, {
     timestamps: true, 
