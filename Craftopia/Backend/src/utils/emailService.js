@@ -617,6 +617,70 @@ const sendCustomizationShipEmail = async (email, userName, orderDetails) => {
     }
 };
 
+
+const sendAuctionStartedToFollowersEmail = async (email, followerName, auctionDetails) => {
+    try {
+        const { productName, artistName, startingPrice, endDate, auctionId, productImage } = auctionDetails;
+
+        const content = `
+            <p>Hello <strong>${followerName}</strong>,</p>
+            <p>Exciting news! <strong>${artistName}</strong>, an artist you follow, has just started a new auction!</p>
+            
+            <div style="background-color: #d1ecf1; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                <h3 style="color: #0c5460; margin-top: 0;">🎨 New Auction Live Now!</h3>
+                <p style="color: #0c5460; margin: 0;">Don't miss your chance to bid on this unique piece!</p>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <h3 style="color: #333; margin-top: 0;">Auction Details</h3>
+                <p><strong>Artist:</strong> ${artistName}</p>
+                <p><strong>Product:</strong> ${productName}</p>
+                <p><strong>Starting Price:</strong> $${startingPrice}</p>
+                <p><strong>Auction Ends:</strong> ${new Date(endDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>Auction ID:</strong> ${auctionId}</p>
+            </div>
+            
+            ${productImage ? `
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="${productImage}" alt="${productName}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+            ` : ''}
+            
+            <div style="background-color: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <h4 style="color: #856404; margin-top: 0;">⏰ Time Sensitive!</h4>
+                <p style="color: #856404; margin-bottom: 0;">This auction is live now and won't last forever. Place your bid early to secure your chance at owning this beautiful handcrafted piece!</p>
+            </div>
+            
+            <p>As a follower of <strong>${artistName}</strong>, you get early notification of their auctions. Here's what you can do:</p>
+            <ul>
+                <li>🔍 View the full auction details and high-resolution images</li>
+                <li>💰 Place your bid to compete for this unique artwork</li>
+                <li>👀 Watch the auction and get notified of new bids</li>
+                <li>🏆 Win the auction and add this piece to your collection</li>
+            </ul>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="#" style="background-color: #ff6b35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">View Auction & Place Bid</a>
+            </div>
+            
+            <p>Thank you for supporting <strong>${artistName}</strong> and the handcrafted arts community!</p>
+        `;
+
+        const mailOptions = {
+            from: `"Craftopia" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: `🎨 ${artistName} Started a New Auction - ${productName}`,
+            html: getEmailTemplate('New Auction Alert!', content, `Don't miss out on this exclusive piece from ${artistName}!`)
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending auction started to followers email:', error);
+        return false;
+    }
+};
+
 module.exports = { 
     sendOTPEmail,
     sendOrderConfirmationEmail,
@@ -629,5 +693,6 @@ module.exports = {
     sendAuctionWonEmail,
     sendShipAuctionEmail,
     sendCustomizationShipEmail,
-    sendPaymentConfirmationEmail
+    sendPaymentConfirmationEmail,
+    sendAuctionStartedToFollowersEmail
 };
