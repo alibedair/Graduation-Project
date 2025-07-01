@@ -40,7 +40,7 @@ exports.placeOrder = async (req, res) => {
                 return res.status(400).json({ message: `Insufficient stock for product ${prod.name}` });
             }
             totalAmount += prod.price * productQuantity;
-            await prod.update({ quantity: prod.quantity - productQuantity });
+            
         }
 
         const order = await Order.create({
@@ -158,15 +158,6 @@ exports.cancelOrder = async (req, res) => {
         }        
         if (order.status === 'Pending') {
             await order.update({ status: 'Cancelled' });
-            const productOrders = await Product_Order.findAll({
-                where: { orderId: order.orderId }
-            });
-            for (const productOrder of productOrders) {
-                const prod = await product.findByPk(productOrder.productId);
-                if (prod) {
-                    await prod.update({ quantity: prod.quantity + productOrder.quantity });
-                }
-            }
             return res.status(200).json({
                 message: 'Order cancelled successfully',
                 order
