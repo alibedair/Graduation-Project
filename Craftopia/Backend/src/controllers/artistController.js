@@ -1,5 +1,5 @@
 const Artist = require('../models/artist');
-const uploadBuffer = require('../utils/cloudinaryUpload');
+const { uploadBuffer } = require('../utils/cloudinaryUpload');
 const User = require('../models/user');
 const { Op, Sequelize } = require('sequelize');
 const { validationResult } = require('express-validator');

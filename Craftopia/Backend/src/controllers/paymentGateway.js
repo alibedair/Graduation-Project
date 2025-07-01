@@ -65,14 +65,6 @@ exports.createEscrowPayment = async (req, res) => {
             });
         }
         if (!creditCard || creditCard.expiryDate !== expiryDate) {
-            await Payment.create({
-                orderId: order.orderId,
-                customerId: customer.customerId,
-                amount: 0,
-                paymentReference: creditCardNumber,
-                status: 'failed',
-                transactionType: 'payment'
-            });
             return res.status(404).json({
                 success: false,
                 message: 'Credit card is invalid, payment failed',
@@ -131,7 +123,7 @@ exports.createEscrowPayment = async (req, res) => {
                     message: 'Product not found'
                 });
             }
-            if (product.stock < productOrder.quantity) {
+            if (product.quantity < productOrder.quantity) {
                 return res.status(400).json({
                     success: false,
                     message: `Insufficient stock for product ${product.name}, you can try again later when the stock is updated`
