@@ -37,6 +37,20 @@ exports.placeBid = async (req, res) => {
             await firebase_db.ref(`auctions/${auctionId}`).update({ status: 'ended' });
             return res.status(400).json({ message: 'This auction has ended' });
         }
+
+        if (auction.bids) {
+            const bidsArray = Object.values(auction.bids);
+            if (bidsArray.length > 0) {
+                const highestBid = bidsArray.reduce((max, bid) => 
+                    bid.bidAmount > max.bidAmount ? bid : max
+                );
+                if (highestBid.userId === userId) {
+                    return res.status(400).json({ 
+                        message: 'You are already the highest bidder for this auction' 
+                    });
+                }
+            }
+        }
         
         const incrementPercentage = auction.incrementPercentage || 10;
         const minBidIncrement = (auction.StartingPrice * incrementPercentage) / 100;
