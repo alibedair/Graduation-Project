@@ -50,4 +50,13 @@ router.get('/get/:artistId',
     productController.getArtistProducts
 );
 
+router.delete('/delete/:productId',
+    authMiddleware,
+    roleMiddleware(['artist', 'admin']),
+    [
+        param('productId').isInt().withMessage('Product ID must be an integer')
+    ],
+    productController.deleteProduct
+);
+
 module.exports = router;

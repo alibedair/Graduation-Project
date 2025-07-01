@@ -1,7 +1,7 @@
 const Product = require('../models/product');
 const Category = require('../models/category');
 const Artist = require('../models/artist');
-const uploadBuffer = require('../utils/cloudinaryUpload');
+const { uploadBuffer, deleteImagesByPublicIds } = require('../utils/cloudinaryUpload');
 const Review = require('../models/Review');
 const { Sequelize } = require('sequelize');
 const AuctionRequest = require('../models/auctionRequest');
@@ -161,7 +161,7 @@ exports.updateProduct = async (req, res) => {
         if (req.files && req.files.image && req.files.image.length > 0) {
           const imageFile = req.files.image[0];
           const result = await uploadBuffer(imageFile.buffer, {
-            folder: 'products/images',
+            folder: `artists/${artist.userId}/products`,
             resource_type: 'image'
           });
           image = result.secure_url;
@@ -253,3 +253,41 @@ exports.getArtistProducts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.deleteProduct = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const artist = await Artist.findOne({where:{userId}});
+        if(!artist) {
+            return res.status(403).json({message: 'You are not authorized to delete a product'});
+        }
+        const productId = req.params.productId;
+        const product = await Product.findOne({where:{productId}});
+        if(!product) {
+            return res.status(404).json({message: 'Product not found'});
+        }
+        if(product.artistId !== artist.artistId) {
+            return res.status(403).json({message: 'Forbidden'});
+        }
+        
+        // Only allow deletion of normal type products
+        if(product.type !== 'normal') {
+            return res.status(400).json({
+                message: `Cannot delete ${product.type} products. Only normal products can be deleted.`
+            });
+        }
+
+        // Delete images from Cloudinary before deleting the product
+        if (product.image?.length > 0) {
+            const deleteResult = await deleteImagesByPublicIds(artist.userId, product.image);
+            if (!deleteResult.success) {
+                console.error('Failed to delete images from Cloudinary:', deleteResult.error);
+            }
+        }
+
+        await product.destroy();
+        res.status(200).json({message: 'Product deleted successfully'});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
