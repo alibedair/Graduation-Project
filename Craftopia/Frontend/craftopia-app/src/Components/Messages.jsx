@@ -14,6 +14,8 @@ const Messages = ({ responseId, onClose }) => {
     const inputRef = useRef(null);
     const token = localStorage.getItem("token");
     const [messageCount, setMessageCount] = useState(0);
+    const prevMessageCount = useRef(0);
+
 
     const getConversationByResponseId = async (responseId) => {
         const res = await fetch(`http://localhost:3000/msg/conversation/${responseId}`, {
@@ -41,6 +43,7 @@ const Messages = ({ responseId, onClose }) => {
     };
 
     useEffect(() => {
+        let interval;
         const fetchMessages = async () => {
             try {
                 const data = await getConversationByResponseId(responseId);
@@ -62,9 +65,14 @@ const Messages = ({ responseId, onClose }) => {
             }
         };
 
+        if (responseId) {
+            fetchMessages();
+            interval = setInterval(fetchMessages, 1000);
+        }
 
-        if (responseId) fetchMessages();
+        return () => clearInterval(interval);
     }, [responseId, token]);
+
 
     useEffect(() => {
         if (chatRef.current) {
