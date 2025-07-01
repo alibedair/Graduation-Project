@@ -10,11 +10,12 @@ const AdminAuctionManagement = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [scheduledStartDate, setScheduledStartDate] = useState('');
   const [scheduledDuration, setScheduledDuration] = useState('');
-const [adminNotes, setAdminNotes] = useState('');
-
+  const [adminNotes, setAdminNotes] = useState('');
+  const [artistMap, setArtistMap] = useState({});
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [errorRequests, setErrorRequests] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [todayBidCount, setTodayBidCount] = useState(0);
 
   const formatEndDate = (dateStr) => {
   if (!dateStr) return 'Unknown';
@@ -65,6 +66,7 @@ const [adminNotes, setAdminNotes] = useState('');
   }
 };
 
+
 const fetchAuctionRequests = async () => {
   setLoadingRequests(true);
   setErrorRequests(null);
@@ -95,10 +97,56 @@ const fetchAuctionRequests = async () => {
   }
 };
 
+const fetchArtists = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/artist/all', {
+      headers: commonHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch artists');
+
+    const data = await response.json();
+    const map = {};
+
+    data.artists.forEach(artist => {
+      map[artist.artistId] = artist.name;
+    });
+
+    setArtistMap(map);
+  } catch (err) {
+    console.error('Error fetching artists:', err);
+  }
+};
+
+const fetchTodayBids = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/bid/today-bids', {
+      headers: commonHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    setTodayBidCount(data.totalBids || 0);
+  } catch (err) {
+    console.error("Failed to fetch today's bids:", err);
+    setTodayBidCount(0); // fallback
+  }
+};
+
+const refreshAuctions = async () => {
+  await fetchAuctionRequests();
+  await fetchActiveAuctions();
+  await fetchTodayBids();
+};
 
   useEffect(() => {
     fetchAuctionRequests();
     fetchActiveAuctions();
+    fetchArtists();
+    fetchTodayBids();
   }, []);
 
   useEffect(() => {
@@ -146,8 +194,10 @@ const handleApproveRequest = async () => {
     }
 
     setFeedbackMessage('Auction request approved and scheduled.');
+    setTimeout(() => setFeedbackMessage(''), 3000);
     setPendingRequests(prev => prev.filter(req => req.requestId !== requestId));
     setSelectedRequest(null);
+    await refreshAuctions();
   } catch (err) {
     console.error("Error approving request:", err);
     setFeedbackMessage(`Error: ${err.message}`);
@@ -161,8 +211,9 @@ const handleDeclineRequest = async () => {
 
   const requestId = selectedRequest.requestId;
   const declineBody = {
-    adminNotes: declineReason || "no",
+    adminNotes: adminNotes || "No notes provided.",
   };
+
 
   try {
     const response = await fetch(`http://localhost:3000/auctionRequest/reject/${requestId}`, {
@@ -177,13 +228,63 @@ const handleDeclineRequest = async () => {
     }
 
     setFeedbackMessage('Auction request rejected.');
+    setTimeout(() => setFeedbackMessage(''), 3000);
     setPendingRequests(prev => prev.filter(req => req.requestId !== requestId));
     setSelectedRequest(null);
+    await refreshAuctions();
   } catch (err) {
     console.error("Error declining request:", err);
     setFeedbackMessage(`Error: ${err.message}`);
   }
 };
+
+
+const AuctionCard = ({ auction }) => (
+  <div className="bg-white border border-coral/20 rounded-lg shadow-sm p-6">
+    <div className="flex justify-between items-start">
+      <div className="flex-1">
+        <h3 className="text-lg font-semibold text-coral mb-2">
+          {auction.productDetails?.name || 'Untitled Product'}
+        </h3>
+        <p className="text-black/70 mb-2">
+          by: {artistMap[auction.artistId] || `Artist #${auction.artistId}`}
+        </p>
+
+        <div className="flex flex-col gap-1 text-sm text-black/60">
+          <div className="flex gap-4 items-center">
+            <span>Current bid: ${auction.currentPrice}</span>
+            <span>•</span>
+            <span>{auction.bidCount} bids</span>
+          </div>
+          <div className="flex gap-4 items-center">
+            {auction.status === "scheduled" && auction.startDate && (
+              <>
+                <span>Starts: {formatEndDate(auction.startDate)}</span>
+                <span>•</span>
+              </>
+            )}
+            <span>Ends: {formatEndDate(auction.endDate)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-end gap-2">
+        <span className={`px-3 py-1 ${
+          auction.status === 'active' ? 'bg-green-100 text-green-800' :
+          auction.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' :
+          auction.status === 'ended' ? 'bg-gray-200 text-gray-800' : ''
+        } rounded-full text-sm font-medium capitalize`}>
+          {auction.status}
+        </span>
+        <img
+          src={auction.productDetails?.image?.[0] || "/fallback.jpg"}
+          alt="Product"
+          className="w-24 h-24 object-cover rounded-md"
+        />
+      </div>
+    </div>
+  </div>
+);
 
 
   return (
@@ -209,7 +310,7 @@ const handleDeclineRequest = async () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-black/60 text-sm">Active Auctions</p>
-                <p className="text-2xl font-bold text-black">{activeAuctions.length}</p>
+                <p className="text-2xl font-bold text-black">{activeAuctions.filter(auction => auction.status === 'active').length}</p>
               </div>
               <Gavel className="h-8 w-8 text-coral" />
             </div>
@@ -218,7 +319,7 @@ const handleDeclineRequest = async () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-black/60 text-sm">Total Bids Today</p>
-                <p className="text-2xl font-bold text-black">47</p>
+                <p className="text-2xl font-bold text-black">{todayBidCount}</p>
               </div>
               <Users className="h-8 w-8 text-coral" />
             </div>
@@ -257,6 +358,26 @@ const handleDeclineRequest = async () => {
             >
               Active Auctions
             </button>
+            <button
+              onClick={() => setActiveTab('scheduled')}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                activeTab === 'scheduled'
+                  ? 'text-burgundy border-b-2 border-burgundy'
+                  : 'text-burgundy/60 hover:text-burgundy'
+              }`}
+            >
+              Scheduled Auctions
+            </button>
+            <button
+              onClick={() => setActiveTab('ended')}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                activeTab === 'ended'
+                  ? 'text-burgundy border-b-2 border-burgundy'
+                  : 'text-burgundy/60 hover:text-burgundy'
+              }`}
+            >
+              Ended Auctions
+            </button>
           </div>
 
           {feedbackMessage && (
@@ -280,192 +401,200 @@ const handleDeclineRequest = async () => {
                   const currentDuration = scheduledDuration || request.suggestedDuration;
                   return (
                     <div key={request.requestId}>
-                      <div key={request.requestId} className="bg-white border border-coral/20 rounded-lg shadow-sm overflow-hidden">
-    <div className="p-6">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-black/90 mb-2">
-            {request.product?.name || 'Untitled Product'}
-          </h3>
-<p className="text-black/70 mb-2 font-medium">
-  by {request.artist?.name || 'Unknown Artist'}
-</p>
+                    <div
+                      key={request.requestId}
+                      className="bg-white rounded-xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+                    >
+                      <div className="p-6 flex flex-col md:flex-row justify-between gap-6">
+                        {/* Product Info */}
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                            {request.product?.name || 'Untitled Product'}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-3 font-medium">
+                            by {request.artist?.name || 'Unknown Artist'}
+                          </p>
 
-          <div className="flex items-center gap-4 text-sm text-black/60">
-            <span>Starting bid: ${request.startingPrice}</span>
-            <span>•</span>
-            <span>Duration: {request.suggestedDuration} days</span>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() =>
-              setSelectedRequest((prev) =>
-                prev?.requestId === request.requestId ? null : request
-              )
-            }
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span>💰 Starting bid: ${request.startingPrice}</span>
+                            <span>•</span>
+                            <span>⏳ Duration: {request.suggestedDuration} days</span>
+                          </div>
+                        </div>
 
-            className="inline-flex items-center gap-2 bg-coral/10 hover:bg-burgundy/20 text-burgundy px-3 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            <Eye className="h-4 w-4" />
-            Review
-          </button>
-        </div>
-      </div>
+                        {/* Review Button */}
+                        <div className="flex items-start md:items-center">
+                          <button
+                            onClick={() =>
+                              setSelectedRequest((prev) =>
+                                prev?.requestId === request.requestId ? null : request
+                              )
+                            }
+                            className="inline-flex items-center gap-2 bg-coral/20 hover:bg-coral/30 text-burgundy px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                          >
+                            <Eye className="h-4 w-4" />
+                            {selectedRequest?.requestId === request.requestId ? 'Close' : 'Review'}
+                          </button>
+                        </div>
+                      </div>
 
-      {selectedRequest?.requestId === request.requestId && (
-        <div className="border-t border-coral/20 pt-6 mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <img 
-                src={request.product?.image?.[0] || "/fallback.jpg"} 
-                alt={request.product?.name || "Auction item"} 
-                className="w-full h-64 object-cover rounded-lg mb-4"
-              />
-
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-coral mb-2">Artist Information</h4>
-                  <p className="text-sm text-black/70">
-                    Rating: {request.artist?.averageRating || 'N/A'}/5
-                  </p>
-                  <p className="text-sm text-black/70">
-                    Previous sales: {request.product?.totalSales || 0}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-coral mb-2">Item Details</h4>
-                  <p className="text-sm text-black/70 mb-1">
-                    <strong>Materials:</strong> {request.product?.material || 'N/A'}
-                  </p>
-                  <p className="text-sm text-black/70">
-                    <strong>Dimensions:</strong> {request.product?.dimensions || 'N/A'}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-coral mb-2">Artist Notes</h4>
-                  <p className="text-sm text-black/70">
-                    {request.notes || 'No notes provided.'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-coral mb-2">Schedule Auction</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <label htmlFor={`startDate-${request.requestId}`} className="block text-sm font-medium text-black mb-1">
-                        Start Date and Time
-                      </label>
-                      <input 
-                        id={`startDate-${request.requestId}`}
-                        type="datetime-local"
-                        value={scheduledStartDate}
-                        onChange={(e) => setScheduledStartDate(e.target.value)}
-                        className="w-full p-2 border border-coral/30 rounded-md focus:outline-hidden focus:ring-2 focus:ring-coral focus:border-coral"
-                      />
+                      {/* Expanded Request Details */}
+                      {selectedRequest?.requestId === request.requestId && (
+                        <div className="bg-card/20 px-6 py-6 border-t border-gray-200">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Image + Info */}
+                            <div>
+                              <img
+                                src={request.product?.image?.[0] || "/fallback.jpg"}
+                                alt="Product"
+                                className="w-full h-60 object-cover rounded-lg shadow-sm mb-4"
+                              />
+                    <div className="text-sm text-gray-700 space-y-1">
+                      <p>
+                        <span className="font-medium">Materials:</span>{" "}
+                        {request.product?.material || 'N/A'}
+                      </p>
+                      <p>
+                        <span className="font-medium">Dimensions:</span>{" "}
+                        {request.product?.dimensions || 'N/A'}
+                      </p>
+                      <p>
+                        <span className="font-medium">Previous Sales:</span>{" "}
+                        {request.product?.totalSales || 0}
+                      </p>
+                      <p>
+                        <span className="font-medium">Artist Rating:</span>{" "}
+                        {request.artist?.averageRating || 'N/A'}/5
+                      </p>
+                      <p>
+                        <span className="font-medium">Description:</span>{" "}
+                        {request.product?.description || 'No description provided'}
+                      </p>
                     </div>
-                    <div>
-                      <label htmlFor={`duration-${request.requestId}`} className="block text-sm font-medium text-black mb-1">
-                        Duration (days)
-                      </label>
-                        <input 
-                          id={`duration-${request.requestId}`}
-                          type="number"
-                          min="1"
-                          value={currentDuration}
-                          onChange={(e) => setScheduledDuration(e.target.value)}
-                          className="w-full p-2 border border-coral/30 rounded-md focus:ring-2 focus:outline-hidden focus:ring-coral focus:border-coral"
-                        />
+
+                            </div>
+
+                            {/* Admin Controls */}
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-medium text-gray-800 mb-1 block">
+                                  Start Date & Time
+                                </label>
+                                <input
+                                  type="datetime-local"
+                                  value={scheduledStartDate}
+                                  onChange={(e) => setScheduledStartDate(e.target.value)}
+                                  className="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-sm font-medium text-gray-800 mb-1 block">
+                                  Duration (days)
+                                </label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={scheduledDuration || request.suggestedDuration}
+                                  onChange={(e) => setScheduledDuration(e.target.value)}
+                                  className="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-sm font-medium text-gray-800 mb-1 block">
+                                  Admin Notes
+                                </label>
+                                <textarea
+                                  rows="3"
+                                  placeholder="Notes for the artist..."
+                                  value={adminNotes}
+                                  onChange={(e) => setAdminNotes(e.target.value)}
+                                  className="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                />
+                              </div>
+
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={handleApproveRequest}
+                                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-md font-medium transition-colors"
+                                >
+                                  <Check className="inline-block mr-2 h-4 w-4" />
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={handleDeclineRequest}
+                                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-md font-medium transition-colors"
+                                >
+                                  <X className="inline-block mr-2 h-4 w-4" />
+                                  Decline
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     </div>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <button 
-                    onClick={handleApproveRequest}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
-                  >
-                    <Check className="h-4 w-4" />
-                    Approve
-                  </button>
-                  <button 
-                    onClick={handleDeclineRequest}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                    Decline
-                  </button>
-                </div>
-                <div>
-                  <label htmlFor={`declineReason-${request.requestId}`} className="block text-sm font-medium text-black mb-1">
-                    Notes 
-                  </label>
-                    <textarea
-                      id={`adminNotes-${request.requestId}`}
-                      className="w-full p-2 border focus:outline-hidden border-coral/30 rounded-md focus:ring-2 focus:ring-coral focus:border-coral"
-                      rows={3}
-                      placeholder="Provide notes for the artist..."
-                      value={adminNotes}
-                      onChange={(e) => setAdminNotes(e.target.value)}
-                    />
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-
- </div>
                   );
                 })}
               </div>
             </div>
           )}
+
 {activeTab === 'active' && (
   <div className="space-y-6">
     <h2 className="text-2xl font-bold text-black">Active Auctions</h2>
-    {activeAuctions.length === 0 ? (
+    {activeAuctions.filter(auction => auction.status === 'active').length === 0 ? (
       <p className="text-burgundy/70">No active auctions to display.</p>
     ) : (
       <div className="grid gap-6">
-        {activeAuctions.map((auction) => (
-          <div key={auction.id} className="bg-white border border-coral/20 rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-coral mb-2">{auction.productDetails?.name || 'Untitled Product'}</h3>
-                <p className="text-black/70 mb-2">by Artist ID: {auction.artistId}</p>
-                <div className="flex items-center gap-4 text-sm text-black/60">
-                  <span>Current bid: ${auction.currentPrice}</span>
-                  <span>•</span>
-                  <span>{auction.bidCount} bids</span>
-                  <span>•</span>
-                  <span>Ends: {formatEndDate(auction.endDate)}</span>
-
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium capitalize">
-                  {auction.status}
-                </span>
-                <img
-                  src={auction.productDetails?.image?.[0] || "/fallback.jpg"}
-                  alt="Product"
-                  className="w-24 h-24 object-cover rounded-md"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
+        {activeAuctions
+          .filter(auction => auction.status === 'active')
+          .map((auction) => (
+            <AuctionCard key={auction.id} auction={auction} />
+          ))}
       </div>
     )}
   </div>
 )}
+
+{activeTab === 'scheduled' && (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-bold text-black">Scheduled Auctions</h2>
+    {activeAuctions.filter(auction => auction.status === 'scheduled').length === 0 ? (
+      <p className="text-burgundy/70">No scheduled auctions to display.</p>
+    ) : (
+      <div className="grid gap-6">
+        {activeAuctions
+          .filter(auction => auction.status === 'scheduled')
+          .map((auction) => (
+            <AuctionCard key={auction.id} auction={auction} />
+          ))}
+      </div>
+    )}
+  </div>
+)}
+
+{activeTab === 'ended' && (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-bold text-black">Ended Auctions</h2>
+    {activeAuctions.filter(auction => auction.status === 'ended').length === 0 ? (
+      <p className="text-burgundy/70">No ended auctions to display.</p>
+    ) : (
+      <div className="grid gap-6">
+        {activeAuctions
+          .filter(auction => auction.status === 'ended')
+          .map((auction) => (
+            <AuctionCard key={auction.id} auction={auction} />
+          ))}
+      </div>
+    )}
+  </div>
+)}
+
+
 
 
         </div>

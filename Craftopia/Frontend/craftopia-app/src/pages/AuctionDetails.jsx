@@ -277,7 +277,6 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [id, token]);
 
-  // ✅ PLACE THIS CHECK **AFTER** useEffect
   if (!auction) {
     return <p className="text-gray-600 p-10 text-center">Loading...</p>;
   }

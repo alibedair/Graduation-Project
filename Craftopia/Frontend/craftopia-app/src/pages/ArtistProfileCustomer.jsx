@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '../Components/Footer';
 import { toast } from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
+import AbstractAuctionCard from '../Components/AbstractAuctionCard'; 
+
 
 
 const Card = ({ children, className = '' }) => {
@@ -125,9 +127,30 @@ const ArtistProfileCustomer = () => {
   const navigate = useNavigate();
   const [auctionProducts, setAuctionProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [galleryProducts, setGalleryProducts] = useState([]);
+
   
 
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
+  const mapProduct = (p, artistName = '') => ({
+  id: p.productId,
+  name: p.name,
+  price: p.price,
+  originalPrice: null,
+  image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
+  quantity: p.quantity || 0,
+  inStock: p.quantity > 0,
+  description: p.description || '',
+  dimensions: p?.dimensions || '',
+  material: p.material || '',
+  rating: p.averageRating || 0,
+  reviews: p.totalReviews || 0,
+  isOnSale: false,
+  type:p.type ,
+  category: p.category?.name || 'Handmade',
+  artist: artistName,
+});
+
 
   useEffect(() => {
     const fetchArtistData = async () => {
@@ -143,13 +166,24 @@ const ArtistProfileCustomer = () => {
         });
 
         const profileData = await profileRes.json();
-
-        const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
-          headers
-        });
-        const productData = await productRes.json();
-
         const a = profileData.artist;
+
+      const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
+        headers
+      });
+      const productData = await productRes.json();
+
+      // Combine and map all types of products
+      const mappedNormal = productData.products.map(p => mapProduct(p, 'normal', a.name));
+      const mappedAuction = productData.auctionProducts.map(p => mapProduct(p, 'auction', a.name));
+      const mappedCustomizable = productData.customizableProducts.map(p => mapProduct(p, 'customizable', a.name));
+
+
+      setGalleryProducts([...mappedNormal, ...mappedAuction, ...mappedCustomizable]);
+
+      // For "Products" tab only show normal ones
+      setProducts(mappedNormal);
+
 
         setArtist({
           id: a.artistId,
@@ -171,23 +205,24 @@ const ArtistProfileCustomer = () => {
           }
         });
 
-        setProducts(productData.products.map(p => ({
-          id: p.productId,
-          name: p.name,
-          price: p.price,
-          originalPrice: null,
-          image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
-          quantity: p.quantity || 0,
-          inStock: p.quantity > 0,
-          description: p.description || '',
-          dimensions: p.dimensions || '',
-          material: p.material || '',
-          rating: p.averageRating || 0,
-          reviews: p.totalReviews || 0,
-          isOnSale: false,
-          category: p.category.name || 'Handmade',
-          artist: { username: a.name }
-        })));
+        // setProducts(normalProducts.map(p => ({
+        //   id: p.productId,
+        //   name: p.name,
+        //   price: p.price,
+        //   originalPrice: null,
+        //   image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
+        //   quantity: p.quantity || 0,
+        //   inStock: p.quantity > 0,
+        //   description: p.description || '',
+        //   dimensions: p?.dimensions || '',
+        //   material: p.material || '',
+        //   rating: p.averageRating || 0,
+        //   reviews: p.totalReviews || 0,
+        //   isOnSale: false,
+        //   type: p.type || "normal",
+        //   category: p.category.name || 'Handmade',
+        //   artist: { username: a.name }
+        // })));
 
 
         setLoading(false);
@@ -224,23 +259,34 @@ const ArtistProfileCustomer = () => {
     checkFollowStatus();
 
     const fetchAuctionProducts = async () => {
-  try {
-    const res = await fetch(`http://localhost:3000/auction/artist-product/${id}`);
-    const data = await res.json();
+      try {
+        const res = await fetch(`http://localhost:3000/auction/artist-product/${id}`);
+        const data = await res.json();
 
-    setAuctionProducts(data.products.map((p) => ({
-      id: p.productId,
-      name: p.name,
-      image: Array.isArray(p.image) && p.image.length > 0 ? p.image[0] : "https://via.placeholder.com/300",
-      description: p.description,
-      dimensions: p.dimensions,
-      quantity: p.quantity,
-      material: p.material,
-    })));
-  } catch (err) {
-    console.error("Error fetching auction products", err);
-  }
-};
+        const activeAuctions = data.auctions.filter(a => a.auction.status === 'active'||a.auction.status === 'scheduled');
+
+        const formattedAuctionProducts = activeAuctions.map(a => ({
+          id: a.auction.id,
+          name: a.auction.productDetails?.name || "Unnamed",
+          image: Array.isArray(a.auction.productDetails?.image) && a.auction.productDetails.image.length > 0
+            ? a.auction.productDetails.image[0]
+            : "https://via.placeholder.com/300",
+          description: a.auction.productDetails?.description || "",
+          dimensions: a.product.dimensions || "",
+          quantity: a.product.quantity || 0,
+          material: a.product.material || "",
+          currentPrice: a.auction.currentPrice,
+          endDate: a.auction.endDate,
+          category:a.product.category.name,
+          status: a.auction.status,
+        }));
+
+        setAuctionProducts(formattedAuctionProducts);
+      } catch (err) {
+        console.error("Error fetching auction products", err);
+      }
+    };
+
 
 fetchAuctionProducts();
 
@@ -294,6 +340,20 @@ fetchAuctionProducts();
       addToWishlist(product);
     }
   };
+
+  const formatTimeLeft = (endDate) => {
+  const end = new Date(endDate);
+  const now = new Date();
+  const diff = end - now;
+
+  if (diff <= 0) return 'Ended';
+
+  const mins = Math.floor((diff / 1000 / 60) % 60);
+  const hours = Math.floor((diff / 1000 / 60 / 60) % 24);
+  const days = Math.floor(diff / 1000 / 60 / 60 / 24);
+
+  return `${days ? `${days}d ` : ''}${hours}h ${mins}m`;
+};
 
   const goToProduct = (id) => {
   navigate(`/product/${id}`);
@@ -440,7 +500,7 @@ fetchAuctionProducts();
         {/* TABS */}
         <Tabs defaultValue="products" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4 bg-card">
-              <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="auctionProducts">Auction Products</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
@@ -472,7 +532,7 @@ fetchAuctionProducts();
           <TabsContent value="products" className="space-y-6">
             <h2 className="text-2xl font-bold text-burgundy">Products ({artist.stats.products})</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product, index) => (
+              {products.filter(p => p.type === 'normal').map((product, index) => (
                 <motion.div
                   key={product.productId || product.id || index}
                   initial={{ y: 50, opacity: 0 }}
@@ -497,112 +557,100 @@ fetchAuctionProducts();
                     }}
                   />
 
-{console.log("Rendering product:", product)}
+                  {console.log("Rendering product:", product)}
                 </motion.div>
               ))}
             </div>
           </TabsContent>
 
 
-          <TabsContent value="gallery" className="space-y-6">
-            <h2 className="text-2xl font-bold text-burgundy">Gallery</h2>
+<TabsContent value="gallery" className="space-y-6">
+  <h2 className="text-2xl font-bold text-burgundy">Gallery</h2>
 
-            <div className="mt-4">
-              <div className="flex justify-start gap-6 mb-8">
+  <div className="mt-4">
+    <div className="flex justify-start gap-6 mb-8">
 
-                <div>
-                  {loadingProducts && <p className="text-center py-8">Loading products...</p>}
-                  {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
+      <div>
+        {loadingProducts && <p className="text-center py-8">Loading products...</p>}
+        {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {products.length === 0 && !loadingProducts && (
-                      <p className="col-span-full text-gray-500 py-8">No products found in your gallery.</p>
-                    )}
-                    {products.map((product) => (
-                      <div
-                        key={product.id}
-                        className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                      >
-                        <div className="aspect-square relative overflow-hidden">
-                          <img
-                            src={product.image?.[0] || "https://via.placeholder.com/300"}
-                            alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                          />
-                        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {galleryProducts.length === 0 && !loadingProducts && (
+            <p className="col-span-full text-gray-500 py-8">No products found in your gallery.</p>
+          )}
 
-                      </div>
-                    ))}
-                    {auctionProducts.length === 0 && !loadingProducts ? (
-                      <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
-                    ) : (
-                      auctionProducts.map((product) => (
-                        <div
-                          key={product.id}
-                          className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                        >
-                          <div className="aspect-square relative overflow-hidden">
-                            <img
-                              src={product.image || "https://via.placeholder.com/300"}
-                              alt={product.name}
-                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                            />
-                          </div>
+          {galleryProducts.map((product, index) => (
+            <div
+              key={product.productId || product._id || index}
+              className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <div className="aspect-square relative overflow-hidden">
+                <img
+                  src={Array.isArray(product.image) ? product.image[0] : product.image || "https://via.placeholder.com/300"}
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                />
 
-                          <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                            AUCTION
-                          </div>
-
-                          
-                        </div>
-                      ))
-                    )}
+                {product.type === "customizable" && (
+                  <div className="absolute top-3 left-3 bg-yellow-500/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                    CUSTOMIZABLE
                   </div>
-                </div>            
+                )}
+
+                {product.type === "auction" && (
+                  <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                    AUCTION
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</TabsContent>
+
+          <TabsContent value="auctionProducts" className="space-y-6">
+            <h2 className="text-2xl font-bold text-burgundy">Auction Products</h2>
+            <div>
+              {loadingProducts && <p className="text-center py-8">Loading auction products...</p>}
+              {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {auctionProducts.length === 0 && !loadingProducts ? (
+                  <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
+                ) : (
+                  auctionProducts.map((auction, index) => (
+                    <motion.div
+                      key={auction.id}
+                      initial={{ y: 50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      whileHover={{ scale: 1.03 }}
+                      className="group cursor-pointer"
+                    >
+                      <AbstractAuctionCard
+                        auction={{
+                          id: auction.id,
+                          title: auction.name,
+                          image: auction.image,
+                          currentBid: auction.currentPrice,
+                          bidCount: auction.bidCount || 0,
+                          timeLeft: formatTimeLeft(auction.endDate),
+                          status: auction.status,
+                          category: auction.category || 'Handmade',
+                          artist: artist.name, // or artist.username
+                        }}
+                        index={index}
+                      />
+                    </motion.div>
+                  ))
+                )}
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="auctionProducts" className="space-y-6">
-            <h2 className="text-2xl font-bold text-burgundy">Auction Products</h2>
-                  <div>
-                  {loadingProducts && <p className="text-center py-8">Loading auction products...</p>}
-                  {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {products.length === 0 && !loadingProducts && (
-                      <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
-                    )}
-                    {auctionProducts.length === 0 && !loadingProducts ? (
-                      <p className="col-span-full text-gray-500 py-8">No auction products found.</p>
-                    ) : (
-                      auctionProducts.map((product) => (
-                        <div
-                          key={product.id}
-                          onClick={() => navigate(`/auction/${product.id}`)}
-                          className="cursor-pointer relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                        >
-                          <div className="aspect-square relative overflow-hidden">
-                            <img
-                              src={product.image || "https://via.placeholder.com/300"}
-                              alt={product.name}
-                              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                            />
-                          </div>
-
-                          <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                            AUCTION
-                          </div>
-
-                          
-                        </div>
-                      ))
-                    )}
-
-
-
-                  </div>
-                </div>
-          </TabsContent>
            <TabsContent value="reviews" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-burgundy">

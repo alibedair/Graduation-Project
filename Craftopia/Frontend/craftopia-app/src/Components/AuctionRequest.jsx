@@ -78,7 +78,7 @@ const AuctionRequest = () => {
         throw new Error(errorData.message || 'Failed to fetch categories.');
       }
       const data = await response.json();
-      setCategoriesList(data.categories || []); // Assuming response is { categories: [...] }
+      setCategoriesList(data.categories || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
       setCategoriesError(err.message || 'Failed to load categories.');
@@ -211,6 +211,7 @@ const AuctionRequest = () => {
     }
 
     setSuccessMessage('Auction request submitted successfully!');
+    setTimeout(() => SuccessMessage(''), 3000);
     setAuctionFormData({
       title: '',
       category: '',
@@ -233,15 +234,21 @@ const AuctionRequest = () => {
 };
 
 
-  // Maps backend status to frontend display
-  const getStatusClasses = (status) => {
-    switch (status && status.toLowerCase()) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-green-100 text-green-800';
-      case 'ended': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+const getStatusClasses = (status) => {
+  switch ((status || '').toLowerCase()) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300';
+    case 'scheduled':
+      return 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300';
+    case 'active':
+      return 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300';
+    case 'ended':
+      return 'bg-red-100 text-red-700 ring-1 ring-red-300';
+    default:
+      return 'bg-gray-100 text-gray-700 ring-1 ring-gray-300';
+  }
+};
+
 
     return (
         <>
@@ -485,31 +492,72 @@ const AuctionRequest = () => {
                             {!loading && auctionRequests.length > 0 && (
                                 <div className="divide-y divide-coral/20">
                                   {auctionRequests.map((request) => (
-                                      <div key={request.requestId} className="p-6 flex items-center justify-between">
-                                        <div className="flex-1">
-                                          <h4 className="font-medium text-burgundy">{request.product.name || 'Product Title'}</h4>
-                                          <p className="text-sm text-burgundy/60">
-                                            {request.product.categoryName || 'Category'} • Starting bid: ${request.startingPrice}
-                                          </p>
-                                          <p className="text-xs text-burgundy/40">
-                                            Submitted: {new Date(request.createdAt).toLocaleDateString()}
-                                          </p>
-                                          {request.status === 'declined' && request.reason && (
-                                            <p className="text-xs text-red-600 mt-1">Reason: {request.reason}</p>
-                                          )}
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusClasses(request.status)}`}>
-                                            {request.status && request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    <div
+                                      key={request.requestId}
+                                      className="group relative flex items-start gap-4 p-6 border border-coral/20 hover:shadow-lg transition bg-white"
+                                    >
+                                      {/* Product Info */}
+                                      <div className="flex-1">
+                                        <h4 className="text-lg font-semibold text-gray-800 group-hover:text-[#7a162e] transition">
+                                          {request.product?.name || 'Product Title'}
+                                        </h4>
+
+                                        <div className="text-sm text-gray-600 mt-1 flex flex-wrap items-center gap-2">
+                                          <span className="inline-flex items-center gap-1">
+                                            <DollarSign className="w-4 h-4 text-emerald-500" />
+                                            Starting Bid: <strong className="text-gray-800">{request.startingPrice} EGP</strong>
                                           </span>
-                                          {request.status === 'declined' && (
-                                            <button className="text-burgundy hover:text-coral text-sm font-medium">
-                                              Resubmit
-                                            </button>
-                                          )}
+                                          <span className="inline-flex items-center gap-1">
+                                            <Package className="w-4 h-4 text-indigo-500" />
+                                            {request.product?.category?.name || 'Category'}
+                                          </span>
                                         </div>
+
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Submitted on {new Date(request.createdAt).toLocaleDateString()}
+                                        </p>
+
+                                        {/* Scheduled / Active / Ended Details */}
+                                        {request.status === 'scheduled' && (
+                                          <div className="mt-2 text-sm text-gray-700 space-y-1">
+                                            <p><Clock className="inline-block w-4 h-4 mr-1" /> <strong>Start:</strong> {new Date(request.scheduledStartDate).toLocaleString()}</p>
+                                            <p><Clock className="inline-block w-4 h-4 mr-1" /> <strong>End:</strong> {new Date(request.scheduledEndDate).toLocaleString()}</p>
+                                            {request.adminNotes && (
+                                              <p className="text-gray-500 italic">
+                                                <AlertCircle className="inline-block w-4 h-4 mr-1 text-yellow-600" />
+                                                {request.adminNotes}
+                                              </p>
+                                            )}
+                                          </div>
+                                        )}
+                                        {(request.status === 'active' || request.status === 'ended') && request.scheduledEndDate && (
+                                          <p className="mt-2 text-sm text-gray-600">
+                                            <Clock className="inline-block w-4 h-4 mr-1" />
+                                            <strong>End Date:</strong> {new Date(request.scheduledEndDate).toLocaleString()}
+                                          </p>
+                                        )}
+                                        {request.adminNotes && request.status !== 'scheduled' && (
+                                          <p className="mt-2 text-sm text-gray-500 italic">
+                                            <AlertCircle className="inline-block w-4 h-4 mr-1 text-yellow-600" />
+                                            {request.adminNotes}
+                                          </p>
+                                        )}
                                       </div>
+
+                                      {/* Status Badge */}
+                                      <div className="flex items-center">
+                                        <span
+                                          className={`px-3 py-1 rounded-full text-xs font-semibold transition duration-300 ${getStatusClasses(
+                                            request.status
+                                          )}`}
+                                        >
+                                          {request.status?.charAt(0).toUpperCase() + request.status.slice(1)}
+                                        </span>
+                                      </div>
+                                    </div>
                                   ))}
+
+
                                 </div>
                             )}
                           </div>
