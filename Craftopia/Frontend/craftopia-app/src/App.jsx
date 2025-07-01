@@ -53,7 +53,6 @@ function AppContent() {
   return (
     <>
       {!hideNavbar && <Navbar />}
-
       <Routes>
         <Route
           path="/"
@@ -125,7 +124,7 @@ export default function App() {
           <Router>
             <ScrollToTop />
             <AppContent />
-            <Toaster position="top-right" reverseOrder={false} />
+            <Toaster position="top-center" reverseOrder={false} />
           </Router>
         </CartProvider>
       </WishlistProvider>

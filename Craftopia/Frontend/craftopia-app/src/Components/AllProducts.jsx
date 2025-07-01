@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { motion } from "framer-motion";
-
+import { FaTrash } from "react-icons/fa";
+import toast from "react-hot-toast";
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -96,11 +97,40 @@ const AllProducts = () => {
       });
 
       if (!response.ok) throw new Error("Update failed");
-      alert("Product updated successfully");
+      toast.success("Product updated successfully!");
       fetchProducts();
       setExpandedProductId(null);
     } catch (err) {
-      alert(err.message);
+      toast.error(`Update failed: ${err.message}`);
+    }
+  };
+
+
+  const handleDeleteProduct = async (productId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this product?");
+    if (!confirmed) return;
+    const previousProducts = [...products];
+    setProducts((prev) => prev.filter((p) => p.productId !== productId));
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:3000/product/delete/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Delete failed");
+      }
+
+      toast.success("Product deleted successfully!");
+    } catch (err) {
+      setProducts(previousProducts);
+      toast.error(`Error: ${err.message}`);
     }
   };
 
@@ -168,24 +198,32 @@ const AllProducts = () => {
               key={product.productId}
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.3 }}
               whileHover={{ y: -5 }}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-auto"
             >
+
               <div className="relative w-full">
                 <img
                   src={product.image?.[0] || "https://via.placeholder.com/300"}
                   alt={product.name}
                   className="w-full h-64 object-cover rounded-t-2xl transition-transform duration-300 hover:scale-105"
                 />
-
                 <span
                   className={`absolute top-4 right-4 px-3 py-1 rounded-full shadow text-sm font-semibold ${product.quantity > 0 ? "bg-[#e07385] text-white" : "bg-red-100 text-red-800"
                     }`}
                 >
                   {product.quantity > 0 ? "In Stock" : "Out of Stock"}
                 </span>
+                <button
+                  onClick={() => handleDeleteProduct(product.productId)}
+                  className="absolute top-4 left-4 p-2 rounded-full bg-white text-gray-700 shadow-md hover:bg-red-100 hover:text-red-800 transition-all duration-300"
+                  title="Delete Product"
+                >
+                  <FaTrash className="text-base" />
+                </button>
               </div>
+
 
               <div className="p-5 flex flex-col h-auto">
                 {!isExpanded ? (
@@ -201,6 +239,7 @@ const AllProducts = () => {
                       <FaEdit className="text-sm" />
                       Edit
                     </button>
+
                   </>
                 ) : (
                   <>
