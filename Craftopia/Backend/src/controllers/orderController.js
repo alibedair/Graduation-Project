@@ -221,13 +221,13 @@ exports.shipOrder = async (req, res) => {
         const userId = req.user.id;
         const {respondId} = req.params;
         const respond = await CustomizationResponse.findByPk(respondId);
-        const request = await CustomizationRequest.findByPk(respond.requestId);
         if (!respond) {
             return res.status(404).json({ message: 'Customization response not found' });
         }
         if (respond.status !== 'ACCEPTED') {
             return res.status(400).json({ message: 'Customization response is not accepted' });
         }
+        const request = await CustomizationRequest.findByPk(respond.requestId);
         const artist = await Artist.findOne({ where: { userId } });
         const realArtist = await Artist.findByPk(respond.artistId);
         if (artist.artistId !== realArtist.artistId) {
@@ -254,7 +254,7 @@ exports.shipOrder = async (req, res) => {
         order.status = 'Shipped';
         order.shippedAt = new Date();
         await order.save();
-        const productOrder = await Product_Order.create({
+        await Product_Order.create({
             orderId: order.orderId,
             productId: product.productId,
             quantity: 1
