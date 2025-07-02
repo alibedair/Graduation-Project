@@ -96,7 +96,8 @@ exports.getSalesByArtist = async (req, res) => {
                 message: 'Artist ID must be a number'
             });
         }
-       if(role== 'artist' && req.user.id != artistId) {
+        const artist = await Artist.findByPk(artistId);
+       if(role== 'artist' && req.user.id != artist.userId) {
             return res.status(403).json({
                 success: false,
                 message: 'Forbidden, you do not have permission to access this resource'
