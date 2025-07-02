@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, ChevronDown, Settings, Upload, Edit, Trash2, Package, DollarSign, Users, Star, Clock, Plus, Menu, ShoppingCart, User, Heart, Search, Gavel, AlertCircle, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -7,6 +9,8 @@ const AuctionRequest = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const [showAuctionRequestForm, setShowAuctionRequestForm] = useState(false);
+  const navigate = useNavigate();
+
 
   const [auctionFormData, setAuctionFormData] = useState({
     title: '',
@@ -96,7 +100,7 @@ const AuctionRequest = () => {
   const handleShipAuctionProduct = async (auctionId) => {
   const token = getAuthToken();
   if (!token) {
-    alert('You must be logged in to perform this action.');
+    toast.error('You must be logged in to perform this action.');
     return;
   }
 
@@ -113,11 +117,11 @@ const AuctionRequest = () => {
       throw new Error(errorData.message || 'Failed to create shipment.');
     }
 
-    alert('Shipment created successfully!');
-    fetchArtistAuctionRequests(); // Refresh the data
+    toast.success('Shipment created successfully!');
+    fetchArtistAuctionRequests();
   } catch (error) {
     console.error('Error creating shipment:', error);
-    alert(error.message || 'Something went wrong.');
+    toast.error(error.message || 'Something went wrong.');
   }
 };
 
@@ -523,7 +527,14 @@ const getStatusClasses = (status) => {
                                   {auctionRequests.map((request) => (
                                     <div
                                       key={request.requestId}
-                                      className="group relative flex items-start gap-4 p-6 border border-coral/20 hover:shadow-lg transition bg-white"
+                                      className={`cursor-pointer group relative flex items-start gap-4 p-6 border border-coral/20 transition bg-white ${
+                                      request?.auctionId ? 'hover:shadow-lg cursor-pointer' : 'opacity-60 cursor-not-allowed'
+                                    }`}
+                                    onClick={() => {
+                                      if (request?.auctionId) {
+                                        navigate(`/auction/${request?.auctionId}`);
+                                      }
+                                    }}
                                     >
                                       {/* Product Info */}
                                       <div className="flex-1">
@@ -559,20 +570,17 @@ const getStatusClasses = (status) => {
                                             )}
                                           </div>
                                         )}
-                                        {(request.status === 'active' || request.status === 'ended') && request.scheduledEndDate && (
-                                          <p className="mt-2 text-sm text-gray-600">
-                                            <Clock className="inline-block w-4 h-4 mr-1" />
-                                            <strong>End Date:</strong> {new Date(request.scheduledEndDate).toLocaleString()}
-                                          </p>
-                                        )}
-                                        {request.status === 'ended' && (
+
+                                        {request.auction.status === 'ended' && (
+                                          <>
                                           <button
-                                            onClick={() => handleShipAuctionProduct(request.requestId)}
+                                            onClick={() => handleShipAuctionProduct(request.auction?.auctionId)}
                                             className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
                                           >
                                             <Package className="w-4 h-4" />
                                             Ship Product
                                           </button>
+                                          </>
                                         )}
 
                                         {request.adminNotes && request.status !== 'scheduled' && (
@@ -583,8 +591,8 @@ const getStatusClasses = (status) => {
                                         )}
                                       </div>
 
-                                      {/* Status Badge */}
-                                      <div className="flex items-center">
+                                      {/* Status Badges */}
+                                      <div className="flex flex-col items-end gap-1">
                                         <span
                                           className={`px-3 py-1 rounded-full text-xs font-semibold transition duration-300 ${getStatusClasses(
                                             request.status
@@ -592,7 +600,18 @@ const getStatusClasses = (status) => {
                                         >
                                           {request.status?.charAt(0).toUpperCase() + request.status.slice(1)}
                                         </span>
+
+                                        {request.auction?.status && (
+                                          <span
+                                            className={`px-3 py-1 rounded-full text-xs font-semibold transition duration-300 ${getStatusClasses(
+                                              request.auction.status
+                                            )}`}
+                                          >
+                                            Auction: {request.auction.status.charAt(0).toUpperCase() + request.auction.status.slice(1)}
+                                          </span>
+                                        )}
                                       </div>
+
                                     </div>
                                   ))}
 

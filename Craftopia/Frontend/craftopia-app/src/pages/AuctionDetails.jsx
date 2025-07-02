@@ -49,7 +49,7 @@ const CountdownTimer = ({ endTime, status}) => {
 };
 
 // Embedded Bid History Component
-const BidHistory = ({ bids , currentUser}) => {
+const BidHistory = ({ bids, currentUser, auctionHasEnded }) => {
   return (
     <div className="bg-gray-50 rounded-xl p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -90,11 +90,12 @@ const BidHistory = ({ bids , currentUser}) => {
                 <div className="font-bold text-lg">
                   ${bid.bidAmount.toLocaleString()}
                 </div>
-                {index === 0 && (
-                  <div className="text-xs text-green-600 font-medium">
-                    WINNING BID
-                  </div>
-                )}
+                  {index === 0 && (
+                    <div className="text-xs font-medium text-green-600">
+                      {auctionHasEnded ? "WINNING BID" : "HIGHEST BID"}
+                    </div>
+                  )}
+
               </div>
             </motion.div>
           );
@@ -591,7 +592,7 @@ const handleBidSubmit = async () => {
                   <h2 className="text-xl font-semibold">Bidding History</h2>
                 </div>
                 <div className="p-6">
-                  <BidHistory bids={auction.bids} currentUser={currentUser} />
+                  <BidHistory bids={auction.bids} currentUser={currentUser} auctionHasEnded={auctionHasEnded} />
 
                 </div>
               </motion.div>
