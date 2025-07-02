@@ -41,6 +41,14 @@ exports.placeBid = async (req, res) => {
         if (auction.bids) {
             const bidsArray = Object.values(auction.bids);
             if (bidsArray.length > 0) {
+                const userExistingBid = bidsArray.find(bid => bid.userId === userId);
+                if (userExistingBid) {
+                    return res.status(400).json({ 
+                        message: 'You have already placed a bid on this auction. Please use the update bid feature to modify your bid.',
+                        existingBidAmount: userExistingBid.bidAmount,
+                    });
+                }
+
                 const highestBid = bidsArray.reduce((max, bid) => 
                     bid.bidAmount > max.bidAmount ? bid : max
                 );
@@ -53,7 +61,7 @@ exports.placeBid = async (req, res) => {
         }
         
         const incrementPercentage = auction.incrementPercentage || 10;
-        const minBidIncrement = (auction.StartingPrice * incrementPercentage) / 100;
+        const minBidIncrement = (auction.startingPrice * incrementPercentage) / 100;
         const minimumBid = auction.currentPrice + minBidIncrement;
         
         if (parseFloat(bidAmount) < minimumBid) {
@@ -275,5 +283,155 @@ exports.getTodayBids = async (req, res) => {
     } catch (error) {
         console.error('Error getting today\'s bids:', error);
         return res.status(500).json({message: 'Internal server error'});
+    }
+};
+
+exports.updateBid = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        const userId = req.user.id;
+        const customer = await Customer.findOne({where: {userId}});
+
+        if (!customer) {
+            return res.status(403).json({message: 'Only customers can update bids'});
+        }
+        const { auctionId, newBidAmount } = req.body;
+        const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
+        const auction = auctionSnapshot.val();
+        
+        if (!auction) {
+            return res.status(404).json({ message: 'Auction not found' });
+        }
+        if (auction.status !== 'active') {
+            return res.status(400).json({ message: 'This auction is not active' });
+        }
+        const endTime = new Date(auction.endDate);
+        const now = new Date();
+        if (now > endTime) {
+            await firebase_db.ref(`auctions/${auctionId}`).update({ status: 'ended' });
+            return res.status(400).json({ message: 'This auction has ended' });
+        }
+
+        if (!auction.bids) {
+            return res.status(404).json({ message: 'No bids found for this auction' });
+        }
+
+        let userBidId = null;
+        let existingBid = null;
+        Object.entries(auction.bids).forEach(([bidId, bid]) => {
+            if (bid.userId === userId) {
+                userBidId = bidId;
+                existingBid = bid;
+            }
+        });
+
+        if (!existingBid) {
+            return res.status(404).json({ message: 'You have not placed a bid on this auction' });
+        }
+        const bidsArray = Object.values(auction.bids);
+        const highestBid = bidsArray.reduce((max, bid) => 
+            bid.bidAmount > max.bidAmount ? bid : max
+        );
+
+        if (highestBid.userId === userId) {
+            return res.status(400).json({ 
+                message: 'You cannot update your bid because you are already the highest bidder' 
+            });
+        }
+
+        const incrementPercentage = auction.incrementPercentage || 10;
+        const minBidIncrement = (auction.startingPrice * incrementPercentage) / 100;
+
+        if (parseFloat(newBidAmount) <= existingBid.bidAmount) {
+            return res.status(400).json({ 
+                message: `Bid must be at least ${(existingBid.bidAmount + 0.01).toFixed(2)}`,
+                minimumBid: (existingBid.bidAmount + 0.01).toFixed(2)
+            });
+        }
+        const otherBids = bidsArray.filter(bid => bid.userId !== userId);
+        if (otherBids.length > 0) {
+            const highestOtherBid = otherBids.reduce((max, bid) => 
+                bid.bidAmount > max.bidAmount ? bid : max
+            );
+            
+            const minimumUpdateBid = highestOtherBid.bidAmount + minBidIncrement;
+            if (parseFloat(newBidAmount) < minimumUpdateBid) {
+                return res.status(400).json({ 
+                    message: `Updated bid must be at least ${minimumUpdateBid.toFixed(2)}`,
+                    minimumBid: minimumUpdateBid.toFixed(2)
+                });
+            }
+        }
+        const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
+        
+        auctionRef.transaction((currentAuction) => {
+            if (!currentAuction) {
+                return null; 
+            }
+            
+            if (currentAuction.status !== 'active') {
+                return;
+            }
+            if (currentAuction.bids && currentAuction.bids[userBidId]) {
+                currentAuction.bids[userBidId] = {
+                    ...currentAuction.bids[userBidId],
+                    bidAmount: parseFloat(newBidAmount),
+                    timestamp: formatToLocaleString(now),
+                    updatedAt: formatToLocaleString(now)
+                };
+
+                currentAuction.currentPrice = parseFloat(newBidAmount);
+                currentAuction.lastBidTime = formatToLocaleString(now);
+                currentAuction.lastBidder = userId;
+            }
+            
+            return currentAuction;
+        }, (error, committed, snapshot) => {
+            if (error) {
+                console.error('Error updating bid:', error);
+                return res.status(500).json({ message: 'Error updating bid: ' + error.message });
+            }
+            
+            if (!committed) {
+                return res.status(400).json({ message: 'Bid could not be updated. Please try again.' });
+            }
+            (async () => {
+                try {
+                    const user = await User.findByPk(userId);
+                    if (user && user.email) {
+                        const updatedAuction = snapshot.val();
+                        const bidDetails = {
+                            productName: updatedAuction.productDetails?.name || 'Auction Item',
+                            bidAmount: parseFloat(newBidAmount || 0).toFixed(2),
+                            currentHighestBid: parseFloat(updatedAuction.currentPrice || 0).toFixed(2),
+                            auctionEndTime: updatedAuction.endDate,
+                            isHighestBidder: updatedAuction.lastBidder === userId,
+                            isUpdate: true
+                        };
+                        
+                        await sendBidReceivedEmail(user.email, customer.name || 'Valued Customer', bidDetails);
+                    }
+                } catch (emailError) {
+                    console.error('Error sending bid update notification email:', emailError);
+                }
+            })();
+            
+            const updatedAuction = snapshot.val();
+            return res.status(200).json({ 
+                message: 'Bid updated successfully',
+                bidId: userBidId,
+                oldBidAmount: existingBid.bidAmount,
+                newBidAmount: parseFloat(newBidAmount),
+                currentPrice: updatedAuction.currentPrice,
+                bidCount: updatedAuction.bidCount
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error updating bid:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
