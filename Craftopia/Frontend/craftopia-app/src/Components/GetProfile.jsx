@@ -142,6 +142,11 @@ const GetProfile = ({ setActiveTab }) => {
 
   if (!profile) return <p className="text-gray-600">Loading profile...</p>;
 
+  const sortedNormalProducts = [...products].sort(
+    (a, b) => (b.sellingNumber || 0) - (a.sellingNumber || 0)
+  );
+  const bestSellingId = sortedNormalProducts[0]?.productId;
+  const leastSellingId = sortedNormalProducts[sortedNormalProducts.length - 1]?.productId;
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -223,8 +228,8 @@ const GetProfile = ({ setActiveTab }) => {
           <button
             onClick={() => setActiveSection("gallery")}
             className={`px-6 py-3 text-base rounded-full font-semibold transition duration-200 ${activeSection === "gallery"
-                ? "bg-[#E07385] text-white shadow-md"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              ? "bg-[#E07385] text-white shadow-md"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
           >
             Gallery Products
@@ -233,8 +238,8 @@ const GetProfile = ({ setActiveTab }) => {
           <button
             onClick={() => setActiveSection("auction")}
             className={`px-6 py-3 text-base rounded-full font-semibold transition duration-200 ${activeSection === "auction"
-                ? "bg-[#E07385] text-white shadow-md"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              ? "bg-[#E07385] text-white shadow-md"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
           >
             Auction Products
@@ -243,8 +248,8 @@ const GetProfile = ({ setActiveTab }) => {
           <button
             onClick={() => setActiveSection("customized")}
             className={`px-6 py-3 text-base rounded-full font-semibold transition duration-200 ${activeSection === "customized"
-                ? "bg-[#E07385] text-white shadow-md"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              ? "bg-[#E07385] text-white shadow-md"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
           >
             Customized Products
@@ -275,6 +280,18 @@ const GetProfile = ({ setActiveTab }) => {
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
+                    {product.productId === bestSellingId && (
+                      <div className="absolute top-3 right-3 bg-[#E07385] text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                        Best Selling
+                      </div>
+                    )}
+
+                    {product.productId === leastSellingId && (
+                      <div className="absolute top-3 right-3 bg-black text-[#E07385] text-xs font-bold px-2 py-1 rounded-full z-10">
+                        Least Selling
+                      </div>
+                    )}
+
                     {product.type === "auction" && (
                       <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full">
                         AUCTION
