@@ -100,7 +100,7 @@ const AuctionRequest = () => {
   const handleShipAuctionProduct = async (auctionId) => {
   const token = getAuthToken();
   if (!token) {
-    toast.error('You must be logged in to perform this action.');
+    setError('You must be logged in to perform this action.');
     return;
   }
 
@@ -117,11 +117,11 @@ const AuctionRequest = () => {
       throw new Error(errorData.message || 'Failed to create shipment.');
     }
 
-    toast.success('Shipment created successfully!');
+    setSuccessMessage('Shipment created successfully!');
     fetchArtistAuctionRequests();
   } catch (error) {
     console.error('Error creating shipment:', error);
-    toast.error(error.message || 'Something went wrong.');
+    setError(error.message || 'Something went wrong.');
   }
 };
 
@@ -243,7 +243,7 @@ const AuctionRequest = () => {
     }
 
     setSuccessMessage('Auction request submitted successfully!');
-    setTimeout(() => SuccessMessage(''), 3000);
+    setTimeout(() => setSuccessMessage(null), 3000);
     setAuctionFormData({
       title: '',
       category: '',
@@ -280,6 +280,7 @@ const getStatusClasses = (status) => {
       return 'bg-gray-100 text-gray-700 ring-1 ring-gray-300';
   }
 };
+ 
 
 
     return (
@@ -524,7 +525,9 @@ const getStatusClasses = (status) => {
                             )}
                             {!loading && auctionRequests.length > 0 && (
                                 <div className="divide-y divide-coral/20">
-                                  {auctionRequests.map((request) => (
+                                  {auctionRequests.map((request) => {
+                                    const hasBids = request.auction?.bids && Object.keys(request.auction.bids).length > 0;
+                                    return(
                                     <div
                                       key={request.requestId}
                                       className={`cursor-pointer group relative flex items-start gap-4 p-6 border border-coral/20 transition bg-white ${
@@ -571,17 +574,27 @@ const getStatusClasses = (status) => {
                                           </div>
                                         )}
 
-                                        {request.auction.status === 'ended' && (
+                                        {request.auction?.status === 'ended' && (
                                           <>
-                                          <button
-                                            onClick={() => handleShipAuctionProduct(request.auction?.auctionId)}
-                                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
-                                          >
-                                            <Package className="w-4 h-4" />
-                                            Ship Product
-                                          </button>
+                                            {hasBids > 0 ? (
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation(); 
+                                                  handleShipAuctionProduct(request.auctionId);
+                                                }}
+                                                className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
+                                              >
+                                                <Package className="w-4 h-4" />
+                                                Ship Product
+                                              </button>
+                                            ) : (
+                                              <p className="mt-3 text-sm text-gray-500 italic">
+                                                No bids were submitted. Product cannot be shipped.
+                                              </p>
+                                            )}
                                           </>
                                         )}
+
 
                                         {request.adminNotes && request.status !== 'scheduled' && (
                                           <p className="mt-2 text-sm text-gray-500 italic">
@@ -612,8 +625,10 @@ const getStatusClasses = (status) => {
                                         )}
                                       </div>
 
-                                    </div>
-                                  ))}
+
+                                   </div>
+                                    );
+})}
 
 
                                 </div>
