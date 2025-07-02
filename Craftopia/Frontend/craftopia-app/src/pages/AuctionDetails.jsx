@@ -49,43 +49,59 @@ const CountdownTimer = ({ endTime, status}) => {
 };
 
 // Embedded Bid History Component
-const BidHistory = ({ bids }) => {
+const BidHistory = ({ bids , currentUserId}) => {
   return (
-    <div className="bg-gray-50 rounded-xl p-6 ">
+    <div className="bg-gray-50 rounded-xl p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <Gavel className="h-5 w-5" />
         Bidding History
       </h3>
       <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
-        {bids.map((bid, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="flex items-center justify-between p-3 bg-white rounded-lg border"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium">{bid.customerName?.[0]}</span>
+        {bids.map((bid, index) => {
+          const isUser = bid.customerId === currentUserId;
+
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`flex items-center justify-between p-3 rounded-lg border ${
+                isUser ? 'bg-emerald-100' : 'bg-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium">{bid.customerName?.[0]}</span>
+                </div>
+                <div>
+                  <div className="font-medium">
+                    {isUser ? 'You' : bid.customerName}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(bid.timestamp).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-500">{bid.time}</div>
+                </div>
               </div>
-              <div>
-                <div className="font-medium">{bid.customerName}</div><div className="text-sm text-gray-500">{new Date(bid.timestamp).toLocaleString()}</div>
-                <div className="text-sm text-gray-500">{bid.time}</div>
+              <div className="text-right">
+                <div className="font-bold text-lg">
+                  ${bid.bidAmount.toLocaleString()}
+                </div>
+                {index === 0 && (
+                  <div className="text-xs text-green-600 font-medium">
+                    WINNING BID
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="text-right">
-              <div className="font-bold text-lg">${bid.bidAmount.toLocaleString()}</div>
-              {index === 0 && (
-                <div className="text-xs text-green-600 font-medium">WINNING BID</div>
-              )}
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
 };
+
 
 // Embedded Artist Info Component
 const ArtistInfo = ({ artist,handleFollow, isFollowed}) => {
@@ -210,56 +226,67 @@ const AuctionDetails = () => {
   const [auction, setAuction] = useState(null);
   const [artist, setArtist] = useState(null);
   const [error, setError] = useState('');
-  
-
-const [following, setFollowing] = useState(false); 
-
+  const [userBid, setUserBid] = useState(null); // their last bid
+  const [isHighestBidder, setIsHighestBidder] = useState(false);
+  const [following, setFollowing] = useState(false); 
   const token = localStorage.getItem("token");
   const isLoggedIn = !!token;
 
-  useEffect(() => {
-    fetch(`http://localhost:3000/auction/${id}`)
-      .then(res => res.json())
-      .then(data => setAuction(data.auction))
-      .catch(console.error);
-  }, [id]);
+const getCurrentUserId = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split('.')[1]))?.id;
+  } catch {
+    return null;
+  }
+};
 
-// update isFollowed after fetching artist info
-useEffect(() => {
-  const fetchAuctionAndArtist = async () => {
-    try {
-      const resAuction = await fetch(`http://localhost:3000/auction/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!resAuction.ok) throw new Error("Failed to fetch auction");
-      const auctionData = await resAuction.json();
-      setAuction(auctionData.auction);
+const fetchAuctionAndArtist = async () => {
+  try {
+    const resAuction = await fetch(`http://localhost:3000/auction/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    const auctionData = await resAuction.json();
+    const auctionObj = auctionData.auction;
+    setAuction(auctionObj);
 
-      const artistId = auctionData.auction.artist.artistId;
+    const currentUserId = getCurrentUserId();
 
-      const resArtist = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+    if (currentUserId && auctionObj.bids) {
+      const userBidObj = auctionObj.bids.find(bid => bid.customerId === currentUserId);
+      setUserBid(userBidObj || null);
+      if (auctionObj.bids.length > 0) {
+        const highestBid = auctionObj.bids[0];
+        setIsHighestBidder(highestBid.customerId === currentUserId);
+      }
+    }
 
-      if (!resArtist.ok) throw new Error("Failed to fetch artist");
-      const artistData = await resArtist.json();
-      setArtist(artistData.artist);
+    const resArtist = await fetch(`http://localhost:3000/artist/getprofile/${auctionObj.artist.artistId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    const artistData = await resArtist.json();
+    setArtist(artistData.artist);
 
+    if (token) {
       const followedRes = await fetch("http://localhost:3000/customer/followed-artists", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       const followedData = await followedRes.json();
-      const isFollowed = followedData.followedArtists?.some(a => a.artistId === artistData.artist.artistId);
-      setFollowing(isFollowed); // ✅ set following here
-
-    } catch (error) {
-      console.error(error);
+      const isFollowed = followedData.followedArtists?.some(
+        (a) => a.artistId === artistData.artist.artistId
+      );
+      setFollowing(isFollowed);
     }
-  };
 
+  } catch (err) {
+    console.error("Error fetching auction & artist:", err);
+  }
+};
+
+useEffect(() => {
   fetchAuctionAndArtist();
-}, [id]);
+}, []);
 
 useEffect(() => {
   const interval = setInterval(async () => {
@@ -287,6 +314,7 @@ const currentBid = parseFloat(auction.currentPrice);
 const minIncrement = startingPrice * 0.1;
 const minBid = currentBid + minIncrement;
 const auctionHasEnded = auction.endDate && new Date(auction.endDate) <= new Date();
+
 
 const handleFollowClick = async () => {
   if (!isLoggedIn) {
@@ -321,7 +349,7 @@ const handleFollowClick = async () => {
 
 
 
- const handleBidSubmit = async () => {
+const handleBidSubmit = async () => {
   const amount = parseFloat(bidAmount);
   setError('');
 
@@ -347,34 +375,36 @@ const handleFollowClick = async () => {
 
   const auctionId = auction.id || auction.auctionId || auction._id;
 
-  try {
-    console.log("Sending bid for auction ID:", auctionId, "Amount:", amount);
+try {
+  const res = await fetch('http://localhost:3000/bid/place', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      auctionId,
+      bidAmount: amount,
+    }),
+  });
 
-    const res = await fetch('http://localhost:3000/bid/place', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        auctionId,
-        bidAmount: amount,
-      }),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json();
-      console.error('Bid Error Response:', errorData);
-      throw new Error('Failed to place bid');
-    }
-
-    setBidAmount('');
-    setError('✅ Bid placed successfully!');
-  } catch (err) {
-    console.error(err);
-    setError('❌ Error placing bid. Try again.');
+  if (!res.ok) {
+    const errorData = await res.json();
+    const backendMessage = errorData?.message || 'Failed to place bid';
+    throw new Error(backendMessage);
   }
+
+  setBidAmount('');
+  setError('✅ Bid placed successfully!');
+  await fetchAuctionAndArtist();
+
+} catch (err) {
+  console.error('❌ Bid Submit Error:', err);
+  setError(`❌ ${err.message}`);
+}
+
 };
+
 
 
 
@@ -458,30 +488,45 @@ const handleFollowClick = async () => {
 
               {/* Bid Input */}
               <div className="mt-6 space-y-3">
-                      {error && <div className="text-sm text-red-600 mt-1 font-medium">{error}</div>}
+                  {userBid && (
+                    <div className="bg-yellow-100 border border-yellow-400 p-4 rounded-lg text-yellow-800 mb-3">
+                      You have already placed a bid of <strong>${userBid.bidAmount}</strong>.
+                    </div>
+                  )}
+                {error && <div className="text-sm text-red-600 mt-1 font-medium">{error}</div>}
 
                 {auction.status === 'active' && !auctionHasEnded && (
                   
                   <div className="flex gap-3">
 
-                                      <input
-                                        type="number"
-                                        min={minBid}
-                                        step={minIncrement}
-                                        placeholder={`Min: $${minBid.toFixed(2)}`}
-                                        value={bidAmount}
-                                        onChange={(e) => setBidAmount(e.target.value)}
-                                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                                      />
-                            <button
-                              onClick={handleBidSubmit}
-                              className={`px-8 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors ${
-                                auction.status === 'scheduled' ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
-                              }`}
-                                disabled={auction.status === 'scheduled'}
-                            >
-                              {auction.status === 'scheduled' ? 'Not Started' : 'Bid'}
-                            </button>
+                      <input
+                          type="number"
+                          min={minBid}
+                          step={minIncrement}
+                          placeholder={`Min: $${minBid.toFixed(2)}`}
+                          value={bidAmount}
+                          onChange={(e) => setBidAmount(e.target.value)}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      />
+            <button
+              onClick={handleBidSubmit}
+              className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
+                auction.status === 'scheduled'
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800'
+              }`}
+              disabled={auction.status === 'scheduled'}
+            >
+              {auction.status === 'scheduled'
+                ? 'Not Started'
+                : userBid
+                  ? isHighestBidder
+                    ? 'You Are Highest Bidder'
+                    : 'Update Bid'
+                  : 'Bid'}
+            </button>
+
+
                           </div>
                 )}
                       
@@ -538,7 +583,7 @@ const handleFollowClick = async () => {
                   <h2 className="text-xl font-semibold">Bidding History</h2>
                 </div>
                 <div className="p-6">
-                  <BidHistory bids={auction.bids} />
+                  <BidHistory bids={auction.bids} currentUserId={getCurrentUserId()} />
                 </div>
               </motion.div>
             </motion.div>
