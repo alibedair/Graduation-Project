@@ -88,11 +88,6 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
                     }]
                 }]
             });
-            
-            if (followers.length === 0) {
-                console.log(`No followers found for artist ${artist.name} (auction ${auctionId})`);
-                continue;
-            }
 
             const auctionDetails = {
                 productName: product.name,
@@ -118,8 +113,6 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
             });
             const results = await Promise.all(emailPromises);
             const successCount = results.filter(result => result === true).length;
-            
-            console.log(`Auction ${auctionId} started: Notified ${successCount}/${followers.length} followers of artist ${artist.name}`);
         }
     } catch (error) {
         console.error('Error notifying followers for started auctions:', error);
