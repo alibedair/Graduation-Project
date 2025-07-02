@@ -59,7 +59,7 @@ const Auctions = () => {
       return {
         id: a.id,
         title: a.productDetails?.name || 'Untitled',
-        artist: a.artist.name || `Artist ID: ${a.artistId}`,
+        artist: a.artist?.name || `Artist ID: ${a.artistId}`,
         image: a.productDetails?.image?.[0] || '/fallback.jpg',
         currentBid: a.currentPrice,
         startingBid: a.startingPrice,

@@ -77,6 +77,7 @@ const AbstractAuctionCard = ({ auction, index }) => {
               <motion.img
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.4 }}
+                onError={(e) => { e.target.src = '/default-fallback.jpg'; }} 
                 src={auction.image}
                 alt={auction.title}
                 className="w-full h-full object-cover"

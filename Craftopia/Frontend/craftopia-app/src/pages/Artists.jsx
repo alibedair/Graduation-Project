@@ -25,16 +25,20 @@ const Artists = () => {
 
         let followedArtistIds = [];
 
-        // Fetch followed artists only if token exists
+        // ✅ Try to fetch followed artists, but don't break everything if it fails
         if (token) {
-          const followedRes = await axios.get(
-            'http://localhost:3000/customer/followed-artists',
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          followedArtistIds = followedRes.data.followedArtists?.map((a) => a.artistId) || [];
+          try {
+            const followedRes = await axios.get(
+              'http://localhost:3000/customer/followed-artists',
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            followedArtistIds = followedRes.data.followedArtists?.map((a) => a.artistId) || [];
+          } catch (followErr) {
+            console.warn('User not logged in or unauthorized to fetch followed artists.');
+            // It's safe to ignore this if token is invalid/expired.
+          }
         }
 
         // Merge isFollowing
@@ -46,12 +50,13 @@ const Artists = () => {
         setArtists(updatedArtists);
         setCategories(categoriesRes.data.categories || []);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching artist or category data:', error);
       }
     };
 
     fetchData();
   }, []);
+
 
   const filteredArtists = artists.filter((artist) =>
     filter === 'all' ||

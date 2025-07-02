@@ -93,6 +93,34 @@ const AuctionRequest = () => {
     fetchCategories();            
   }, []); 
 
+  const handleShipAuctionProduct = async (auctionId) => {
+  const token = getAuthToken();
+  if (!token) {
+    alert('You must be logged in to perform this action.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/order/shipment-auction/${auctionId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create shipment.');
+    }
+
+    alert('Shipment created successfully!');
+    fetchArtistAuctionRequests(); // Refresh the data
+  } catch (error) {
+    console.error('Error creating shipment:', error);
+    alert(error.message || 'Something went wrong.');
+  }
+};
+
   // --- Handle Form Input Changes ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -332,6 +360,7 @@ const getStatusClasses = (status) => {
                               <textarea
                                 id="description"
                                 name="description"
+                                maxLength={255} 
                                 className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg shadow-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                 rows={4}
                                 placeholder="Detailed description of your item, including craftsmanship details..."
@@ -536,6 +565,16 @@ const getStatusClasses = (status) => {
                                             <strong>End Date:</strong> {new Date(request.scheduledEndDate).toLocaleString()}
                                           </p>
                                         )}
+                                        {request.status === 'ended' && (
+                                          <button
+                                            onClick={() => handleShipAuctionProduct(request.requestId)}
+                                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
+                                          >
+                                            <Package className="w-4 h-4" />
+                                            Ship Product
+                                          </button>
+                                        )}
+
                                         {request.adminNotes && request.status !== 'scheduled' && (
                                           <p className="mt-2 text-sm text-gray-500 italic">
                                             <AlertCircle className="inline-block w-4 h-4 mr-1 text-yellow-600" />
@@ -569,3 +608,4 @@ const getStatusClasses = (status) => {
 };
 
 export default AuctionRequest;
+

@@ -16,6 +16,8 @@ const AdminAuctionManagement = () => {
   const [errorRequests, setErrorRequests] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [todayBidCount, setTodayBidCount] = useState(0);
+  const [zoomedImage, setZoomedImage] = useState(null);
+
 
   const formatEndDate = (dateStr) => {
   if (!dateStr) return 'Unknown';
@@ -444,11 +446,13 @@ const AuctionCard = ({ auction }) => (
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Image + Info */}
                             <div>
-                              <img
-                                src={request.product?.image?.[0] || "/fallback.jpg"}
-                                alt="Product"
-                                className="w-full h-60 object-cover rounded-lg shadow-sm mb-4"
-                              />
+                            <img
+                              src={request.product?.image?.[0] || "/fallback.jpg"}
+                              alt="Product"
+                              onClick={() => setZoomedImage(request.product?.image?.[0])}
+                              className="w-full h-60 object-cover rounded-lg shadow-sm mb-4 cursor-pointer hover:scale-105 transition-transform duration-300"
+                            />
+
                     <div className="text-sm text-gray-700 space-y-1">
                       <p>
                         <span className="font-medium">Materials:</span>{" "}
@@ -543,64 +547,80 @@ const AuctionCard = ({ auction }) => (
             </div>
           )}
 
-{activeTab === 'active' && (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-black">Active Auctions</h2>
-    {activeAuctions.filter(auction => auction.status === 'active').length === 0 ? (
-      <p className="text-burgundy/70">No active auctions to display.</p>
-    ) : (
-      <div className="grid gap-6">
-        {activeAuctions
-          .filter(auction => auction.status === 'active')
-          .map((auction) => (
-            <AuctionCard key={auction.id} auction={auction} />
-          ))}
-      </div>
-    )}
-  </div>
-)}
+          {activeTab === 'active' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-black">Active Auctions</h2>
+              {activeAuctions.filter(auction => auction.status === 'active').length === 0 ? (
+                <p className="text-burgundy/70">No active auctions to display.</p>
+              ) : (
+                <div className="grid gap-6">
+                  {activeAuctions
+                    .filter(auction => auction.status === 'active')
+                    .map((auction) => (
+                      <AuctionCard key={auction.id} auction={auction} />
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
 
-{activeTab === 'scheduled' && (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-black">Scheduled Auctions</h2>
-    {activeAuctions.filter(auction => auction.status === 'scheduled').length === 0 ? (
-      <p className="text-burgundy/70">No scheduled auctions to display.</p>
-    ) : (
-      <div className="grid gap-6">
-        {activeAuctions
-          .filter(auction => auction.status === 'scheduled')
-          .map((auction) => (
-            <AuctionCard key={auction.id} auction={auction} />
-          ))}
-      </div>
-    )}
-  </div>
-)}
+          {activeTab === 'scheduled' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-black">Scheduled Auctions</h2>
+              {activeAuctions.filter(auction => auction.status === 'scheduled').length === 0 ? (
+                <p className="text-burgundy/70">No scheduled auctions to display.</p>
+              ) : (
+                <div className="grid gap-6">
+                  {activeAuctions
+                    .filter(auction => auction.status === 'scheduled')
+                    .map((auction) => (
+                      <AuctionCard key={auction.id} auction={auction} />
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
 
-{activeTab === 'ended' && (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-black">Ended Auctions</h2>
-    {activeAuctions.filter(auction => auction.status === 'ended').length === 0 ? (
-      <p className="text-burgundy/70">No ended auctions to display.</p>
-    ) : (
-      <div className="grid gap-6">
-        {activeAuctions
-          .filter(auction => auction.status === 'ended')
-          .map((auction) => (
-            <AuctionCard key={auction.id} auction={auction} />
-          ))}
-      </div>
-    )}
-  </div>
-)}
+          {activeTab === 'ended' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-black">Ended Auctions</h2>
+              {activeAuctions.filter(auction => auction.status === 'ended').length === 0 ? (
+                <p className="text-burgundy/70">No ended auctions to display.</p>
+              ) : (
+                <div className="grid gap-6">
+                  {activeAuctions
+                    .filter(auction => auction.status === 'ended')
+                    .map((auction) => (
+                      <AuctionCard key={auction.id} auction={auction} />
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
 
 
 
 
         </div>
-      </div>
+        </div>
+        {zoomedImage && (
+          <div
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+            onClick={() => setZoomedImage(null)}
+          >
+            <img
+              src={zoomedImage}
+              alt="Zoomed Product"
+              className="max-w-full max-h-full rounded-lg shadow-lg"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking image
+            />
+          </div>
+        )}
+
     </div>
+
   );
 };
 
 export default AdminAuctionManagement;
+
