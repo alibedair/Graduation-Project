@@ -4,6 +4,7 @@ const ArtistFollow = require('../models/artistFollow');
 const Artist = require('../models/artist');
 const Product = require('../models/product');
 const Customer = require('../models/customer');
+const User = require('../models/user');
 const { sendAuctionStartedToFollowersEmail } = require('../utils/emailService');
 
 const updateAuctionStatuses = async () => {
@@ -67,7 +68,7 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
             }
             
             const product = await Product.findByPk(productId, {
-                attributes: ['productId', 'name', 'images']
+                attributes: ['productId', 'name', 'image']
             });
             
             if (!product) {
@@ -80,7 +81,11 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
                 include: [{
                     model: Customer,
                     as: 'customer',
-                    attributes: ['customerId', 'name', 'email']
+                    attributes: ['customerId', 'name', 'userId'],
+                    include: [{
+                        model: User,
+                        attributes: ['email']
+                    }]
                 }]
             });
             
@@ -95,17 +100,17 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
                 startingPrice: startingPrice,
                 endDate: endDate,
                 auctionId: auctionId,
-                productImage: product.images && product.images.length > 0 ? product.images[0] : null
+                productImage: product.image && product.image.length > 0 ? product.image[0] : null
             };
             
             const emailPromises = followers.map(follow => {
-                if (follow.customer && follow.customer.email) {
+                if (follow.customer && follow.customer.user && follow.customer.user.email) {
                     return sendAuctionStartedToFollowersEmail(
-                        follow.customer.email,
+                        follow.customer.user.email,
                         follow.customer.name,
                         auctionDetails
                     ).catch(error => {
-                        console.error(`Failed to send auction notification to ${follow.customer.email}:`, error);
+                        console.error(`Failed to send auction notification to ${follow.customer.user.email}:`, error);
                         return false;
                     });
                 }

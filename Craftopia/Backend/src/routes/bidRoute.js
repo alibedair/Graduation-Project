@@ -30,4 +30,14 @@ router.get('/today-bids',
     bidController.getTodayBids
 );
 
+router.put('/update',
+    authMiddleware,
+    roleMiddleware('customer'),
+    [
+        body('auctionId').isString().withMessage('Auction ID must be a string'),
+        body('newBidAmount').isFloat({ min: 0 }).withMessage('New bid amount must be a positive number')
+    ],
+    bidController.updateBid
+);
+
 module.exports = router;
