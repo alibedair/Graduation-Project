@@ -9,6 +9,7 @@ const RequestCustomization = () => {
         title: "",
         description: "",
         budget: "",
+        deadline: "", 
         image: null,
     });
 
@@ -90,6 +91,7 @@ const RequestCustomization = () => {
         form.append("title", formData.title);
         form.append("description", formData.description);
         form.append("budget", formData.budget);
+        form.append("deadline", formData.deadline);
         form.append("image", formData.image);
 
         const token = localStorage.getItem("token");
@@ -182,14 +184,16 @@ const RequestCustomization = () => {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return "Not provided";
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
+    if (!dateString) return "Not specified";
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) 
+        ? "Invalid date" 
+        : date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
         });
-    };
+};
 
     const getStatusBadge = (status) => {
         const statusStyles = {
@@ -611,6 +615,20 @@ const RequestCustomization = () => {
                                     className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                 />
                             </div>
+                            <div>
+    <label className="block font-semibold text-sm text-[#7a162e] mb-2">
+        Deadline <span className="text-red-500">*</span>
+    </label>
+    <input
+        type="date"
+        name="deadline"
+        value={formData.deadline}
+        onChange={handleChange}
+        required
+        min={new Date().toISOString().split('T')[0]} // Set min date to today
+        className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+    />
+</div>
                             <div className="mt-4">
                                 <button
                                     type="submit"
