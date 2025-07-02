@@ -25,4 +25,14 @@ router.get('/salesHistory',
     trackController.getSalesHistory
 );
 
+
+router.get('/Salesofartist/:artistId',
+    authMiddleware,
+    roleMiddleware(['admin', 'artist']),
+    [
+        param('artistId').isNumeric().withMessage('Artist ID must be a number'),
+    ],
+    trackController.getSalesByArtist
+);
+
 module.exports = router;
