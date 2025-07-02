@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaEdit, FaSignOutAlt, FaPlus } from "react-icons/fa";
+import { BarChart2 } from "lucide-react";
 import GetProfile from "../Components/GetProfile";
 import EditProfile from "../Components/EditProfile";
 import AddProduct from "../Components/AddProduct";
@@ -10,6 +11,7 @@ import { Gavel } from "lucide-react";
 import AuctionRequest from "../Components/AuctionRequest";
 import RequestCategory from "../Components/RequestCategory";
 import Messages from "../Components/Messages";
+import SalesHistory from "../Components/SalesHistory";
 
 const ArtistProfile = ({ setIsLoggedIn }) => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -49,6 +51,14 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
               <li onClick={() => setActiveTab("requestcategory")} className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "requestcategory" ? "bg-gray-200 font-semibold" : ""}`}>
                 📩 Request Category
               </li>
+              <li
+                onClick={() => setActiveTab("saleshistory")}
+                className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "saleshistory" ? "bg-gray-200 font-semibold" : ""
+                  }`}
+              >
+                <BarChart2 className="h-4 w-4 text-black" /> Sales History
+              </li>
+
               <li onClick={handleLogout} className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2">
                 <FaSignOutAlt className="text-black" /> Logout
               </li>
@@ -65,6 +75,7 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
             {activeTab === "review" && <ReviewRequests onMessageClick={setSelectedMessageId} />}
             {activeTab === "auction" && <AuctionRequest />}
             {activeTab === "requestcategory" && <RequestCategory />}
+            {activeTab === "saleshistory" && <SalesHistory />}
           </div>
 
           {/* 💬 Inline Chat Box */}

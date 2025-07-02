@@ -21,6 +21,8 @@ const AddProduct = () => {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [categoriesError, setCategoriesError] = useState(null);
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const [imageError, setImageError] = useState("");
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -74,6 +76,7 @@ const AddProduct = () => {
           dimension: "",
         });
         setImages([]);
+        setImageError("");
       }
     } catch (error) {
       setMessage("Server error, please try again later.");
@@ -191,24 +194,25 @@ const AddProduct = () => {
                     onChange={handleChange}
                     required
                     className={`appearance-none w-full px-4 py-3 border border-[#f3c7ce] rounded-lg bg-white ${formData.categoryName === ""
-                        ? "text-gray-400"
-                        : "text-gray-700"
+                      ? "text-gray-400"
+                      : "text-gray-700"
                       }`}
                   >
-                    <option value="" disabled>
-                      {loadingCategories
-                        ? "Loading categories..."
-                        : categoriesError
-                          ? "Failed to load categories"
-                          : "Select a category"}
-                    </option>
-                    {!loadingCategories &&
-                      !categoriesError &&
-                      categoriesList.map((cat) => (
-                        <option key={cat._id} value={cat.name}>
-                          {cat.name}
-                        </option>
-                      ))}
+                    {loadingCategories ? (
+                      <option value="" disabled>Loading categories...</option>
+                    ) : categoriesList.length === 0 || categoriesError ? (
+                      <option value="" disabled>No categories available</option>
+                    ) : (
+                      <>
+                        <option value="" disabled>Select a category</option>
+                        {categoriesList.map((cat) => (
+                          <option key={cat._id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </>
+                    )}
+
                   </select>
                 </div>
               </div>
@@ -265,11 +269,17 @@ const AddProduct = () => {
                   accept="image/*"
                   multiple
                   onChange={(e) => {
-                    const selectedFiles = Array.from(e.target.files).slice(0, 5);
+                    const selectedFiles = Array.from(e.target.files);
+                    if (selectedFiles.length > 5) {
+                      setImageError("You can upload a maximum of 5 images.");
+                      return;
+                    }
                     setImages(selectedFiles);
+                    setImageError("");
                   }}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
+
                 <div className="relative z-0 flex flex-col items-center justify-center pointer-events-none">
                   <Upload className="h-8 w-8 text-burgundy/60 mb-2" />
                   <p className="text-[#7a162e] font-medium">
@@ -278,6 +288,10 @@ const AddProduct = () => {
                   <p className="text-sm text-gray-500">Up to 5 images</p>
                 </div>
               </div>
+              {imageError && (
+                <p className="text-red-500 text-sm mt-2">{imageError}</p>
+              )}
+
 
               {images.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
