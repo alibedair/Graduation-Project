@@ -49,7 +49,7 @@ const CountdownTimer = ({ endTime, status}) => {
 };
 
 // Embedded Bid History Component
-const BidHistory = ({ bids , currentUserId}) => {
+const BidHistory = ({ bids , currentUser}) => {
   return (
     <div className="bg-gray-50 rounded-xl p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -58,7 +58,9 @@ const BidHistory = ({ bids , currentUserId}) => {
       </h3>
       <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
         {bids.map((bid, index) => {
-          const isUser = bid.customerId === currentUserId;
+          const isUser = bid.userId === currentUser?.id && currentUser?.role === 'customer';
+
+
 
           return (
             <motion.div
@@ -226,21 +228,27 @@ const AuctionDetails = () => {
   const [auction, setAuction] = useState(null);
   const [artist, setArtist] = useState(null);
   const [error, setError] = useState('');
-  const [userBid, setUserBid] = useState(null); // their last bid
+  const [userBid, setUserBid] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isHighestBidder, setIsHighestBidder] = useState(false);
   const [following, setFollowing] = useState(false); 
   const token = localStorage.getItem("token");
   const isLoggedIn = !!token;
 
-const getCurrentUserId = () => {
+const getCurrentUserInfo = () => {
   const token = localStorage.getItem("token");
   if (!token) return null;
   try {
-    return JSON.parse(atob(token.split('.')[1]))?.id;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return {
+      id: payload.id,
+      role: payload.role, 
+    };
   } catch {
     return null;
   }
 };
+
 
 const fetchAuctionAndArtist = async () => {
   try {
@@ -251,16 +259,18 @@ const fetchAuctionAndArtist = async () => {
     const auctionObj = auctionData.auction;
     setAuction(auctionObj);
 
-    const currentUserId = getCurrentUserId();
+    const userInfo = getCurrentUserInfo();
+    setCurrentUser(userInfo);
 
-    if (currentUserId && auctionObj.bids) {
-      const userBidObj = auctionObj.bids.find(bid => bid.customerId === currentUserId);
+    if (userInfo?.role === 'customer' && auctionObj.bids) {
+      const userBidObj = auctionObj.bids.find(bid => bid.userId === userInfo.id);
       setUserBid(userBidObj || null);
       if (auctionObj.bids.length > 0) {
         const highestBid = auctionObj.bids[0];
-        setIsHighestBidder(highestBid.customerId === currentUserId);
+        setIsHighestBidder(highestBid.userId === userInfo.id);
       }
     }
+
 
     const resArtist = await fetch(`http://localhost:3000/artist/getprofile/${auctionObj.artist.artistId}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -373,39 +383,42 @@ const handleBidSubmit = async () => {
     return;
   }
 
-  const auctionId = auction.id || auction.auctionId || auction._id;
+  const auctionId = auction.id;
 
-try {
-  const res = await fetch('http://localhost:3000/bid/place', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      auctionId,
-      bidAmount: amount,
-    }),
-  });
+  const url = userBid
+    ? 'http://localhost:3000/bid/update'
+    : 'http://localhost:3000/bid/place';
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    const backendMessage = errorData?.message || 'Failed to place bid';
-    throw new Error(backendMessage);
+  const payload = userBid
+    ? { auctionId, newBidAmount: amount }
+    : { auctionId, bidAmount: amount };
+
+  const method = userBid ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      const backendMessage = errorData?.message || 'Bid failed';
+      throw new Error(backendMessage);
+    }
+
+    setBidAmount('');
+    setError('✅ Bid submitted successfully!');
+    await fetchAuctionAndArtist(); // refresh auction data
+  } catch (err) {
+    console.error('❌ Bid Submit Error:', err);
+    setError(`❌ ${err.message}`);
   }
-
-  setBidAmount('');
-  setError('✅ Bid placed successfully!');
-  await fetchAuctionAndArtist();
-
-} catch (err) {
-  console.error('❌ Bid Submit Error:', err);
-  setError(`❌ ${err.message}`);
-}
-
 };
-
-
 
 
 
@@ -495,40 +508,35 @@ try {
                   )}
                 {error && <div className="text-sm text-red-600 mt-1 font-medium">{error}</div>}
 
-                {auction.status === 'active' && !auctionHasEnded && (
-                  
-                  <div className="flex gap-3">
+{auction.status === 'active' && !auctionHasEnded && currentUser?.role === 'customer' && (
+  <div className="flex gap-3">
+    <input
+      type="number"
+      min={minBid}
+      step={minIncrement}
+      placeholder={`Min: $${minBid.toFixed(2)}`}
+      value={bidAmount}
+      onChange={(e) => setBidAmount(e.target.value)}
+      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+    />
+    <button
+      onClick={handleBidSubmit}
+      className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
+        auction.status === 'scheduled'
+          ? 'bg-gray-400 text-white cursor-not-allowed'
+          : 'bg-black text-white hover:bg-gray-800'
+      }`}
+      disabled={auction.status === 'scheduled'}
+    >
+      {userBid
+        ? isHighestBidder
+          ? "You're Highest Bidder"
+          : 'Update Bid'
+        : 'Place Bid'}
+    </button>
+  </div>
+)}
 
-                      <input
-                          type="number"
-                          min={minBid}
-                          step={minIncrement}
-                          placeholder={`Min: $${minBid.toFixed(2)}`}
-                          value={bidAmount}
-                          onChange={(e) => setBidAmount(e.target.value)}
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                      />
-            <button
-              onClick={handleBidSubmit}
-              className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
-                auction.status === 'scheduled'
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-black text-white hover:bg-gray-800'
-              }`}
-              disabled={auction.status === 'scheduled'}
-            >
-              {auction.status === 'scheduled'
-                ? 'Not Started'
-                : userBid
-                  ? isHighestBidder
-                    ? 'You Are Highest Bidder'
-                    : 'Update Bid'
-                  : 'Bid'}
-            </button>
-
-
-                          </div>
-                )}
                       
                 <div className="text-sm text-gray-600">
                   Minimum bid: ${minBid.toLocaleString()}
@@ -583,7 +591,8 @@ try {
                   <h2 className="text-xl font-semibold">Bidding History</h2>
                 </div>
                 <div className="p-6">
-                  <BidHistory bids={auction.bids} currentUserId={getCurrentUserId()} />
+                  <BidHistory bids={auction.bids} currentUser={currentUser} />
+
                 </div>
               </motion.div>
             </motion.div>
