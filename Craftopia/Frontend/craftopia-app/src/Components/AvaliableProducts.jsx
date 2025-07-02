@@ -15,12 +15,8 @@ const AvaliableProducts = () => {
   const navigate = useNavigate();
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const {
-    cartItems,
-    addToCart,
-    incrementQuantity,
-    decrementQuantity,
-  } = useCart();
+  const { cartItems, addToCart, incrementQuantity, decrementQuantity } =
+    useCart();
 
   useEffect(() => {
     axios
@@ -63,7 +59,6 @@ const AvaliableProducts = () => {
     const exists = wishlist.find((item) => item.id === product.id);
     exists ? removeFromWishlist(product.id) : addToWishlist(product);
   };
-
 
   const updateScrollButtons = () => {
     const container = scrollRef.current;
@@ -138,41 +133,42 @@ const AvaliableProducts = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          {products.map((product, index) => {
-            const isFavorite = wishlist.some((item) => item.id === product.id);
-            const inCart = cartItems.find((item) => item.id === product.id);
-            const quantity = inCart?.cartQuantity || 0;
+          {products
+            .filter((product) => product.inStock) // <-- only show available products
+            .map((product, index) => {
+              const isFavorite = wishlist.some(
+                (item) => item.id === product.id
+              );
+              const inCart = cartItems.find((item) => item.id === product.id);
+              const quantity = inCart?.cartQuantity || 0;
 
-            return (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, rotateY: 5 }}
-                viewport={{ once: true }}
-                className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
-              >
-                <ProductCard
-                  product={product}
-                  isFavorite={isFavorite}
-                  onToggleFavorite={() => toggleWishlist(product)}
-                  isInCart={!!inCart}
-                  quantity={quantity}
-                  onAddToCart={() => addToCart(product, navigate)}
-                  onIncrement={() => {
-                    if (inCart) incrementQuantity(inCart);
-                  }}
-
-                  onDecrement={() => {
-                    if (inCart) decrementQuantity(inCart);
-                  }}
-
-                />
-
-              </motion.div>
-            );
-          })}
+              return (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05, rotateY: 5 }}
+                  viewport={{ once: true }}
+                  className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
+                >
+                  <ProductCard
+                    product={product}
+                    isFavorite={isFavorite}
+                    onToggleFavorite={() => toggleWishlist(product)}
+                    isInCart={!!inCart}
+                    quantity={quantity}
+                    onAddToCart={() => addToCart(product, navigate)}
+                    onIncrement={() => {
+                      if (inCart) incrementQuantity(inCart);
+                    }}
+                    onDecrement={() => {
+                      if (inCart) decrementQuantity(inCart);
+                    }}
+                  />
+                </motion.div>
+              );
+            })}
         </motion.div>
       </div>
     </section>
