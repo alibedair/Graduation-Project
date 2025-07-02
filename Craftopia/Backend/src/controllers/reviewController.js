@@ -57,12 +57,12 @@ exports.createReview = async (req, res) => {
                 required: true
             }]
         });
-/*
+
         if (!hasPurchased) {
             return res.status(403).json({
                 message: 'You can only review products you have purchased and received'
             });
-        }*/
+        }
         const newReview = await Review.create({
             customerId: customer.customerId,
             productId: productId,
