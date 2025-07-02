@@ -78,7 +78,29 @@ exports.getMyAuctionRequests = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        return res.status(200).json(requests);
+        const requestsWithAuctions = await Promise.all(requests.map(async (request) => {
+            const requestData = request.toJSON();
+            
+            if (request.auctionId && request.status === 'scheduled') {
+                try {
+                    const auctionSnapshot = await firebase_db.ref(`auctions/${request.auctionId}`).once('value');
+                    if (auctionSnapshot.exists()) {
+                        requestData.auction = auctionSnapshot.val();
+                    } else {
+                        requestData.auction = null;
+                    }
+                } catch (firebaseError) {
+                    console.error(`Error fetching auction ${request.auctionId}:`, firebaseError);
+                    requestData.auction = null;
+                }
+            } else {
+                requestData.auction = null;
+            }
+            
+            return requestData;
+        }));
+
+        return res.status(200).json(requestsWithAuctions);
     } catch (error) {
         console.error('Error getting auction requests:', error);
         return res.status(500).json({ message: 'Internal server error' });
