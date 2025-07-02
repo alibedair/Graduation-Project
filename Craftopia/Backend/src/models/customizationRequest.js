@@ -27,6 +27,11 @@ const CustomizationRequest = sequelize.define('customizationrequest', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    deadline: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
+    },
     image: {
         type: DataTypes.STRING,
         allowNull: true

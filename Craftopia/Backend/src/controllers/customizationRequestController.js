@@ -3,9 +3,10 @@ const Artist = require('../models/artist');
 const Customer = require('../models/customer');
 const CustomizationResponse = require('../models/customizationResponse');
 const User = require('../models/user');
-const uploadBuffer = require('../utils/cloudinaryUpload');
+const { uploadBuffer } = require('../utils/cloudinaryUpload');
 const { autoDeclinePendingResponses } = require('../utils/customizationUtils');
 const { sendCustomizationRequestReceivedEmail } = require('../utils/emailService');
+const { validateDeadline } = require('../utils/dateValidation');
 
 
 exports.createCustomizationRequest = async (req, res) => {
@@ -16,11 +17,18 @@ exports.createCustomizationRequest = async (req, res) => {
             return res.status(403).json({message: 'You are not authorized to create a customization request'});
         }
 
-        const {description, budget, title} = req.body;
-        if(!description || !budget || !title){
+        const {description, budget, title, deadline} = req.body;
+        if(!description || !budget || !title || !deadline){
             return res.status(400).json({
                 message: 'Please provide all required fields',
-                required: ['description', 'budget', 'title']
+                required: ['description', 'budget', 'title', 'deadline']
+            });
+        }
+        try {
+            validateDeadline(deadline);
+        } catch (validationError) {
+            return res.status(400).json({
+                message: validationError.message
             });
         }
 
@@ -44,6 +52,7 @@ exports.createCustomizationRequest = async (req, res) => {
             requestDescription: description,
             budget,
             title,
+            deadline: new Date(deadline + 'T00:00:00.000Z'),
             image,
             customerId: customer.customerId,
             status: 'OPEN',

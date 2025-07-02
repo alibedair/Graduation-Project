@@ -4,6 +4,7 @@ const customizationRequestController = require('../controllers/customizationRequ
 const upload = require('../middlewares/upload');
 const { body, param } = require('express-validator');
 const roleMiddleware = require('../middlewares/roleMiddleware');
+const { validateDeadline } = require('../utils/dateValidation');
 
 router.post('/request', 
     authMiddleware,
@@ -11,7 +12,7 @@ router.post('/request',
     [
         body('description').notEmpty().withMessage('Description is required'),
         body('budget').isFloat({ min: 0 }).withMessage('Budget must be a positive number'),
-        body('deadline').isISO8601().withMessage('Deadline must be a valid date')
+        body('deadline').custom(validateDeadline)
     ],
     customizationRequestController.createCustomizationRequest
 );

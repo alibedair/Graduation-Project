@@ -61,9 +61,38 @@ const formatToLocaleString = (date) => {
     });
 };
 
+const validateDeadline = (value) => {
+    if (!value) {
+        throw new Error('Deadline is required');
+    }
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(value)) {
+        throw new Error('Deadline must be in YYYY-MM-DD format (e.g., 2025-08-15)');
+    }
+    const deadlineDate = new Date(value + 'T00:00:00.000Z');
+    
+    if (isNaN(deadlineDate.getTime())) {
+        throw new Error('Invalid date provided');
+    }
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    if (deadlineDate < today) {
+        throw new Error('Deadline must be today or in the future');
+    }
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+    if (deadlineDate > oneYearFromNow) {
+        throw new Error('Deadline cannot be more than one year in the future');
+    }
+    
+    return true;
+};
+
 module.exports = {
     validateAuctionStartDate,
     validateFutureDateTime,
     convertToDateTime,
-    formatToLocaleString
+    formatToLocaleString,
+    validateDeadline
 };
