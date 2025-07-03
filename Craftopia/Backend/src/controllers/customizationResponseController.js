@@ -50,7 +50,7 @@ exports.respondToCustomizationRequest = async (req, res) => {
             }
         });
 
-        if (existingResponse) {
+        if (existingResponse && existingResponse.status !== 'DECLINED') {
             return res.status(400).json({ 
                 message: 'You have already responded to this request',
                 existingResponseId: existingResponse.responseId,
@@ -79,6 +79,51 @@ exports.respondToCustomizationRequest = async (req, res) => {
                 console.error('Image upload error:', uploadError);
                 return res.status(500).json({ message: 'Error uploading image' });
             }
+        }
+
+        if (existingResponse && existingResponse.status === 'DECLINED') {
+            await existingResponse.update({
+                price: parseFloat(price),
+                notes: notes,
+                estimationCompletionTime: estimationDate,
+                image: image,
+                status: 'PENDING',
+                updatedAt: new Date()
+            });
+
+            try {
+                const customer = await Customer.findOne({ where: { customerId: request.customerId } });
+                const customerUser = await User.findByPk(customer.userId);
+                
+                if (customerUser && customerUser.email) {
+                    const responseDetails = {
+                        requestTitle: request.title,
+                        artistName: artist.name || 'Artist',
+                        proposedPrice: parseFloat(existingResponse.price || 0).toFixed(2),
+                        estimatedDays: Math.ceil((new Date(existingResponse.estimationCompletionTime) - new Date()) / (1000 * 60 * 60 * 24)),
+                        responseId: existingResponse.responseId,
+                        isUpdate: true
+                    };
+                    
+                    await sendCustomizationResponseEmail(customerUser.email, customer.name || 'Valued Customer', responseDetails);
+                }
+            } catch (emailError) {
+                console.error('Error sending customization response update email:', emailError);
+            }
+            return res.status(200).json({
+                message: 'Response updated successfully',
+                response: {
+                    responseId: existingResponse.responseId,
+                    price: existingResponse.price,
+                    notes: existingResponse.notes,
+                    estimationCompletionTime: existingResponse.estimationCompletionTime,
+                    artistId: existingResponse.artistId,
+                    requestId: existingResponse.requestId,
+                    image: existingResponse.image,
+                    status: existingResponse.status,
+                    updatedAt: existingResponse.updatedAt
+                }
+            });
         }
 
         const newResponse = await CustomizationResponse.create({
