@@ -17,13 +17,15 @@ const CompareProducts = () => {
     const [products, setProducts] = useState([]);
     const [compareList, setCompareList] = useState([]);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        fetch("http://localhost:3000/product/get")
-            .then((res) => res.json())
-            .then((data) => setProducts(data.products))
-            .catch((err) => console.error("Error fetching products:", err));
-    }, []);
+useEffect(() => {
+    fetch("http://localhost:3000/product/get")
+        .then((res) => res.json())
+        .then((data) => {
+            const normalProducts = data.products.filter(p => p.type === 'normal');
+            setProducts(normalProducts);
+        })
+        .catch((err) => console.error("Error fetching products:", err));
+}, []);
 
     const addToCompare = (product) => {
         if (compareList.find((p) => p.productId === product.productId)) return;
