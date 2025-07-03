@@ -168,3 +168,31 @@ exports.getCustomerCustomizationRequests = async (req, res) => {
         res.status(500).send({ message: 'Internal server error' });
     }
 };
+exports.getCustomerCustomizationRequestswithnoOffers = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const customer = await Customer.findOne({ where: { userId } });
+        if (!customer) {
+            return res.status(403).send({ message: 'You are not authorized to view customization requests' });
+        }
+
+        const requests = await CustomizationRequest.findAll({
+            where: { customerId: customer.customerId },            
+            include: [
+                {
+                    model: CustomizationResponse,
+                    required: false
+                }
+            ]
+        });
+        const requestsWithNoOffers = requests.filter(request => {
+            const responses = request.customizationresponses || request.CustomizationResponses || request.customizationResponses;
+            return !responses || responses.length === 0;
+        });
+        
+        return res.status(200).json(requestsWithNoOffers);
+    } catch (error) {
+        console.error('Error getting customer customization requests:', error);
+        res.status(500).send({ message: 'Internal server error' });
+    }
+};

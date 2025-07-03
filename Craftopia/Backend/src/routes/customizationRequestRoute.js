@@ -21,6 +21,12 @@ router.get('/requests', authMiddleware, customizationRequestController.getOpenCu
 
 router.get('/customer/requests', authMiddleware, roleMiddleware('customer'), customizationRequestController.getCustomerCustomizationRequests);
 
+router.get('/noOffers', 
+    authMiddleware, 
+    roleMiddleware('customer'), 
+    customizationRequestController.getCustomerCustomizationRequestswithnoOffers
+);
+
 router.put('/close/:requestId',
     authMiddleware,
     roleMiddleware('customer'),
