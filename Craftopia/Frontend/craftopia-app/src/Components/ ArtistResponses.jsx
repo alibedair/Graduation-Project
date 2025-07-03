@@ -75,6 +75,16 @@ const ArtistResponses = () => {
             }
         }
     }, [unreadMessages, responses]);
+    useEffect(() => {
+        if (reportToast.show) {
+            const timer = setTimeout(() => {
+                setReportToast({ show: false, message: "", success: true });
+            }, 4000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [reportToast]);
+
     const [reportContent, setReportContent] = useState("");
 
     if (loading) return <div className="text-center py-8">Loading responses...</div>;
@@ -82,9 +92,10 @@ const ArtistResponses = () => {
 
     const handleReportSubmit = async () => {
         if (!reportContent.trim()) {
-            alert("Please enter a reason for the report.");
+            setReportToast({ show: true, message: "Please enter a reason for the report.", success: false });
             return;
         }
+
 
         try {
             const token = localStorage.getItem("token");
@@ -114,11 +125,11 @@ const ArtistResponses = () => {
                     setAttachment(null);
                 }, 3000);
             } else {
-                alert(data.message || "Failed to submit report.");
+                setReportToast({ show: true, message: data.message || "Failed to submit report.", success: false });
             }
         } catch (error) {
             console.error(error);
-            alert("An error occurred while submitting the report.");
+            setReportToast({ show: true, message: "An error occurred while submitting the report.", success: false });
         }
     };
     const handleShipOrder = async (responseId) => {
