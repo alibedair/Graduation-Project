@@ -5,6 +5,7 @@ const { uploadBuffer, deleteImagesByPublicIds } = require('../utils/cloudinaryUp
 const Review = require('../models/Review');
 const { Sequelize } = require('sequelize');
 const AuctionRequest = require('../models/auctionRequest');
+const { Admin } = require('../models');
 
 exports.createProduct = async (req, res) => {
     try {
@@ -258,28 +259,30 @@ exports.deleteProduct = async (req, res) => {
     try {
         const userId = req.user.id;
         const artist = await Artist.findOne({where:{userId}});
-        if(!artist) {
+        const admin = await Admin.findOne({where:{userId}});
+
+        if(!artist && !admin) {
             return res.status(403).json({message: 'You are not authorized to delete a product'});
         }
+        
         const productId = req.params.productId;
         const product = await Product.findOne({where:{productId}});
         if(!product) {
             return res.status(404).json({message: 'Product not found'});
         }
-        if(product.artistId !== artist.artistId) {
-            return res.status(403).json({message: 'Forbidden'});
+        if(artist && !admin && product.artistId !== artist.artistId) {
+            return res.status(403).json({message: 'Forbidden: You can only delete your own products'});
         }
-        
-        // Only allow deletion of normal type products
+
         if(product.type !== 'normal') {
             return res.status(400).json({
                 message: `Cannot delete ${product.type} products. Only normal products can be deleted.`
             });
         }
 
-        // Delete images from Cloudinary before deleting the product
         if (product.image?.length > 0) {
-            const deleteResult = await deleteImagesByPublicIds(artist.userId, product.image);
+            const userIdForCloudinary = artist ? artist.userId : userId;
+            const deleteResult = await deleteImagesByPublicIds(userIdForCloudinary, product.image);
             if (!deleteResult.success) {
                 console.error('Failed to delete images from Cloudinary:', deleteResult.error);
             }
