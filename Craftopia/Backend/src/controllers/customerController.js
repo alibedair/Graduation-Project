@@ -2,6 +2,7 @@ const customer = require('../models/customer');
 const User = require('../models/user');
 const Artist = require('../models/artist');
 const ArtistFollow = require('../models/artistFollow');
+const Product = require('../models/product');
 
 exports.updateProfile = async (req, res) => {
     try {
@@ -160,7 +161,7 @@ exports.getFollowing = async (req, res) => {
     }
 };
 
-exports.searchArtists = async (req, res) => {
+exports.searchArtistsAndProducts = async (req, res) => {
     try {
         const { query } = req.query;
         const userId = req.user?.id;
@@ -173,6 +174,7 @@ exports.searchArtists = async (req, res) => {
         if (userId) {
             customerProfile = await customer.findOne({ where: { userId } });
         }
+
         const artists = await Artist.findAll({
             where: {
                 [require('sequelize').Op.or]: [
@@ -182,37 +184,65 @@ exports.searchArtists = async (req, res) => {
                 ]
             },
             attributes: ['artistId', 'name', 'username', 'profilePicture', 'biography'],
-            limit: 20
+            limit: 10
         });
+
+        const products = await Product.findAll({
+            where: {
+                [require('sequelize').Op.or]: [
+                    { name: { [require('sequelize').Op.iLike]: `%${query}%` } },
+                    { description: { [require('sequelize').Op.iLike]: `%${query}%` } },
+                    { material: { [require('sequelize').Op.iLike]: `%${query}%` } }
+                ]
+            },
+            include: [{
+                model: Artist,
+                attributes: ['artistId', 'name', 'username', 'profilePicture']
+            }],
+            attributes: ['productId', 'name', 'price', 'description', 'image', 'quantity', 'material', 'type'],
+            limit: 10
+        });
+
         const artistsWithCounts = await Promise.all(
             artists.map(async (artist) => {
                 const followersCount = await ArtistFollow.count({
                     where: { artistId: artist.artistId }
                 });
 
+                let isFollowing = false;
+                if (customerProfile) {
+                    const followRecord = await ArtistFollow.findOne({
+                        where: {
+                            customerId: customerProfile.customerId,
+                            artistId: artist.artistId
+                        }
+                    });
+                    isFollowing = !!followRecord;
+                }
+
                 return {
                     ...artist.dataValues,
-                    followersCount
+                    followersCount,
+                    isFollowing,
+                    type: 'artist'
                 };
             })
         );
-        artistsWithCounts.sort((a, b) => b.followersCount - a.followersCount);
-        for (let artist of artistsWithCounts) {
-            artist.isFollowing = false;
-            if (customerProfile) {
-                const followRecord = await ArtistFollow.findOne({
-                    where: {
-                        customerId: customerProfile.customerId,
-                        artistId: artist.artistId
-                    }
-                });
-                artist.isFollowing = !!followRecord;
-            }
-        }
 
-        return res.status(200).json({ artists: artistsWithCounts });
+        const productsFormatted = products.map(product => ({
+            ...product.dataValues,
+            type: 'product'
+        }));
+
+        artistsWithCounts.sort((a, b) => b.followersCount - a.followersCount);
+
+        return res.status(200).json({ 
+            artists: artistsWithCounts,
+            products: productsFormatted,
+            totalResults: artistsWithCounts.length + productsFormatted.length
+        });
     } catch (error) {
-        console.error('Error searching artists:', error);
+        console.error('Error searching artists and products:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

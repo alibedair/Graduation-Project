@@ -38,8 +38,8 @@ router.get('/followed-artists',
     customerController.getFollowing
 );
 
-router.get('/search-artists',
-    customerController.searchArtists
+router.get('/search',
+    customerController.searchArtistsAndProducts
 );
 router.get('/all-customers', 
     authMiddleware, 
