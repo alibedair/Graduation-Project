@@ -6,24 +6,16 @@ import { useCart } from '../context/CartContext';
 import Footer from '../Components/Footer';
 import { useSearchParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-
-
-
 const Shop = () => {
     const [searchParams] = useSearchParams();
     const initialCategory = searchParams.get('category') || 'All';
     const [selected, setSelected] = useState(initialCategory);
-
     const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
-
     const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
     const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
     const navigate = useNavigate();
-
-
-
     useEffect(() => {
         const category = searchParams.get('category') || 'All';
         setSelected(category);
@@ -36,25 +28,23 @@ const Shop = () => {
                 const data = await res.json();
 
                 const productsArray = data.products || [];
-                const formatted = productsArray.map((p) => ({
-                    id: p.productId,
-                    name: p.name,
-                    price: p.price,
-                    image: p.image || [],
-                    category: p.category?.name || "Uncategorized",
-                    artist: p.artist?.name || "Unknown",
-                    averageRating: parseFloat(p.averageRating) || 0,
-                    totalReviews: p.totalReviews || 0,
-                    inStock: p.quantity > 0,
-                    description: p.description || "No description available.",
-                    dimensions: p.dimensions || "Not specified",
-                    material: p.material || "Not specified",
-                    quantity: p.quantity
-                }));
-
-
-
-
+                const formatted = productsArray
+                    .filter((p) => p.type === 'normal')
+                    .map((p) => ({
+                        id: p.productId,
+                        name: p.name,
+                        price: p.price,
+                        image: p.image || [],
+                        category: p.category?.name || "Uncategorized",
+                        artist: p.artist?.name || "Unknown",
+                        averageRating: parseFloat(p.averageRating) || 0,
+                        totalReviews: p.totalReviews || 0,
+                        inStock: p.quantity > 0,
+                        description: p.description || "No description available.",
+                        dimensions: p.dimensions || "Not specified",
+                        material: p.material || "Not specified",
+                        quantity: p.quantity
+                    }));
                 setProducts(formatted);
                 const uniqueCategories = Array.from(
                     new Set(formatted.map((p) => p.category))

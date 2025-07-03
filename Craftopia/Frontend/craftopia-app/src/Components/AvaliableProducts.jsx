@@ -40,7 +40,9 @@ const AvaliableProducts = () => {
           inStock: p.quantity > 0,
           averageRating: parseFloat(p.averageRating) || 0,
           totalReviews: p.totalReviews || 0,
+          type: p.type,
         }));
+
 
         setProducts(formatted);
       })
@@ -134,7 +136,7 @@ const AvaliableProducts = () => {
           viewport={{ once: true }}
         >
           {products
-            .filter((product) => product.inStock) // <-- only show available products
+            .filter((product) => product.inStock && product.type === 'normal')
             .map((product, index) => {
               const isFavorite = wishlist.some(
                 (item) => item.id === product.id

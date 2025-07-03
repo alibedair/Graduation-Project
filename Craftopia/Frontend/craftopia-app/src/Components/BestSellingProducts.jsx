@@ -29,22 +29,26 @@ const BestSellingProducts = () => {
           (a, b) => b.sellingNumber - a.sellingNumber
         );
 
-        const formatted = sorted.map((p) => ({
-          id: p.productId,
-          name: p.name,
-          price: p.price,
-          image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ["/placeholder.jpg"],
-          category: p.category?.name || "Uncategorized",
-          artist: p.artist?.name || "Unknown",
-          averageRating: parseFloat(p.averageRating) || 0,
-          totalReviews: p.totalReviews || 0,
-          inStock: p.quantity > 0,
-          description: p.description || "No description available.",
-          material: p.material || "Not specified",
-          dimensions: p.dimensions || "Not specified",
-          sold: p.sellingNumber || 0,
-          quantity: p.quantity,
-        }));
+        const formatted = sorted
+          .filter((p) => p.type === 'normal')
+          .map((p) => ({
+            id: p.productId,
+            name: p.name,
+            price: p.price,
+            image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ["/placeholder.jpg"],
+            category: p.category?.name || "Uncategorized",
+            artist: p.artist?.name || "Unknown",
+            averageRating: parseFloat(p.averageRating) || 0,
+            totalReviews: p.totalReviews || 0,
+            inStock: p.quantity > 0,
+            description: p.description || "No description available.",
+            material: p.material || "Not specified",
+            dimensions: p.dimensions || "Not specified",
+            sold: p.sellingNumber || 0,
+            quantity: p.quantity,
+            type: p.type,
+          }));
+
 
         setProducts(formatted);
       })
@@ -160,11 +164,11 @@ const BestSellingProducts = () => {
                   quantity={quantity}
                   onAddToCart={() => addToCart(product, navigate)}
                   onIncrement={() => {
-  if (inCart) incrementQuantity(inCart);
-}}
-onDecrement={() => {
-  if (inCart && quantity > 0) decrementQuantity(inCart);
-}}
+                    if (inCart) incrementQuantity(inCart);
+                  }}
+                  onDecrement={() => {
+                    if (inCart && quantity > 0) decrementQuantity(inCart);
+                  }}
 
                 />
               </motion.div>
