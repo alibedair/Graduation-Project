@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Palette, Brush, Smile, Plus, Sparkle, Upload } from "lucide-react";
 import { EnvelopeIcon } from "@heroicons/react/24/solid";
@@ -10,14 +9,13 @@ const RequestCustomization = () => {
         title: "",
         description: "",
         budget: "",
-        deadline: "",
+        deadline: "", 
         image: null,
     });
 
     const [preview, setPreview] = useState(null);
     const [message, setMessage] = useState(null);
     const [replies, setReplies] = useState([]);
-    const [requests, setRequests] = useState([]);
     const [groupedReplies, setGroupedReplies] = useState({});
     const fileInputRef = useRef(null);
     const [showForm, setShowForm] = useState(false);
@@ -26,17 +24,10 @@ const RequestCustomization = () => {
     const [openChatId, setOpenChatId] = useState(null);
     const [unreadMessages, setUnreadMessages] = useState([]);
     const [newMessageNotification, setNewMessageNotification] = useState(null);
-
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("token");
             try {
-                const requestsRes = await fetch("http://localhost:3000/customizationRequest/noOffers", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!requestsRes.ok) throw new Error("Failed to fetch requests.");
-                const requestsData = await requestsRes.json();
-                setRequests(requestsData);
                 const repliesRes = await fetch("http://localhost:3000/customizationResponse/responses", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -68,7 +59,6 @@ const RequestCustomization = () => {
                 console.error("Error fetching data:", error);
                 setGroupedReplies({});
                 setUnreadMessages([]);
-                setRequests([]);
             }
         };
 
@@ -117,7 +107,7 @@ const RequestCustomization = () => {
             const data = await response.json();
 
             setMessage("Request submitted successfully!");
-            setFormData({ title: "", description: "", budget: "", deadline: "", image: null });
+            setFormData({ title: "", description: "", budget: "", image: null });
             setPreview(null);
         } catch (error) {
             console.error(error);
@@ -126,7 +116,6 @@ const RequestCustomization = () => {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         if (unreadMessages.length > 0) {
             const latestMessage = unreadMessages[unreadMessages.length - 1];
@@ -145,7 +134,6 @@ const RequestCustomization = () => {
             }
         }
     }, [unreadMessages, replies]);
-
     const toggleRequest = (requestId) => {
         setExpandedRequestIds(prev =>
             prev.includes(requestId)
@@ -196,25 +184,23 @@ const RequestCustomization = () => {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return "Not specified";
-        const date = new Date(dateString);
-        return isNaN(date.getTime())
-            ? "Invalid date"
-            : date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-    };
+    if (!dateString) return "Not specified";
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) 
+        ? "Invalid date" 
+        : date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+};
 
     const getStatusBadge = (status) => {
         const statusStyles = {
             PENDING: "bg-yellow-100 text-yellow-800",
             ACCEPTED: "bg-green-100 text-green-800",
-            DECLINED: "bg-red-100 text-red-800",
-            NO_OFFERS: "bg-blue-100 text-blue-800"
+            DECLINED: "bg-red-100 text-red-800"
         };
-
 
         return (
             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusStyles[status]}`}>
@@ -222,15 +208,12 @@ const RequestCustomization = () => {
             </span>
         );
     };
-
     const getUnreadCount = (responseId) => {
         return unreadMessages.filter(msg => msg.responseId === responseId).length;
     };
-
     const hasUnreadMessages = (responseId) => {
         return unreadMessages.some(msg => msg.responseId === responseId);
     };
-
     return (
         <div className="max-w-5xl bg-[#FAF9F6] p-8 rounded-3xl relative">
             {newMessageNotification && (
@@ -328,7 +311,6 @@ const RequestCustomization = () => {
                     </div>
                 </motion.div>
             )}
-
             {openChatId && (
                 <Messages
                     responseId={openChatId}
@@ -336,24 +318,25 @@ const RequestCustomization = () => {
                 />
             )}
 
-
             {!showForm ? (
                 <>
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="text-4xl font-extrabold text-[black] tracking-wide">
                             🎨 Artist Offers
                         </h2>
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="bg-[#E07385] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#c75d70] shadow-md transition duration-300 flex items-center gap-2"
-                        >
-                            <Plus className="w-5 h-5" />
-                            Add New Request
-                        </button>
+                        {Object.keys(groupedReplies).length > 0 && (
+                            <button
+                                onClick={() => setShowForm(true)}
+                                className="bg-[#E07385] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#c75d70] shadow-md transition duration-300 flex items-center gap-2"
+                            >
+                                <Plus className="w-5 h-5" />
+                                Add New Request
+                            </button>
+                        )}
                     </div>
 
                     <div className="bg-[#FAF9F6] p-6 rounded-2xl shadow-md max-w-5xl ml-0 mr-auto space-y-6">
-                        {Object.keys(groupedReplies).length === 0 && requests.length === 0 ? (
+                        {Object.keys(groupedReplies).length === 0 ? (
                             <div className="relative text-center py-16 px-6 bg-gradient-to-br from-[#FFF5F7] to-[#FFF] rounded-xl border-2 border-dashed border-[#E07385]/30 overflow-hidden">
                                 <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-[#F8E8EB]/50 blur-xl"></div>
                                 <div className="absolute -bottom-8 -right-8 w-40 h-40 rounded-full bg-[#F8E8EB]/30 blur-xl"></div>
@@ -398,248 +381,174 @@ const RequestCustomization = () => {
                                 </div>
                             </div>
                         ) : (
-                            <>
-                                {Object.keys(groupedReplies).length > 0 && Object.entries(groupedReplies).map(([requestId, replies]) => {
-                                    const firstReply = replies[0];
-                                    const request = firstReply.customizationrequest || {};
+                            Object.entries(groupedReplies).map(([requestId, replies]) => {
+                                const firstReply = replies[0];
+                                const request = firstReply.customizationrequest || {};
 
-                                    return (
+                                return (
+                                    <div
+                                        key={requestId}
+                                        className="border border-[#E07385]/40 rounded-xl p-5 bg-[#F6EEEE] shadow-sm hover:shadow-md transition-all duration-300"
+                                    >
                                         <div
-                                            key={requestId}
-                                            className="border border-[#E07385]/40 rounded-xl p-5 bg-[#F6EEEE] shadow-sm hover:shadow-md transition-all duration-300"
+                                            className="flex items-center justify-between cursor-pointer"
+                                            onClick={() => toggleRequest(requestId)}
                                         >
-                                            <div
-                                                className="flex items-center justify-between cursor-pointer"
-                                                onClick={() => toggleRequest(requestId)}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    {request.image && (
-                                                        <img
-                                                            src={request.image}
-                                                            alt="Request"
-                                                            className="w-20 h-20 object-cover rounded-lg border border-[#E07385]/30 shadow-sm"
-                                                        />
-                                                    )}
-                                                    <div>
-                                                        <p className="text-xl font-semibold text-[black]">
-                                                            🛍️ {request.title || "Unknown Product"}
+                                            <div className="flex items-center gap-4">
+                                                {request.image && (
+                                                    <img
+                                                        src={request.image}
+                                                        alt="Request"
+                                                        className="w-20 h-20 object-cover rounded-lg border border-[#E07385]/30 shadow-sm"
+                                                    />
+                                                )}
+                                                <div>
+                                                    <p className="text-xl font-semibold text-[black]">
+                                                        🛍️ {request.title || "Unknown Product"}
+                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-l text-gray-500">
+                                                            {replies.length} {replies.length === 1 ? "offer" : "offers"} available
                                                         </p>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-l text-gray-500">
-                                                                {replies.length} {replies.length === 1 ? "offer" : "offers"} available
-                                                            </p>
-                                                            {replies.some(r => r.status === 'ACCEPTED') && (
-                                                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
-                                                                    Accepted
-                                                                </span>
-                                                            )}
-                                                            {replies.some(r => r.status === 'ACCEPTED' && hasUnreadMessages(r.responseId)) && (
-                                                                <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold animate-pulse">
-                                                                    New Messages!
-                                                                </span>
-                                                            )}
-                                                            {replies.some(r => r.status === 'ACCEPTED' && getUnreadCount(r.responseId) > 0) && (
-                                                                <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold animate-pulse">
-                                                                    {replies.reduce((total, r) => total + (r.status === 'ACCEPTED' ? getUnreadCount(r.responseId) : 0), 0)} New Messages
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                        {replies.some(r => r.status === 'ACCEPTED') && (
+                                                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                                                                Accepted
+                                                            </span>
+                                                        )}
+                                                        {replies.some(r => r.status === 'ACCEPTED' && hasUnreadMessages(r.responseId)) && (
+                                                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold animate-pulse">
+                                                                New Messages!
+                                                            </span>
+                                                        )}
+                                                        {replies.some(r => r.status === 'ACCEPTED' && getUnreadCount(r.responseId) > 0) && (
+                                                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold animate-pulse">
+                                                                {replies.reduce((total, r) => total + (r.status === 'ACCEPTED' ? getUnreadCount(r.responseId) : 0), 0)} New Messages
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <span className="text-2xl text-[#E07385] font-bold">
-                                                    {expandedRequestIds.includes(requestId) ? "▲" : "▼"}
-                                                </span>
                                             </div>
+                                            <span className="text-2xl text-[#E07385] font-bold">
+                                                {expandedRequestIds.includes(requestId) ? "▲" : "▼"}
+                                            </span>
+                                        </div>
 
-                                            {expandedRequestIds.includes(requestId) && (
-                                                <div className="mt-4 pt-4 space-y-6">
-                                                    {replies.map((reply) => (
-                                                        <div
-                                                            key={reply.responseId}
-                                                            className={`p-4 rounded-lg border border-gray-200 ${reply.status === 'ACCEPTED' ? 'bg-[white]' : 'bg-white'}`}
-                                                        >
-                                                            <div className="flex items-center justify-between gap-4 mb-3">
-                                                                <div className="flex items-center gap-3">
-                                                                    {reply.artist?.profilePicture && (
-                                                                        <img
-                                                                            src={reply.artist.profilePicture}
-                                                                            alt="Artist"
-                                                                            className="w-12 h-12 rounded-full object-cover"
-                                                                        />
-                                                                    )}
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-lg font-semibold text-black">
-                                                                            {reply.artist?.username || "Unknown Artist"}
-                                                                        </span>
-                                                                        {getStatusBadge(reply.status)}
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="flex items-center gap-4 relative">
-                                                                    <span className="text-xl font-bold text-[#921A40]">
-                                                                        {reply.price} LE
-                                                                    </span>
-
-                                                                    {reply.status === "ACCEPTED" && (
-                                                                        <motion.div
-                                                                            whileHover={{ scale: 1.1 }}
-                                                                            whileTap={{ scale: 0.95 }}
-                                                                            onClick={() => setOpenChatId(reply.responseId)}
-                                                                            className="relative cursor-pointer"
-                                                                            title="Message artist"
-                                                                        >
-                                                                            <div className="relative">
-                                                                                <EnvelopeIcon className="h-6 w-6 text-[#E07385] hover:text-[#921A40] transition-colors" />
-                                                                                {getUnreadCount(reply.responseId) > 0 && (
-                                                                                    <motion.span
-                                                                                        className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
-                                                                                        initial={{ scale: 0 }}
-                                                                                        animate={{ scale: 1 }}
-                                                                                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                                                                    >
-                                                                                        {getUnreadCount(reply.responseId)}
-                                                                                    </motion.span>
-                                                                                )}
-                                                                            </div>
-                                                                        </motion.div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-
-                                                            {reply.notes && (
-                                                                <p className="text-gray-700 mb-3">
-                                                                    <strong className="text-[#E07385]">Note:</strong> {reply.notes}
-                                                                </p>
-                                                            )}
-
-                                                            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                                                                <p>
-                                                                    <strong className="text-[#E07385]">EstimationCompletionTime</strong>{" "}
-                                                                    {formatDate(reply.estimationCompletionTime)}
-                                                                </p>
-                                                                <p className="text-right text-gray-500">
-                                                                    Offered on: {formatDate(reply.createdAt)}
-                                                                </p>
-                                                            </div>
-
-                                                            {reply.image && (
-                                                                <div className="mb-3">
-                                                                    <div className="inline-block bg-[#E07385]/10 text-[#E07385] px-3 py-1 rounded-full text-xs font-semibold mb-2">
-                                                                        🎨 Artist's Proposal
-                                                                    </div>
+                                        {expandedRequestIds.includes(requestId) && (
+                                            <div className="mt-4 pt-4 space-y-6">
+                                                {replies.map((reply) => (
+                                                    <div
+                                                        key={reply.responseId}
+                                                        className={`p-4 rounded-lg border border-gray-200 ${reply.status === 'ACCEPTED' ? 'bg-[white]' : 'bg-white'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center justify-between gap-4 mb-3">
+                                                            <div className="flex items-center gap-3">
+                                                                {reply.artist?.profilePicture && (
                                                                     <img
-                                                                        src={reply.image}
-                                                                        alt="Reply Image"
-                                                                        className="w-28 h-28 object-cover rounded-lg shadow border border-[#E07385]/30"
+                                                                        src={reply.artist.profilePicture}
+                                                                        alt="Artist"
+                                                                        className="w-12 h-12 rounded-full object-cover"
                                                                     />
+                                                                )}
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-lg font-semibold text-black">
+                                                                        {reply.artist?.username || "Unknown Artist"}
+                                                                    </span>
+                                                                    {getStatusBadge(reply.status)}
                                                                 </div>
-                                                            )}
+                                                            </div>
 
-                                                            <div className="flex justify-end gap-4 mt-4">
-                                                                {reply.status === 'PENDING' ? (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={() => updateReplyStatus(reply.responseId, 'decline')}
-                                                                            className="bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-700 transition"
-                                                                        >
-                                                                            Decline
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => updateReplyStatus(reply.responseId, 'accept')}
-                                                                            className="bg-[#e07385] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#c26075] transition"
-                                                                        >
-                                                                            Accept
-                                                                        </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <div className="text-sm italic text-gray-500">
-                                                                        {reply.status === 'ACCEPTED' ?
-                                                                            "You've accepted this offer" :
-                                                                            "You've declined this offer"}
-                                                                    </div>
+                                                            <div className="flex items-center gap-4 relative">
+                                                                <span className="text-xl font-bold text-[#921A40]">
+                                                                    {reply.price} LE
+                                                                </span>
+
+                                                                {reply.status === "ACCEPTED" && (
+                                                                    <motion.div
+                                                                        whileHover={{ scale: 1.1 }}
+                                                                        whileTap={{ scale: 0.95 }}
+                                                                        onClick={() => setOpenChatId(reply.responseId)}
+                                                                        className="relative cursor-pointer"
+                                                                        title="Message artist"
+                                                                    >
+                                                                        <div className="relative">
+                                                                            <EnvelopeIcon className="h-6 w-6 text-[#E07385] hover:text-[#921A40] transition-colors" />
+                                                                            {getUnreadCount(reply.responseId) > 0 && (
+                                                                                <motion.span
+                                                                                    className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                                                                                    initial={{ scale: 0 }}
+                                                                                    animate={{ scale: 1 }}
+                                                                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                                                                >
+                                                                                    {getUnreadCount(reply.responseId)}
+                                                                                </motion.span>
+                                                                            )}
+                                                                        </div>
+                                                                    </motion.div>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {requests.length > 0 && requests.map(request => (
-                                    !groupedReplies[request.requestId] && (
-                                        <div
-                                            key={request.requestId}
-                                            className="border border-[#E07385]/40 rounded-xl p-5 bg-[#F6EEEE] shadow-sm hover:shadow-md transition-all duration-300"
-                                        >
-                                            <div
-                                                className="flex items-center justify-between cursor-pointer"
-                                                onClick={() => toggleRequest(request.requestId)}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    {request.image && (
-                                                        <img
-                                                            src={request.image}
-                                                            alt="Request"
-                                                            className="w-20 h-20 object-cover rounded-lg border border-[#E07385]/30 shadow-sm"
-                                                        />
-                                                    )}
-                                                    <div>
-                                                        <p className="text-xl font-semibold text-[black]">
-                                                            🛍️ {request.title || "Unknown Product"}
-                                                        </p>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-l text-gray-500">
-                                                                No offers yet
+
+                                                        {reply.notes && (
+                                                            <p className="text-gray-700 mb-3">
+                                                                <strong className="text-[#E07385]">Note:</strong> {reply.notes}
                                                             </p>
-                                                            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">
-                                                                NO_OFFERS
-                                                            </span>
+                                                        )}
+
+                                                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                                                            <p>
+                                                                <strong className="text-[#E07385]">EstimationCompletionTime</strong>{" "}
+                                                                {formatDate(reply.estimationCompletionTime)}
+                                                            </p>
+                                                            <p className="text-right text-gray-500">
+                                                                Offered on: {formatDate(reply.createdAt)}
+                                                            </p>
                                                         </div>
 
-                                                    </div>
-                                                </div>
-                                                <span className="text-2xl text-[#E07385] font-bold">
-                                                    {expandedRequestIds.includes(request.requestId) ? "▲" : "▼"}
-                                                </span>
-                                            </div>
-
-                                            {expandedRequestIds.includes(request.requestId) && (
-                                                <div className="mt-4 pt-6 border-t border-[#E07385]/30 transition-all duration-500 ease-in-out">
-                                                    <div className="p-6 rounded-3xl border border-[#f3c7ce] bg-gradient-to-br from-white to-[#fff6f8] shadow-xl hover:shadow-2xl transition-shadow duration-300">
-
-                                                        {/* Header */}
-                                                        <div className="flex items-center justify-between gap-4 mb-5">
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="w-12 h-12 rounded-full bg-[#fcebed] flex items-center justify-center shadow-inner">
-                                                                    <Palette className="w-6 h-6 text-[#E07385]" />
+                                                        {reply.image && (
+                                                            <div className="mb-3">
+                                                                <div className="inline-block bg-[#E07385]/10 text-[#E07385] px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                                                                    🎨 Artist's Proposal
                                                                 </div>
-                                                                <h3 className="text-lg sm:text-xl font-bold text-[#921A40] tracking-wide">
-                                                                    🎨 Waiting for Artists
-                                                                </h3>
+                                                                <img
+                                                                    src={reply.image}
+                                                                    alt="Reply Image"
+                                                                    className="w-28 h-28 object-cover rounded-lg shadow border border-[#E07385]/30"
+                                                                />
                                                             </div>
-                                                            <span className="text-xl font-bold text-[#E07385] bg-[#fcebed] px-4 py-2 rounded-full shadow">
-                                                                {request.budget} LE
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-sm sm:text-base text-center space-y-3 text-[#7a162e]">
-                                                            <p className="bg-[#fff0f3] border border-[#f3c7ce] px-4 py-3 rounded-lg font-medium shadow-sm">
-                                                                ⏳ This request is currently waiting for artist responses.
-                                                            </p>
-                                                            <p className="text-gray-600 font-semibold">
-                                                                📅 <span className="text-[#E07385]">Deadline:</span> {formatDate(request.deadline)}
-                                                            </p>
+                                                        )}
+
+                                                        <div className="flex justify-end gap-4 mt-4">
+                                                            {reply.status === 'PENDING' ? (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => updateReplyStatus(reply.responseId, 'decline')}
+                                                                        className="bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-700 transition"
+                                                                    >
+                                                                        Decline
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => updateReplyStatus(reply.responseId, 'accept')}
+                                                                        className="bg-[#e07385] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#c26075] transition"
+                                                                    >
+                                                                        Accept
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <div className="text-sm italic text-gray-500">
+                                                                    {reply.status === 'ACCEPTED' ?
+                                                                        "You've accepted this offer" :
+                                                                        "You've declined this offer"}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-
-
-
-                                        </div>
-                                    )
-                                ))}
-                            </>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })
                         )}
                     </div>
                 </>
@@ -653,12 +562,13 @@ const RequestCustomization = () => {
                             onClick={() => setShowForm(false)}
                             className="text-white bg-[#E07385] hover:bg-[#921A40] font-medium transition px-4 py-2 rounded-lg"
                         >
-                            Back to Offers
+                            Artist Offers
                         </button>
                     </div>
 
                     {message && (
-                        <p className={`mb-6 text-center text-lg font-semibold ${message.includes("success") ? "text-green-600" : "text-[#E07385] animate-pulse"}`}>
+                        <p className={`mb-6 text-center text-lg font-semibold ${message.includes("success") ? "text-green-600" : "text-[#E07385] animate-pulse"
+                            }`}>
                             {message}
                         </p>
                     )}
@@ -692,7 +602,6 @@ const RequestCustomization = () => {
                                     className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm resize-none h-32 focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                 />
                             </div>
-
                             <div>
                                 <label className="block font-semibold text-sm text-[#7a162e] mb-2">
                                     Budget (LE) <span className="text-red-500">*</span>
@@ -706,22 +615,20 @@ const RequestCustomization = () => {
                                     className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
                                 />
                             </div>
-
                             <div>
-                                <label className="block font-semibold text-sm text-[#7a162e] mb-2">
-                                    Deadline <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    name="deadline"
-                                    value={formData.deadline}
-                                    onChange={handleChange}
-                                    required
-                                    min={new Date().toISOString().split('T')[0]}
-                                    className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
-                                />
-                            </div>
-
+    <label className="block font-semibold text-sm text-[#7a162e] mb-2">
+        Deadline <span className="text-red-500">*</span>
+    </label>
+    <input
+        type="date"
+        name="deadline"
+        value={formData.deadline}
+        onChange={handleChange}
+        required
+        min={new Date().toISOString().split('T')[0]} // Set min date to today
+        className="w-full px-4 py-3 border border-[#f3c7ce] rounded-lg text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E07385]"
+    />
+</div>
                             <div className="mt-4">
                                 <button
                                     type="submit"
