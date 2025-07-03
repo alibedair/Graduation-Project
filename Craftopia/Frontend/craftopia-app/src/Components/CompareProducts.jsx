@@ -10,6 +10,7 @@ import {
     Palette,
     User,
     Tag,
+    PoundSterling,
 } from "lucide-react";
 
 const CompareProducts = () => {
@@ -99,8 +100,9 @@ const CompareProducts = () => {
                                         {product.name}
                                     </h3>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[#921A40] font-bold">
-                                            ${product.price}
+                                        <span className="text-[#921A40] font-bold inline-flex items-center gap-x-0.5">
+                                        <PoundSterling className="h-4 w-4 inline-block" />
+                                        {product.price}
                                         </span>
                                         <div className="flex items-center text-yellow-500">
                                             <Star size={14} fill="currentColor" />
@@ -209,9 +211,11 @@ const CompareProducts = () => {
                                         icon: <Tag size={16} />,
                                         label: "Price",
                                         accessor: (p) => (
-                                            <span className="text-[#921A40] font-bold">
-                                                ${p.price}
+                                            <span className="text-[#921A40] font-bold inline-flex items-center gap-x-0.5 ">
+                                            <PoundSterling className="h-3 w-3 inline-block" />
+                                            {p.price}
                                             </span>
+
                                         ),
                                     },
                                 ].map(({ icon, label, accessor }, rowIndex) => (
