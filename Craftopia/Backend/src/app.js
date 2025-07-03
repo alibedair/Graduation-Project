@@ -6,8 +6,9 @@ const app = express();
 
 app.use(helmet());
 
+ // Configure CORS for both development and production
 app.use(cors({
-  origin: 'http://localhost:5173',  
+  origin: '*',  // Allow any origin in production for now (you can restrict later)
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true           
@@ -16,6 +17,11 @@ app.use(cors({
 
 
 app.use(express.json({ limit: '2mb' }));
+
+// Health check route for Render
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'success', message: 'Craftopia API is running' });
+});
 
 // Routes
 const authRoute = require('./routes/authRoute');
@@ -83,7 +89,7 @@ const cartRoute = require('./routes/cartRoute');
 app.use('/mycart', cartRoute);
 
 const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
