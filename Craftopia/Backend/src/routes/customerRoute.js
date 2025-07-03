@@ -39,7 +39,6 @@ router.get('/followed-artists',
 );
 
 router.get('/search-artists',
-    authMiddleware,
     customerController.searchArtists
 );
 router.get('/all-customers', 

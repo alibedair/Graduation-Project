@@ -61,13 +61,13 @@ exports.login = async (req, res) => {
           if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        /*if (!user.isEmailVerified) {
+        if (!user.isEmailVerified) {
             return res.status(403).json({ 
                 message: 'Please verify your email before logging in',
                 requiresEmailVerification: true,
                 userId: user.userId
             });
-        }*/
+        }
         
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {

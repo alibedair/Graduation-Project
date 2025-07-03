@@ -226,26 +226,56 @@ exports.removeArtist = async (req, res) => {
                 where: { artistId: artist.artistId },
                 transaction
             });
-            
-            // don't delete active auctions
 
+            let hasActiveAuctions = false;
             for (const request of auctionRequests) {
-                if (request.status === 'approved') {
+                if (request.status === 'scheduled' && request.auctionId) {
                     try {
-                        const auctionsRef = firebase_db.ref('auctions');
-                        const snapshot = await auctionsRef.orderByChild('requestId').equalTo(request.requestId).once('value');
-                        const auctions = snapshot.val();
+                        const auctionSnapshot = await firebase_db.ref(`auctions/${request.auctionId}`).once('value');
+                        const auctionData = auctionSnapshot.val();
                         
-                        if (auctions) {
-                            for (const auctionId in auctions) {
-                                await firebase_db.ref(`auctions/${auctionId}`).remove();
-                            }
+                        if (auctionData && auctionData.status === 'active') {
+                            hasActiveAuctions = true;
+                            break;
                         }
                     } catch (firebaseError) {
-                        console.error('Firebase error when deleting auctions:', firebaseError);
+                        console.error('Firebase error when checking auction status:', firebaseError);
                     }
                 }
-                await request.destroy({ transaction });
+            }
+            
+            if (hasActiveAuctions) {
+                await transaction.rollback();
+                return res.status(400).json({ 
+                    message: "Cannot remove artist with active auctions. Please wait for auctions to end." 
+                });
+            }
+
+            for (const request of auctionRequests) {
+                if (request.status === 'scheduled') {
+                    try {
+                        if (request.auctionId) {
+                            const auctionSnapshot = await firebase_db.ref(`auctions/${request.auctionId}`).once('value');
+                            const auctionData = auctionSnapshot.val();
+                            if (auctionData && auctionData.status === 'scheduled') {
+                                await firebase_db.ref(`auctions/${request.auctionId}`).remove();
+                            }
+                        }
+                        await request.update({ 
+                            status: 'rejected',
+                            adminNotes: 'Auction rejected due to artist account removal'
+                        }, { transaction });
+                        
+                    } catch (firebaseError) {
+                        console.error('Firebase error when handling scheduled auction:', firebaseError);
+                        await request.update({ 
+                            status: 'rejected',
+                            adminNotes: 'Auction rejected due to artist account removal'
+                        }, { transaction });
+                    }
+                } else {
+                    await request.destroy({ transaction });
+                }
             }
             
             await CustomizationResponse.destroy({
