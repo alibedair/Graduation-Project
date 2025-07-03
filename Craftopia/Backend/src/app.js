@@ -8,7 +8,7 @@ app.use(helmet());
 
  // Configure CORS for both development and production
 app.use(cors({
-  origin: '*',  // Allow any origin in production for now (you can restrict later)
+  origin: 'http://localhost:5173',  
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true           

@@ -2,10 +2,17 @@ const admin = require("firebase-admin");
 require('dotenv').config();
 const serviceAccount = require("./firebaseServiceAccount.json");
 
+console.log('Firebase Database URL:', process.env.FIREBASE_DATABASE_URL);
+
+if (!process.env.FIREBASE_DATABASE_URL) {
+  console.error('ERROR: FIREBASE_DATABASE_URL environment variable is not set!');
+  console.error('Please make sure to set FIREBASE_DATABASE_URL in your .env file or Docker environment');
+}
+
 try {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL, 
+    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://craftopia-b79f8-default-rtdb.europe-west1.firebasedatabase.app/',
   });
   console.log('Firebase initialized successfully');
 } catch (error) {
