@@ -100,6 +100,7 @@ const GetProfile = ({ setActiveTab }) => {
               dimensions: p.dimensions,
               quantity: p.quantity,
               material: p.material,
+              type: 'auction',
             }))
         );
       } catch (err) {

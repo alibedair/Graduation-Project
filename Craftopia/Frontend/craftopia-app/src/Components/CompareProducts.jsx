@@ -17,15 +17,15 @@ const CompareProducts = () => {
     const [products, setProducts] = useState([]);
     const [compareList, setCompareList] = useState([]);
     const navigate = useNavigate();
-useEffect(() => {
-    fetch("http://localhost:3000/product/get")
-        .then((res) => res.json())
-        .then((data) => {
-            const normalProducts = data.products.filter(p => p.type === 'normal');
-            setProducts(normalProducts);
-        })
-        .catch((err) => console.error("Error fetching products:", err));
-}, []);
+    useEffect(() => {
+        fetch("http://localhost:3000/product/get")
+            .then((res) => res.json())
+            .then((data) => {
+                const normalProducts = data.products.filter(p => p.type === 'normal');
+                setProducts(normalProducts);
+            })
+            .catch((err) => console.error("Error fetching products:", err));
+    }, []);
 
     const addToCompare = (product) => {
         if (compareList.find((p) => p.productId === product.productId)) return;
@@ -103,8 +103,8 @@ useEffect(() => {
                                     </h3>
                                     <div className="flex justify-between items-center">
                                         <span className="text-[#921A40] font-bold inline-flex items-center gap-x-0.5">
-                                        <PoundSterling className="h-4 w-4 inline-block" />
-                                        {product.price}
+                                            <PoundSterling className="h-4 w-4 inline-block" />
+                                            {product.price}
                                         </span>
                                         <div className="flex items-center text-yellow-500">
                                             <Star size={14} fill="currentColor" />
@@ -198,8 +198,8 @@ useEffect(() => {
                                                         key={i}
                                                         size={14}
                                                         className={`${i < Math.floor(Number(p.averageRating) || 0)
-                                                                ? "text-[#E07385] fill-current"
-                                                                : "text-gray-300"
+                                                            ? "text-[#E07385] fill-current"
+                                                            : "text-gray-300"
                                                             }`}
                                                     />
                                                 ))}
@@ -214,8 +214,8 @@ useEffect(() => {
                                         label: "Price",
                                         accessor: (p) => (
                                             <span className="text-[#921A40] font-bold inline-flex items-center gap-x-0.5 ">
-                                            <PoundSterling className="h-3 w-3 inline-block" />
-                                            {p.price}
+                                                <PoundSterling className="h-3 w-3 inline-block" />
+                                                {p.price}
                                             </span>
 
                                         ),
