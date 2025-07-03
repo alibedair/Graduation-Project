@@ -193,8 +193,8 @@ exports.acceptCustomizationResponse = async (req, res) => {
             price: response.price,
             description: customizationRequest.requestDescription,
             image: customizationRequest.image ? [customizationRequest.image] : [],
-            quantity: 0,
-            sellingNumber: 1,
+            quantity: 1,
+            sellingNumber: 0,
             artistId: response.artistId,
             type : 'customizable'
 

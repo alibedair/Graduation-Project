@@ -237,11 +237,11 @@ exports.shipOrder = async (req, res) => {
         if(!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
+         if( order.status === 'Shipped') {
+            return res.status(400).json({ message: 'Order is already shipped' });
+        }
         if( order.status !== 'Completed') {
             return res.status(400).json({ message: 'Customer should pay first,before shipping the order' });
-        }
-        if( order.status === 'Shipped') {
-            return res.status(400).json({ message: 'Order is already shipped' });
         }
         order.status = 'Shipped';
         order.shippedAt = new Date();
