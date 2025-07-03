@@ -101,8 +101,8 @@ const Auctions = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-black/90 mb-4">Live Auctions</h1>
-          <p className="text-lg text-black/70">Bid on unique handcrafted items from talented artisans</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-black/90 mb-4"><span className='font-light'>Live </span>Auctions</h1>
+          <p className="text-lg text-burgundy/70">Bid on unique handcrafted items from talented artisans</p>
         </div>
 
         {/* Filters */}

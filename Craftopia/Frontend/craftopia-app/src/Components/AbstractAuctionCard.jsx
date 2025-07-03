@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, Users, ArrowRight, Star } from 'lucide-react';
+import { Clock, Users, ArrowRight, Star ,PoundSterling } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -113,8 +113,12 @@ const AbstractAuctionCard = ({ auction, index }) => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Current Bid</p>
-                <p className="text-2xl font-bold text-gray-900">${auction.currentBid.toLocaleString()}</p>
-              </div>
+                <p className="text-2xl font-bold text-gray-900 flex items-center gap-1">
+                  <PoundSterling className="h-5 w-5 inline-block" />
+                  {auction.currentBid.toLocaleString()}
+                </p>
+
+                </div>
               <div className="text-right">
                 <div className="flex items-center gap-1 text-yellow-400 mb-1">
                   <Star className="h-4 w-4 fill-current" />

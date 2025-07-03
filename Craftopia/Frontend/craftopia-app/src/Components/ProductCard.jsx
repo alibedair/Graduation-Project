@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, Star, Minus, Plus } from "lucide-react";
+import { Heart, Star, Minus, Plus, PoundSterling } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({
@@ -106,29 +106,32 @@ const ProductCard = ({
                 </div>
 
                 <div className="flex items-center gap-2 mb-4">
-  <div className="flex items-center gap-1">
-    <Star className="h-4 w-4 fill-[#E07385] text-[#E07385]" />
-    <span className="text-sm font-semibold text-gray-900">
-      {Number(product.averageRating || 0).toFixed(1)}
-    </span>
-  </div>
-  <span className="text-sm text-gray-500">
-    ({product.totalReviews || 0} reviews)
-  </span>
-</div>
-
-
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-gray-900">
-                            ${product.price}
+                    <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-[#E07385] text-[#E07385]" />
+                        <span className="text-sm font-semibold text-gray-900">
+                        {Number(product.averageRating || 0).toFixed(1)}
                         </span>
-                        {product.originalPrice && (
-                            <span className="text-sm text-gray-400 line-through">
-                                ${product.originalPrice}
-                            </span>
-                        )}
                     </div>
+                    <span className="text-sm text-gray-500">
+                        ({product.totalReviews || 0} reviews)
+                    </span>
+                    </div>
+
+
+                                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-x-2">
+                    <span className="text-xl font-bold text-gray-900 flex items-center gap-x-1">
+                        <PoundSterling className="h-4 w-4 inline-block" />
+                        {product.price}
+                    </span>
+                    {product.originalPrice && (
+                        <span className="text-sm text-gray-400 line-through flex items-center gap-x-1">
+                        <PoundSterling className="h-4 w-4 inline-block" />
+                        {product.originalPrice}
+                        </span>
+                    )}
+                    </div>
+
 
                     {product.inStock ? (
                         isInCart ? (

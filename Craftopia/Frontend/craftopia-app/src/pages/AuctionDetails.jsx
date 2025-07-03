@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Box, ChartColumnStacked, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Heart, Box, PoundSterling,ChartColumnStacked, Clock, Users, Star, Gavel, Shield, Award, MapPin, Calendar, Timer, TrendingUp, Info, ChevronRight, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '../Components/Footer';
 import { toast } from 'react-hot-toast';
@@ -87,9 +87,11 @@ const BidHistory = ({ bids, currentUser, auctionHasEnded }) => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-lg">
-                  ${bid.bidAmount.toLocaleString()}
-                </div>
+<div className="font-bold text-lg flex items-center gap-x-1">
+  <PoundSterling className="h-4 w-4 inline-block" />
+  {bid.bidAmount.toLocaleString()}
+</div>
+
                   {index === 0 && (
                     <div className="text-xs font-medium text-green-600">
                       {auctionHasEnded ? "WINNING BID" : "HIGHEST BID"}
@@ -380,7 +382,7 @@ const handleBidSubmit = async () => {
   }
 
   if (amount < minBid) {
-    setError(`❌ Bid must be at least : $${minBid.toFixed(2)}`);
+    setError(`❌ Bid must be at least : ${minBid.toFixed(2)}`);
     return;
   }
 
@@ -479,17 +481,21 @@ const handleBidSubmit = async () => {
             </div>
 
             {/* Current Bid */}
-            <div className="bg-gray-50 rounded-xl p-6">
+            <div className="bg-gray-50 rounded-xl p-2">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Current Bid</div>
-                  <div className="text-4xl font-bold">${auction.currentPrice.toLocaleString()}</div>
+                    <div className="text-4xl font-bold flex items-center gap-x-1">
+                      <PoundSterling className="h-9 w-9 inline-block align-middle font-bold" />
+                      {auction.currentPrice.toLocaleString()}
+                    </div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-gray-600 mb-1">Starting Price</div>
-                  <div className="text-lg font-semibold">
-                    ${auction.startingPrice.toLocaleString()}
-                  </div>
+                    <div className="text-lg font-semibold flex items-center gap-x-1">
+                      <PoundSterling className="h-4 w-4 inline-block" />
+                      {auction.startingPrice.toLocaleString()}
+                    </div>
                 </div>
               </div>
 
@@ -503,45 +509,52 @@ const handleBidSubmit = async () => {
               {/* Bid Input */}
               <div className="mt-6 space-y-3">
                   {userBid && (
-                    <div className="bg-yellow-100 border border-yellow-400 p-4 rounded-lg text-yellow-800 mb-3">
-                      You have already placed a bid of <strong>${userBid.bidAmount}</strong>.
-                    </div>
+                  <div className="bg-yellow-100 border border-yellow-400 p-4 rounded-lg text-yellow-800 mb-3">
+                    You have already placed a bid of{' '}
+                    <strong className="inline-flex items-center">
+                      <PoundSterling className="h-3 w-3 inline-block" />
+                      {userBid.bidAmount}
+                    </strong>.
+                  </div>
                   )}
                 {error && <div className="text-sm text-red-600 mt-1 font-medium">{error}</div>}
 
-{auction.status === 'active' && !auctionHasEnded && currentUser?.role === 'customer' && (
-  <div className="flex gap-3">
-    <input
-      type="number"
-      min={minBid}
-      step={minIncrement}
-      placeholder={`Min: $${minBid.toFixed(2)}`}
-      value={bidAmount}
-      onChange={(e) => setBidAmount(e.target.value)}
-      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-    />
-    <button
-      onClick={handleBidSubmit}
-      className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
-        auction.status === 'scheduled'
-          ? 'bg-gray-400 text-white cursor-not-allowed'
-          : 'bg-black text-white hover:bg-gray-800'
-      }`}
-      disabled={auction.status === 'scheduled'}
-    >
-      {userBid
-        ? isHighestBidder
-          ? "You're Highest Bidder"
-          : 'Update Bid'
-        : 'Place Bid'}
-    </button>
-  </div>
-)}
+                {auction.status === 'active' && !auctionHasEnded && currentUser?.role === 'customer' && (
+                  <div className="flex gap-3">
+                    <input
+                      type="number"
+                      min={minBid}
+                      step={minIncrement}
+                      placeholder={`Min ${minBid.toFixed(2)}`}
+                      value={bidAmount}
+                      onChange={(e) => setBidAmount(e.target.value)}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                    <button
+                      onClick={handleBidSubmit}
+                      className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
+                        auction.status === 'scheduled'
+                          ? 'bg-gray-400 text-white cursor-not-allowed'
+                          : 'bg-black text-white hover:bg-gray-800'
+                      }`}
+                      disabled={auction.status === 'scheduled'}
+                    >
+                      {userBid
+                        ? isHighestBidder
+                          ? "You're Highest Bidder"
+                          : 'Update Bid'
+                        : 'Place Bid'}
+                    </button>
+                  </div>
+                )}
 
                       
-                <div className="text-sm text-gray-600">
-                  Minimum bid: ${minBid.toLocaleString()}
-                </div>
+                <div className="text-sm text-gray-600 flex items-center gap-x-1">
+                <span>Minimum bid:</span>
+                <PoundSterling className="h-4 w-3 inline-block" />
+                <span>{minBid.toLocaleString()}</span>
+              </div>
+
               </div>
               
             </div>
