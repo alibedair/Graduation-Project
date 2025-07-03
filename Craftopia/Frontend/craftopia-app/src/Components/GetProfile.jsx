@@ -285,13 +285,11 @@ const GetProfile = ({ setActiveTab }) => {
                         Best Selling
                       </div>
                     )}
-
-                    {product.productId === leastSellingId && (
+                    {products.length > 1 && product.productId === leastSellingId && (
                       <div className="absolute top-3 right-3 bg-black text-[#E07385] text-xs font-bold px-2 py-1 rounded-full z-10">
                         Least Selling
                       </div>
                     )}
-
                     {product.type === "auction" && (
                       <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full">
                         AUCTION
