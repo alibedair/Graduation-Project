@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, ChevronDown, Settings, Upload, Edit, Trash2, Package, DollarSign, Users, Star, Clock, Plus, Menu, ShoppingCart, User, Heart, Search, Gavel, AlertCircle, Loader2 } from 'lucide-react';
+import { Camera, ChevronDown, Settings, Upload, Edit, Trash2, Package, PoundSterling, Users, Star, Clock, Plus, Menu, ShoppingCart, User, Heart, Search, Gavel, AlertCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -546,8 +546,8 @@ const getStatusClasses = (status) => {
                                         </h4>
 
                                         <div className="text-sm text-gray-600 mt-1 flex flex-wrap items-center gap-2">
-                                          <span className="inline-flex items-center gap-1">
-                                            <DollarSign className="w-4 h-4 text-emerald-500" />
+                                          <span className="inline-flex items-center gap-x-1">
+                                            <PoundSterling className="w-4 h-4 text-emerald-500" />
                                             Starting Bid: <strong className="text-gray-800">{request.startingPrice} EGP</strong>
                                           </span>
                                           <span className="inline-flex items-center gap-1">

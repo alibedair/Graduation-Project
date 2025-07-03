@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Clock, Users, Gavel, Check, X, Eye, DollarSign,
+  Clock, Users, Gavel, Check, X, Eye, PoundSterling,
 } from 'lucide-react';
 
 const AdminAuctionManagement = () => {
@@ -254,7 +254,11 @@ const AuctionCard = ({ auction }) => (
 
         <div className="flex flex-col gap-1 text-sm text-black/60">
           <div className="flex gap-4 items-center">
-            <span>Current bid: ${auction.currentPrice}</span>
+            <span className="inline-flex items-center gap-x-1 align-middle">
+              Current bid:
+              <PoundSterling className="h-3 w-3 inline-block" />
+              {auction.currentPrice}
+            </span>
             <span>•</span>
             <span>{auction.bidCount} bids</span>
           </div>
@@ -326,15 +330,6 @@ const AuctionCard = ({ auction }) => (
               <Users className="h-8 w-8 text-coral" />
             </div>
           </div>
-          {/* <div className="bg-cream border border-coral/20 rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-burgundy/60 text-sm">Revenue This Month</p>
-                <p className="text-2xl font-bold text-burgundy">$8,420</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-coral" />
-            </div>
-          </div> */}
         </div>
 
         {/* Tabs */}
@@ -418,7 +413,12 @@ const AuctionCard = ({ auction }) => (
                           </p>
 
                           <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span>💰 Starting bid: ${request.startingPrice}</span>
+                            <span className="inline-flex items-center gap-x-1">
+                              💰 Starting bid:
+                              <PoundSterling className="h-4 w-4 inline-block" />
+                              {request.startingPrice}
+                            </span>
+
                             <span>•</span>
                             <span>⏳ Duration: {request.suggestedDuration} days</span>
                           </div>
