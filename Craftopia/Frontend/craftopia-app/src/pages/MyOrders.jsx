@@ -278,8 +278,6 @@ const MyOrders = () => {
                                         {order.products?.map((item, i) => (
                                             <div
                                                 key={i}
-                                                onClick={() => navigate(`/product/${item.id || item.productId}`, { state: { product: item } })}
-
                                                 className="flex-shrink-0 w-52 h-64 bg-white rounded-lg shadow overflow-hidden hover:scale-[1.02] transition-transform relative cursor-pointer"
                                             >
                                                 {item.image?.[0] && (
