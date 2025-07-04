@@ -45,11 +45,12 @@ const Register = () => {
         role,
       });
 
-      setSuccessMessage('Registration successful! You can now log in.');
+      setSuccessMessage('Registration successful! Please verify your email.');
       setTimeout(() => {
         setLoading(false);
-        navigate('/login');
+        navigate('/verify-email', { state: { userId: data.userId } });
       }, 1500);
+
     } catch (err) {
       console.error(err);
       const backendMessage = err.response?.data?.message || 'Registration failed';

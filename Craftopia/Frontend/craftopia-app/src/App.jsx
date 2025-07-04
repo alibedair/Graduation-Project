@@ -30,6 +30,7 @@ import ScrollToTop from './Components/ScrollToTop';
 import Following from './Components/Following';
 import { Toaster } from 'react-hot-toast';
 import SearchResults from './pages/SearchResults';
+import VerifyEmail from './pages/VerifyEmail';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -111,6 +112,7 @@ function AppContent() {
         <Route path="/following" element={<Following />}/>
         <Route path="/payment/:orderId" element={<PaymentPage />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
 
       </Routes>
