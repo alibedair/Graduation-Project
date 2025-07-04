@@ -103,63 +103,74 @@ const MyOrders = () => {
         setArtistComment('');
     };
 
-   const submitReview = async () => {
-    if (rating === 0) {
-        alert('Please select a rating');
-        return;
-    }
-
-    if (!review || review.trim().length < 20) {
-        alert('Please write a review with at least 20 characters');
-        return;
-    }
-
-    const reviewData = {
-        productId: currentProduct.productId || currentProduct.id,
-        rating: rating,
-        review: review.trim()
-    };
-    if (artistRating > 0) {
-        reviewData.artistRating = artistRating;
-        reviewData.artistComment = artistComment?.trim() || "";
-    }
-
-    try {
-        const response = await axios.post(
-            'http://localhost:3000/review/create',
-            reviewData,
-            {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-
-        if (response.status === 201) {
-            alert('Thank you for your review!');
-            closeReviewModal();
-        } else {
-            alert('Something went wrong. Please try again.');
+    const submitReview = async () => {
+        if (rating === 0) {
+            alert('Please select a rating');
+            return;
         }
-    } catch (error) {
-        console.error('Error submitting review:', error);
-        alert(error.response?.data?.message || error.message || 'Failed to submit review. Please try again.');
-    }
-};
 
+        if (!review || review.trim().length < 20) {
+            alert('Please write a review with at least 20 characters');
+            return;
+        }
 
-    if (isLoading) {
-        return (
-            <div className="px-6 py-10 bg-[var(--color-cream)] min-h-screen flex flex-col items-center justify-center">
-                <div className="animate-pulse flex flex-col items-center">
-                    <FiPackage className="text-5xl text-gray-300 mb-4" />
-                    <div className="h-4 bg-gray-200 rounded w-48 mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-64"></div>
-                </div>
-            </div>
-        );
-    }
+        const reviewData = {
+            productId: currentProduct.productId || currentProduct.id,
+            rating: rating,
+            review: review.trim(),
+        };
+        if (artistRating > 0) {
+            reviewData.artistRating = artistRating;
+            reviewData.artistComment = artistComment?.trim() || "";
+        }
+
+        try {
+            const response = await axios.post(
+                'http://localhost:3000/review/create',
+                reviewData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (response.status === 201) {
+                alert('Thank you for your review!');
+                setOrders(prevOrders =>
+                    prevOrders.map(order => {
+                        return {
+                            ...order,
+                            products: order.products.map(product => {
+                                if (
+                                    (product.productId === currentProduct.productId || product.id === currentProduct.id)
+                                ) {
+                                    return {
+                                        ...product,
+                                        reviewed: true,
+                                    };
+                                }
+                                return product;
+                            }),
+                        };
+                    })
+                );
+
+                closeReviewModal();
+            } else {
+                alert('Something went wrong. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            alert(
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to submit review. Please try again.'
+            );
+        }
+    };
+
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-12 bg-[var(--color-cream)] min-h-screen">
@@ -195,7 +206,7 @@ const MyOrders = () => {
                     <div className="inline-flex gap-3 min-w-max px-2 py-1 rounded-xl bg-white shadow-inner border border-[var(--color-coral)/30]">
                         {[
                             { label: 'All Orders', value: 'all', icon: null },
-                           { label: 'Shipped', value: 'shipped', icon: <FiTruck className="mr-1" /> },
+                            { label: 'Shipped', value: 'shipped', icon: <FiTruck className="mr-1" /> },
                             { label: 'Completed', value: 'completed', icon: <FiCheckCircle className="mr-1" /> },
                             { label: 'Cancelled', value: 'cancelled', icon: <FiXCircle className="mr-1" /> },
                             { label: 'Pending', value: 'pending', icon: <FiClock className="mr-1" /> },
@@ -267,7 +278,9 @@ const MyOrders = () => {
                                         {order.products?.map((item, i) => (
                                             <div
                                                 key={i}
-                                                className="flex-shrink-0 w-52 h-64 bg-white rounded-lg shadow overflow-hidden hover:scale-[1.02] transition-transform relative"
+                                                onClick={() => navigate(`/product/${item.id || item.productId}`, { state: { product: item } })}
+
+                                                className="flex-shrink-0 w-52 h-64 bg-white rounded-lg shadow overflow-hidden hover:scale-[1.02] transition-transform relative cursor-pointer"
                                             >
                                                 {item.image?.[0] && (
                                                     <img
@@ -285,8 +298,12 @@ const MyOrders = () => {
                                                         Qty: <span className="font-medium">{item.productorder?.quantity}</span>
                                                     </p>
                                                 </div>
-                                               {order.status === 'Completed' && !item.reviewed && (
-                                                    <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn">
+
+                                                {order.status === 'Completed' && !item.reviewed && (
+                                                    <div
+                                                        onClick={e => e.stopPropagation()}
+                                                        className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn"
+                                                    >
                                                         <p className="text-xs text-[var(--color-burgundy)] font-semibold mb-1">
                                                             Enjoyed this product? Leave a review!
                                                         </p>
@@ -299,10 +316,9 @@ const MyOrders = () => {
                                                         </button>
                                                     </div>
                                                 )}
-
-
                                             </div>
                                         ))}
+
                                     </div>
                                 </div>
 
