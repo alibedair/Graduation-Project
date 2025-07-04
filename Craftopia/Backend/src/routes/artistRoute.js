@@ -11,7 +11,7 @@ const optionalAuth = (req, res, next) => {
     if (!req.headers.authorization) {
         return next();
     }
-    
+
     // If authorization header exists, try to authenticate
     authMiddleware(req, res, (err) => {
         // If auth fails, continue without user (don't block the request)
@@ -27,19 +27,19 @@ router.get('/getprofile/:artistId',
     optionalAuth,
     artistController.getArtist
 );
-router.get('/all',artistController.getAllArtists);
-router.get('/:artistId/followers', 
+router.get('/all', artistController.getAllArtists);
+router.get('/:artistId/followers',
     param('artistId').isInt().withMessage('Artist ID must be an integer'),
     artistController.getArtistFollowers
 );
 
 router.post('/update',
-    authMiddleware, 
+    authMiddleware,
     roleMiddleware('artist'),
     upload.fields([
         { name: 'profilePicture', maxCount: 1 },
         { name: 'profileVideo', maxCount: 1 }
-    ]), 
+    ]),
     [
         body('name').optional().isString().trim().isLength({ min: 2, max: 50 })
             .withMessage('Name must be between 2 and 50 characters'),
@@ -51,10 +51,14 @@ router.post('/update',
     artistController.updateArtist
 );
 
-router.get('/myprofile', 
-    authMiddleware, 
+router.get('/myprofile',
+    authMiddleware,
     roleMiddleware('artist'),
     artistController.getProfile
+);
+router.get('/getbyname/:name',
+    optionalAuth,
+    artistController.getArtistByName
 );
 
 

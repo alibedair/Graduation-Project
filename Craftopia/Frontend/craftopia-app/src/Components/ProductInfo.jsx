@@ -86,25 +86,45 @@ const ProductInfo = ({ product }) => {
   const isMaxReached = !isNaN(maxQty) && quantity >= maxQty;
 
   const handleArtistClick = async () => {
-    try {
-      console.log("Fetching profile");
-      const token = localStorage.getItem("token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const id = product.artist._id || product.artist.id;
-      const res = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
-        headers,
-      });
-      if (!res.ok) {
-        throw new Error("Failed to fetch artist profile");
+  try {
+    console.log("Fetching artist profile...");
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    let artistId = null;
+
+    if (product.artist && typeof product.artist === "object") {
+      artistId = product.artist.id || product.artist.artistId;
+    } else if (typeof product.artist === "string") {
+      const resName = await fetch(
+        `http://localhost:3000/artist/getbyname/${encodeURIComponent(product.artist)}`,
+        { headers }
+      );
+      if (!resName.ok) {
+        throw new Error("Failed to find artist by name");
       }
-      const artistData = await res.json();
-      navigate(`/artist-profile-customer/${id}`, {
-        state: { artist: artistData },
-      });
-    } catch (err) {
-      console.error(err.message);
+      const data = await resName.json();
+      artistId = data.artist.artistId;
     }
-  };
+
+    if (!artistId) {
+      throw new Error("Artist ID not found");
+    }
+    const res = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
+      headers,
+    });
+    if (!res.ok) {
+      throw new Error("Failed to fetch artist profile");
+    }
+
+    const artistData = await res.json();
+    navigate(`/artist-profile-customer/${artistId}`, {
+      state: { artist: artistData },
+    });
+  } catch (err) {
+    console.error(err.message);
+  }
+};
 
   return (
     <div className="grid md:grid-cols-2 gap-12">
@@ -151,9 +171,17 @@ const ProductInfo = ({ product }) => {
                 {product.artist.username || product.artist.name || "Unknown Artist"}
               </button>
             ) : (
-              <span className="font-medium text-[#E07385]">
-                {typeof product.artist === "string" ? product.artist : "Unknown Artist"}
-              </span>
+              <button
+  onClick={handleArtistClick}
+  className="font-medium text-[#E07385] hover:underline focus:outline-none"
+>
+  {product.artist?.username ||
+    (typeof product.artist === "string"
+      ? product.artist
+      : product.artist?.name) ||
+    "Unknown Artist"}
+</button>
+
             )}
           </p>
         </div>
@@ -173,7 +201,7 @@ const ProductInfo = ({ product }) => {
             <Package className={`w-5 h-5 ${isAvailable ? "text-green-600" : "text-red-600"}`} />
             <span className={`font-medium ${isAvailable ? "text-green-600" : "text-red-600"}`}>
               {isAvailable
-                ? `In Stock (${maxQty} available)`
+                ? `In Stock`
                 : "Out of Stock"}
             </span>
           </div>

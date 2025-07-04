@@ -335,3 +335,77 @@ exports.getProfile = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+exports.getArtistByName = async (req, res) => {
+    try {
+        const { name } = req.params;
+
+        if (!name) {
+            return res.status(400).json({ message: "Artist name is required" });
+        }
+
+        const artist = await Artist.findOne({
+            where: { name },
+            include: [
+                {
+                    model: User,
+                    attributes: ['userId', 'email', 'isBanned']
+                },
+                {
+                    model: Product,
+                    include: [
+                        {
+                            model: Category,
+                            attributes: ['categoryId', 'name'],
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!artist) {
+            return res.status(404).json({ message: "Artist not found" });
+        }
+
+        const numberOfFollowers = await ArtistFollow.count({
+            where: { artistId: artist.artistId }
+        });
+
+        const numberOfProducts = await Product.count({
+            where: { artistId: artist.artistId }
+        });
+
+        const categoryMap = new Map();
+        if (artist.products) {
+            artist.products.forEach(product => {
+                if (product.category) {
+                    const catId = product.category.categoryId;
+                    if (categoryMap.has(catId)) {
+                        categoryMap.get(catId).productCount++;
+                    } else {
+                        categoryMap.set(catId, {
+                            categoryId: product.category.categoryId,
+                            name: product.category.name,
+                            productCount: 1
+                        });
+                    }
+                }
+            });
+        }
+
+        const categories = Array.from(categoryMap.values());
+
+        return res.status(200).json({
+            artist: {
+                ...artist.toJSON(),
+                numberOfFollowers,
+                numberOfProducts,
+                categories
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching artist by name:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
