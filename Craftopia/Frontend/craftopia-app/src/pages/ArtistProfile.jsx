@@ -18,7 +18,7 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "profile";
   });
-  const [selectedMessageId, setSelectedMessageId] = useState(null); // 💬 New
+  const [selectedMessageId, setSelectedMessageId] = useState(null); 
 
   const navigate = useNavigate();
 
@@ -65,15 +65,9 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
               >
                 <BarChart2 className="h-4 w-4 text-black" /> Sales History
               </li>
-
-              <li onClick={handleLogout} className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2">
-                <FaSignOutAlt className="text-black" /> Logout
-              </li>
             </ul>
           </nav>
         </div>
-
-        {/* Main Content */}
         <div className="flex-1 p-8 mt-20">
           <div className="max-w-6xl mx-auto bg-cream rounded-lg shadow-md p-6 -mt-8">
             {activeTab === "profile" && <GetProfile setActiveTab={setActiveTab} />}
@@ -84,8 +78,6 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
             {activeTab === "requestcategory" && <RequestCategory />}
             {activeTab === "saleshistory" && <SalesHistory />}
           </div>
-
-          {/* 💬 Inline Chat Box */}
           {selectedMessageId && (
             <div className="mt-8 max-w-4xl mx-auto">
               <Messages responseId={selectedMessageId} onClose={() => setSelectedMessageId(null)} />

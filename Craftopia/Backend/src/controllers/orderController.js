@@ -1,3 +1,4 @@
+
 const Customer = require('../models/customer');
 const Order = require('../models/order');
 const product = require('../models/product');
@@ -9,11 +10,11 @@ const Artist = require('../models/artist');
 const { sendOrderConfirmationEmail, sendShipAuctionEmail, sendCustomizationShipEmail } = require('../utils/emailService');
 const { firebase_db } = require('../config/firebase');
 const Review = require('../models/Review');
-const Product = require('../models/product'); 
+const Product = require('../models/product');
 exports.placeOrder = async (req, res) => {
     try {
-        const userId = req.user.id; 
-        const { productIds,quantity } = req.body;
+        const userId = req.user.id;
+        const { productIds, quantity } = req.body;
 
         const customer = await Customer.findOne({ where: { userId } });
         if (!customer) {
@@ -30,17 +31,17 @@ exports.placeOrder = async (req, res) => {
 
         if (products.length !== productIds.length) {
             return res.status(404).json({ message: 'provide us with list of valid product' });
-        }        
+        }
         var totalAmount = 0;
         for (let i = 0; i < products.length; i++) {
             const prod = products[i];
             const productQuantity = quantity[i];
-            
+
             if (productQuantity > prod.quantity) {
                 return res.status(400).json({ message: `Insufficient stock for product ${prod.name}` });
             }
             totalAmount += prod.price * productQuantity;
-            
+
         }
 
         const order = await Order.create({
@@ -50,18 +51,18 @@ exports.placeOrder = async (req, res) => {
         });
 
         const productOrderData = [];
-        
+
         for (let i = 0; i < products.length; i++) {
             productOrderData.push({
                 orderId: order.orderId,
                 productId: products[i].productId,
                 quantity: quantity[i]
             });
-            
+
         }
-        
+
         await Product_Order.bulkCreate(productOrderData);
-        
+
 
         try {
             const user = await User.findByPk(userId);
@@ -76,7 +77,7 @@ exports.placeOrder = async (req, res) => {
                         quantity: quantity[index]
                     }))
                 };
-                
+
                 await sendOrderConfirmationEmail(user.email, 'Valued Customer', orderDetails);
             }
         } catch (emailError) {
@@ -104,25 +105,37 @@ exports.getmyOrders = async (req, res) => {
 
         const orders = await Order.findAll({
             where: { customerId: customer.customerId },
-            include: [{ 
+            include: [{
                 model: product,
-                attributes: ['productId', 'name', 'price', 'description', 'image'],
-                through: { 
+                attributes: ['productId', 'name', 'price', 'image', 'type'],
+                through: {
                     attributes: ['quantity']
                 }
             }]
         });
         for (const order of orders) {
             for (const prod of order.products) {
-                const existingReview = await Review.findOne({
-                    where: {
-                        productId: prod.productId,
-                        customerId: customer.customerId
-                    }
-                });
+                let canBeReviewed = false;
+                if (prod.type === 'customizable' && order.status === 'Shipped') {
+                    canBeReviewed = true;
+                } else if (prod.type !== 'customizable' && order.status === 'Completed') {
+                    canBeReviewed = true;
+                }
+
+                let existingReview = null;
+                if (canBeReviewed) {
+                    existingReview = await Review.findOne({
+                        where: {
+                            productId: prod.productId,
+                            customerId: customer.customerId
+                        }
+                    });
+                }
+
                 prod.dataValues.reviewed = !!existingReview;
             }
         }
+
 
         return res.status(200).json({
             message: 'Orders retrieved successfully',
@@ -147,15 +160,15 @@ exports.cancelOrder = async (req, res) => {
         }
 
         const order = await Order.findOne({
-            where: { 
+            where: {
                 orderId: orderId,
-                customerId: customer.customerId 
+                customerId: customer.customerId
             }
         });
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
-        }        
+        }
         if (order.status === 'Pending') {
             await order.update({ status: 'Cancelled' });
             return res.status(200).json({
@@ -172,54 +185,54 @@ exports.cancelOrder = async (req, res) => {
     }
 }
 exports.getOrderById = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { orderId } = req.params;
+    try {
+        const userId = req.user.id;
+        const { orderId } = req.params;
 
-    if (!orderId) {
-      return res.status(400).json({ message: 'Order ID is required' });
+        if (!orderId) {
+            return res.status(400).json({ message: 'Order ID is required' });
+        }
+
+        const customer = await Customer.findOne({ where: { userId } });
+        if (!customer) {
+            return res.status(403).json({ message: 'Customer not found' });
+        }
+
+        const order = await Order.findOne({
+            where: {
+                orderId,
+                customerId: customer.customerId,
+            },
+            include: [
+                {
+                    model: product,
+                    attributes: ['productId', 'name', 'price', 'description', 'image'],
+                    through: {
+                        attributes: ['quantity']
+                    }
+                },
+            ]
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        return res.status(200).json({
+            message: 'Order retrieved successfully',
+            order
+        });
+
+    } catch (error) {
+        console.error('Error retrieving order:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
-
-    const customer = await Customer.findOne({ where: { userId } });
-    if (!customer) {
-      return res.status(403).json({ message: 'Customer not found' });
-    }
-
-    const order = await Order.findOne({
-      where: {
-        orderId,
-        customerId: customer.customerId,
-      },
-      include: [
-        {
-          model: product,
-          attributes: ['productId', 'name', 'price', 'description', 'image'],
-          through: {
-            attributes: ['quantity']
-          }
-        },
-      ]
-    });
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    return res.status(200).json({
-      message: 'Order retrieved successfully',
-      order
-    });
-
-  } catch (error) {
-    console.error('Error retrieving order:', error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
 };
 
 exports.shipOrder = async (req, res) => {
     try {
         const userId = req.user.id;
-        const {respondId} = req.params;
+        const { respondId } = req.params;
         const respond = await CustomizationResponse.findByPk(respondId);
         if (!respond) {
             return res.status(404).json({ message: 'Customization response not found' });
@@ -234,19 +247,19 @@ exports.shipOrder = async (req, res) => {
             return res.status(403).json({ message: 'this Artist is not authorized for shipping this order' });
         }
         let order = await Order.findOne({ where: { orderId: request.orderId } });
-        if(!order) {
+        if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
-         if( order.status === 'Shipped') {
+        if (order.status === 'Shipped') {
             return res.status(400).json({ message: 'Order is already shipped' });
         }
-        if( order.status !== 'Completed') {
+        if (order.status !== 'Completed') {
             return res.status(400).json({ message: 'Customer should pay first,before shipping the order' });
         }
         order.status = 'Shipped';
         order.shippedAt = new Date();
         await order.save();
-        try{
+        try {
             const customer = await Customer.findByPk(request.customerId);
             const customerUser = await User.findByPk(customer.userId);
 
@@ -264,7 +277,7 @@ exports.shipOrder = async (req, res) => {
                         price: parseFloat(respond.price || 0).toFixed(2)
                     }
                 };
-                
+
                 await sendCustomizationShipEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
             }
         } catch (emailError) {
@@ -286,8 +299,8 @@ exports.shipOrder = async (req, res) => {
     }
 }
 
-exports.shipAuctionOrder = async(req, res) => {
-    try{
+exports.shipAuctionOrder = async (req, res) => {
+    try {
         const userId = req.user.id;
         const { auctionId } = req.params;
         const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
@@ -296,11 +309,11 @@ exports.shipAuctionOrder = async(req, res) => {
         }
         const auctionData = auctionSnapshot.val();
         const artist = await Artist.findOne({ where: { userId } });
-        if(!artist || auctionData.artistId !== artist.artistId) {
+        if (!artist || auctionData.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'This Artist is not authorized for shipping this auction order' });
         }
         const currentTime = new Date().toISOString();
-        if(!auctionData.endDate || auctionData.endDate > currentTime) {
+        if (!auctionData.endDate || auctionData.endDate > currentTime) {
             return res.status(400).json({ message: 'Auction has not ended yet' });
         }
 
@@ -310,7 +323,7 @@ exports.shipAuctionOrder = async(req, res) => {
         }
         const bidsData = bidsSnapshot.val();
         const bidsArray = Object.values(bidsData);
-        
+
         if (bidsArray.length === 0) {
             return res.status(400).json({ message: 'No bids found for this auction' });
         }
@@ -324,7 +337,7 @@ exports.shipAuctionOrder = async(req, res) => {
             createdAt: new Date(),
             totalAmount: highestBid.bidAmount,
             status: 'Shipped',
-            customerId: customer.customerId  
+            customerId: customer.customerId
         });
         try {
             const customerUser = await User.findByPk(customer.userId);
@@ -346,13 +359,13 @@ exports.shipAuctionOrder = async(req, res) => {
                         }
                     }
                 };
-                
+
                 await sendShipAuctionEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
             }
         } catch (emailError) {
             console.error('Error sending auction ship email:', emailError);
         }
-        
+
         await firebase_db.ref(`auctions/${auctionId}`).update({
             status: 'shipped',
             shippedAt: new Date().toISOString(),
@@ -360,7 +373,7 @@ exports.shipAuctionOrder = async(req, res) => {
             winnerId: highestBid.customerId,
             winningAmount: highestBid.bidAmount
         });
-        
+
         return res.status(200).json({
             message: 'Auction order shipped successfully',
             order: {
@@ -372,7 +385,7 @@ exports.shipAuctionOrder = async(req, res) => {
             }
         });
 
-    }catch (error) {
+    } catch (error) {
         console.error('Error shipping auction order:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }

@@ -87,14 +87,6 @@ const CustomerProfile = ({ setIsLoggedIn }) => {
               >
                 Custom products
               </li>
-
-              <li
-                onClick={handleLogout}
-                className="hover:bg-gray-100 p-2 rounded cursor-pointer text-red-500 flex items-center gap-2"
-              >
-                <FaSignOutAlt className="text-black" />
-                Logout
-              </li>
             </ul>
           </nav>
         </div>

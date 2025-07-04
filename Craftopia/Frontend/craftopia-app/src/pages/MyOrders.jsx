@@ -298,24 +298,27 @@ const MyOrders = () => {
                                                         Qty: <span className="font-medium">{item.productorder?.quantity}</span>
                                                     </p>
                                                 </div>
-
-                                                {order.status === 'Completed' && !item.reviewed && (
-                                                    <div
-                                                        onClick={e => e.stopPropagation()}
-                                                        className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn"
-                                                    >
-                                                        <p className="text-xs text-[var(--color-burgundy)] font-semibold mb-1">
-                                                            Enjoyed this product? Leave a review!
-                                                        </p>
-                                                        <button
-                                                            onClick={() => openReviewModal(item, item.artist)}
-                                                            className="flex items-center gap-1 px-3 py-1 bg-[var(--color-burgundy)] text-white text-xs rounded-full hover:bg-[var(--color-coral)] transition-colors duration-300"
+                                                {!item.reviewed && (
+                                                    ((item.type !== 'customizable' && order.status === 'Completed') ||
+                                                        (item.type === 'customizable' && order.status === 'Shipped')) && (
+                                                        <div
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn"
                                                         >
-                                                            <FiStar size={14} className="text-yellow-300 animate-pulse" />
-                                                            Rate & Review
-                                                        </button>
-                                                    </div>
+                                                            <p className="text-xs text-[var(--color-burgundy)] font-semibold mb-1">
+                                                                Enjoyed this product? Leave a review!
+                                                            </p>
+                                                            <button
+                                                                onClick={() => openReviewModal(item, item.artist)}
+                                                                className="flex items-center gap-1 px-3 py-1 bg-[var(--color-burgundy)] text-white text-xs rounded-full hover:bg-[var(--color-coral)] transition-colors duration-300"
+                                                            >
+                                                                <FiStar size={14} className="text-yellow-300 animate-pulse" />
+                                                                Rate & Review
+                                                            </button>
+                                                        </div>
+                                                    )
                                                 )}
+
                                             </div>
                                         ))}
 
@@ -389,4 +392,3 @@ const MyOrders = () => {
 };
 
 export default MyOrders;
-
