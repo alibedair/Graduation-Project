@@ -261,15 +261,37 @@ exports.getArtistProducts = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const userId = req.user.id;
+        const role = req.user.role;
         const artist = await Artist.findOne({where:{userId}});
         const admin = await Admin.findOne({where:{userId}});
+         const productId = req.params.productId;
+        const product = await Product.findOne({where:{productId}});
+
+        if(role== 'admin') {
+          if(product.type !== 'normal') {
+            return res.status(400).json({
+                message: `Cannot delete ${product.type} products. Only normal products can be deleted.`
+            });
+
+          }
+                  if (product.image?.length > 0) {
+            const userIdForCloudinary = artist ? artist.userId : userId;
+            const deleteResult = await deleteImagesByPublicIds(userIdForCloudinary, product.image);
+            if (!deleteResult.success) {
+                console.error('Failed to delete images from Cloudinary:', deleteResult.error);
+            }
+        }
+
+        await product.destroy();
+        res.status(200).json({message: 'Product deleted successfully'});
+
+        }
 
         if(!artist && !admin) {
             return res.status(403).json({message: 'You are not authorized to delete a product'});
         }
         
-        const productId = req.params.productId;
-        const product = await Product.findOne({where:{productId}});
+       
         if(!product) {
             return res.status(404).json({message: 'Product not found'});
         }
