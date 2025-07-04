@@ -8,7 +8,8 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build
+RUN npm cache clean --force && \
+    NODE_OPTIONS="--max_old_space_size=2048 --optimize-for-size" npm run build
 
 FROM nginx:alpine
 
