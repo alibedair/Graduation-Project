@@ -86,45 +86,45 @@ const ProductInfo = ({ product }) => {
   const isMaxReached = !isNaN(maxQty) && quantity >= maxQty;
 
   const handleArtistClick = async () => {
-  try {
-    console.log("Fetching artist profile...");
-    const token = localStorage.getItem("token");
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    try {
+      console.log("Fetching artist profile...");
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    let artistId = null;
+      let artistId = null;
 
-    if (product.artist && typeof product.artist === "object") {
-      artistId = product.artist.id || product.artist.artistId;
-    } else if (typeof product.artist === "string") {
-      const resName = await fetch(
-        `http://localhost:3000/artist/getbyname/${encodeURIComponent(product.artist)}`,
-        { headers }
-      );
-      if (!resName.ok) {
-        throw new Error("Failed to find artist by name");
+      if (product.artist && typeof product.artist === "object") {
+        artistId = product.artist.id || product.artist.artistId;
+      } else if (typeof product.artist === "string") {
+        const resName = await fetch(
+          `http://localhost:3000/artist/getbyname/${encodeURIComponent(product.artist)}`,
+          { headers }
+        );
+        if (!resName.ok) {
+          throw new Error("Failed to find artist by name");
+        }
+        const data = await resName.json();
+        artistId = data.artist.artistId;
       }
-      const data = await resName.json();
-      artistId = data.artist.artistId;
-    }
 
-    if (!artistId) {
-      throw new Error("Artist ID not found");
-    }
-    const res = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
-      headers,
-    });
-    if (!res.ok) {
-      throw new Error("Failed to fetch artist profile");
-    }
+      if (!artistId) {
+        throw new Error("Artist ID not found");
+      }
+      const res = await fetch(`http://localhost:3000/artist/getprofile/${artistId}`, {
+        headers,
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch artist profile");
+      }
 
-    const artistData = await res.json();
-    navigate(`/artist-profile-customer/${artistId}`, {
-      state: { artist: artistData },
-    });
-  } catch (err) {
-    console.error(err.message);
-  }
-};
+      const artistData = await res.json();
+      navigate(`/artist-profile-customer/${artistId}`, {
+        state: { artist: artistData },
+      });
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-12">
@@ -172,15 +172,15 @@ const ProductInfo = ({ product }) => {
               </button>
             ) : (
               <button
-  onClick={handleArtistClick}
-  className="font-medium text-[#E07385] hover:underline focus:outline-none"
->
-  {product.artist?.username ||
-    (typeof product.artist === "string"
-      ? product.artist
-      : product.artist?.name) ||
-    "Unknown Artist"}
-</button>
+                onClick={handleArtistClick}
+                className="font-medium text-[#E07385] hover:underline focus:outline-none"
+              >
+                {product.artist?.username ||
+                  (typeof product.artist === "string"
+                    ? product.artist
+                    : product.artist?.name) ||
+                  "Unknown Artist"}
+              </button>
 
             )}
           </p>
@@ -241,7 +241,11 @@ const ProductInfo = ({ product }) => {
         </div>
 
         <div className="flex justify-center sm:justify-start mt-6">
-          {quantity > 0 ? (
+          {maxQty === 0 ? (
+            <div className="w-full sm:w-1/2 bg-gray-300 text-gray-600 font-semibold py-3 px-6 rounded-full text-center shadow-inner cursor-not-allowed">
+              Sold Out
+            </div>
+          ) : quantity > 0 ? (
             <div className="flex items-center border rounded-full overflow-hidden w-full sm:w-1/2">
               <button
                 onClick={handleDecrease}
@@ -271,6 +275,7 @@ const ProductInfo = ({ product }) => {
               Add to Cart
             </button>
           )}
+
         </div>
       </div>
     </div>
