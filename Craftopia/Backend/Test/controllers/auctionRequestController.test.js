@@ -609,7 +609,7 @@ describe('Auction Request Controller', () => {
       
       sendAuctionApprovedEmail.mockRejectedValue(new Error('Email service error'));
 
-      await auctionRequestController.approveAndScheduleAuction(req, res);or
+      await auctionRequestController.approveAndScheduleAuction(req, res);
       expect(res.status).toHaveBeenCalledWith(201);
     });
 
