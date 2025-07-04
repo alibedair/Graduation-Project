@@ -18,7 +18,7 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "profile";
   });
-  const [selectedMessageId, setSelectedMessageId] = useState(null); 
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
 
   const navigate = useNavigate();
 

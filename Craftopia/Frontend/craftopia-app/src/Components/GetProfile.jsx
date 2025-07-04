@@ -335,11 +335,12 @@ const GetProfile = ({ setActiveTab }) => {
             {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {products.length === 0 && !loadingProducts && (
+              {auctionProducts.length === 0 && !loadingProducts && (
                 <p className="col-span-full text-gray-500 py-8">
                   No auction products found.
                 </p>
               )}
+
               {auctionProducts.map((product) => (
                 <div
                   key={product._id || product.id}

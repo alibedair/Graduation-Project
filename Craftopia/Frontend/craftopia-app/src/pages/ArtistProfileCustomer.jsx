@@ -269,12 +269,12 @@ const ArtistProfileCustomer = () => {
             ? a.auction.productDetails.image[0]
             : "https://via.placeholder.com/300",
           description: a.auction.productDetails?.description || "",
-          dimensions: a.product.dimensions || "",
-          quantity: a.product.quantity || 0,
-          material: a.product.material || "",
+          dimensions: a.product?.dimensions || "",
+          quantity: a.product?.quantity || 0,
+          material: a.product?.material || "",
           currentPrice: a.auction.currentPrice,
           endDate: a.auction.endDate,
-          category: a.product.category.name,
+          category: a.product?.category?.name || "Uncategorized",
           status: a.auction.status,
         }));
 
