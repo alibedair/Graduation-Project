@@ -29,6 +29,7 @@ import ArtistProfileCustomer from './pages/ArtistProfileCustomer';
 import ScrollToTop from './Components/ScrollToTop';
 import Following from './Components/Following';
 import { Toaster } from 'react-hot-toast';
+import SearchResults from './pages/SearchResults';
 
 function LoginRoute() {
   const { user } = useAuth();
@@ -109,6 +110,7 @@ function AppContent() {
         <Route path="/orders" element={<MyOrders />} />
         <Route path="/following" element={<Following />}/>
         <Route path="/payment/:orderId" element={<PaymentPage />} />
+        <Route path="/search" element={<SearchResults />} />
 
 
       </Routes>
