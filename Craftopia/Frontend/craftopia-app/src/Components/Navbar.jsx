@@ -116,7 +116,7 @@ const Navbar = () => {
             onKeyDown={handleSearch}
             onBlur={handleBlur}
             placeholder="Search for artists or products..."
-            className="w-full border border-gray-300 rounded-full px-5 py-2 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-coral"
+            className="w-full border border-coral rounded-full px-5 py-2 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-coral"
           />
           <FaSearch className="absolute right-4 top-2.5 text-gray-600 text-lg" />
 
