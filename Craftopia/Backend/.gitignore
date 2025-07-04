@@ -1,5 +1,7 @@
 # Dependency directories
 node_modules/
+node_modules/*
+**/node_modules
 
 # Environment variables
 .env
@@ -19,3 +21,5 @@ pids/
 .vscode/
 *.swp
 *.swo
+
+src/config/firebaseServiceAccount.json

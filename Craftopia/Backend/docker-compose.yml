@@ -1,0 +1,24 @@
+services:
+  backend:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_NAME=neondb
+      - DB_USER=neondb_owner
+      - DB_PASS=npg_VFtd46acKfJL
+      - DB_HOST=ep-super-resonance-a907tk1s-pooler.gwc.azure.neon.tech
+      - JWT_SECRET=0af946f8f623eb1f25fdbaa4032a856381842b8092ff4a13d3e9386c8ff0879e50d3a6e57434d597cf923d8a755e4b6b
+      - PORT=3000
+      - FIREBASE_DATABASE_URL=https://craftopia-b79f8-default-rtdb.europe-west1.firebasedatabase.app/
+      - CLOUDINARY_CLOUD_NAME=dulfpugu8
+      - CLOUDINARY_API_KEY=366182191772117
+      - CLOUDINARY_API_SECRET=Rxpmc8IHWcb7Oq5lb3NukOvyFdc
+      - EMAIL_USER=carftopia10@gmail.com
+      - EMAIL_PASSWORD=qvel uoyu xfsg llgs
