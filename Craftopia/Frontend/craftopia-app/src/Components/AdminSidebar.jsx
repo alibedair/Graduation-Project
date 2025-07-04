@@ -7,7 +7,8 @@ import {
   FaThList,
   FaSignOutAlt,
   FaExclamation,
-  FaPlus, FaMoneyCheckAlt
+  FaPlus, FaMoneyCheckAlt,
+  FaBoxes
 } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +20,7 @@ const AdminSidebar = ({ selected, setSelected }) => {
   const { logout } = useAuth();
 
   return (
-    <div className="w-80 h-screen bg-[#F6EEEE] p-5 flex flex-col shadow-md shadow-gray-400">
+    <div className="w-85 h-screen bg-[#F6EEEE] p-5 flex flex-col shadow-md shadow-gray-400">
       <div className="flex items-center gap-3 mb-20 pl-3">
         <h1
           className="text-[24px] cursor-pointer"
@@ -91,6 +92,12 @@ const AdminSidebar = ({ selected, setSelected }) => {
           text="User Management"
           selected={selected === "User Management"}
           onClick={() => setSelected("User Management")}
+        />
+        <SidebarButton
+          icon={<FaBoxes />}
+          text="Product Management"
+          selected={selected === "Product Management"}
+          onClick={() => setSelected("Product Management")}
         />
         {/* <SidebarButton
           icon={<FaExclamation />}
