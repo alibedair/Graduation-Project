@@ -97,19 +97,61 @@ function AppContent() {
             />
           }
         />
+
+        <Route 
+          path="/following" 
+                    element={
+            <ProtectedRoute
+          element={<Following />}
+          allowedRoles={['customer']}
+            />
+          }
+          />
+
+        <Route 
+          path="/cart" 
+                    element={
+            <ProtectedRoute
+          element={<CartPage />}
+          allowedRoles={['customer']}
+            />
+          }
+          />
+
+
+
+      <Route 
+      path="/wishlist" 
+      element={
+            <ProtectedRoute
+          element={<WishlistPage  />}
+          allowedRoles={['customer']}
+            />
+          }
+      />
+
+
+
+      <Route 
+      path="/orders" 
+      element={
+            <ProtectedRoute
+          element={<MyOrders  />}
+          allowedRoles={['customer']}
+            />
+          }
+      />
+
+
         <Route path="/auction/:id" element={<AuctionDetails />}/>
         <Route path="/auctions" element={<Auctions />}/>
         <Route path="/artists" element={<Artists />}/>
         <Route path="/artist-profile-customer/:id" element={<ArtistProfileCustomer />}/>
         <Route path="/register" element={<Register/>}/>
-        <Route path="/cart" element={<CartPage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/artist/:id" element={<ArtistProfile />} />
-         <Route path="/wishlist" element={<WishlistPage />} />
-        <Route path="/orders" element={<MyOrders />} />
-        <Route path="/following" element={<Following />}/>
         <Route path="/payment/:orderId" element={<PaymentPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
