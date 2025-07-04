@@ -179,7 +179,7 @@ const Navbar = () => {
                 navigate('/');
                 window.location.href = '/';
               }}
-              className="ml-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-coral hover:text-white transition"
+              className="ml-2 px-4 py-2 text-sm border border-coral rounded-md hover:bg-coral hover:text-white transition"
             >
               Logout
             </button>
