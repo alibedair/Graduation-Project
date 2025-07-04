@@ -22,8 +22,8 @@ const ProductCard = ({ product, onToggleFavorite }) => {
     setQuantity(item?.cartQuantity || 0);
   }, [cartItems, product.id]);
 
-  const maxStock = cartItems.find((item) => item.id === product.id)?.stockQuantity || product.quantity;
-  const maxReached = quantity >= maxStock;
+  const maxStock = product.quantity - (product.sellingNumber || 0);
+const maxReached = quantity >= maxStock;
 
   const mainImage =
     Array.isArray(product.image) && product.image.length > 0

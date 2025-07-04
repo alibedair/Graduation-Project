@@ -15,8 +15,7 @@ const AvaliableProducts = () => {
   const navigate = useNavigate();
 
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { cartItems, addToCart, incrementQuantity, decrementQuantity } =
-    useCart();
+  const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
 
   useEffect(() => {
     axios
@@ -27,37 +26,36 @@ const AvaliableProducts = () => {
       })
       .then((res) => {
         const fetched = res.data.products || [];
-        const formatted = fetched.map((p) => ({
-          id: p.productId,
-          name: p.name,
-          price: p.price,
-          image: p.image,
-          description: p.description,
-          dimensions: p.dimensions,
-          material: p.material,
-          category: p.category?.name || "Uncategorized",
-          artist: p.artist?.name || "Unknown Artist",
-          inStock: p.quantity > 0,
-          averageRating: parseFloat(p.averageRating) || 0,
-          totalReviews: p.totalReviews || 0,
-          type: p.type,
-        }));
-
-
+        const formatted = fetched
+          .filter((p) => p.quantity > 0 && p.type === "normal")
+          .map((p) => ({
+            id: p.productId,
+            name: p.name,
+            price: p.price,
+            image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ["/placeholder.jpg"],
+            description: p.description || "No description available.",
+            dimensions: p.dimensions || "Not specified",
+            material: p.material || "Not specified",
+            category: p.category?.name || "Uncategorized",
+            artist: p.artist?.name || "Unknown",
+            inStock: p.quantity > 0,
+            averageRating: parseFloat(p.averageRating) || 0,
+            totalReviews: p.totalReviews || 0,
+            quantity: p.quantity,
+            sellingNumber: p.sellingNumber || 0,
+            type: p.type,
+          }));
         setProducts(formatted);
       })
-
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Failed to fetch products:", err));
   }, []);
 
   const toggleWishlist = (product) => {
     const token = localStorage.getItem("token");
-
     if (!token) {
       navigate("/login");
       return;
     }
-
     const exists = wishlist.find((item) => item.id === product.id);
     exists ? removeFromWishlist(product.id) : addToWishlist(product);
   };
@@ -105,6 +103,7 @@ const AvaliableProducts = () => {
             Browse unique, handmade items crafted by talented artists
           </p>
         </motion.div>
+
         {canScrollLeft && (
           <button
             onClick={() => handleScroll("left")}
@@ -121,6 +120,7 @@ const AvaliableProducts = () => {
             <FiChevronRight className="text-[#921A40] text-2xl" />
           </button>
         )}
+
         <motion.div
           ref={scrollRef}
           className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"
@@ -135,42 +135,41 @@ const AvaliableProducts = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          {products
-            .filter((product) => product.inStock && product.type === 'normal')
-            .map((product, index) => {
-              const isFavorite = wishlist.some(
-                (item) => item.id === product.id
-              );
-              const inCart = cartItems.find((item) => item.id === product.id);
-              const quantity = inCart?.cartQuantity || 0;
+          {products.map((product, index) => {
+            const isFavorite = wishlist.some((item) => item.id === product.id);
+            const inCart = cartItems.find((item) => item.id === product.id);
+            const quantity = inCart?.cartQuantity || 0;
+            const maxStock = product.quantity - (product.sellingNumber || 0);
+            const maxReached = quantity >= maxStock;
 
-              return (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05, rotateY: 5 }}
-                  viewport={{ once: true }}
-                  className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
-                >
-                  <ProductCard
-                    product={product}
-                    isFavorite={isFavorite}
-                    onToggleFavorite={() => toggleWishlist(product)}
-                    isInCart={!!inCart}
-                    quantity={quantity}
-                    onAddToCart={() => addToCart(product, navigate)}
-                    onIncrement={() => {
-                      if (inCart) incrementQuantity(inCart);
-                    }}
-                    onDecrement={() => {
-                      if (inCart) decrementQuantity(inCart);
-                    }}
-                  />
-                </motion.div>
-              );
-            })}
+            return (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                viewport={{ once: true }}
+                className="group cursor-pointer snap-center w-[300px] md:w-[330px] flex-shrink-0"
+              >
+                <ProductCard
+                  product={product}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={() => toggleWishlist(product)}
+                  isInCart={!!inCart}
+                  quantity={quantity}
+                  maxReached={maxReached}
+                  onAddToCart={() => addToCart(product, navigate)}
+                  onIncrement={() => {
+                    if (inCart) incrementQuantity(inCart);
+                  }}
+                  onDecrement={() => {
+                    if (inCart && quantity > 0) decrementQuantity(inCart);
+                  }}
+                />
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </section>

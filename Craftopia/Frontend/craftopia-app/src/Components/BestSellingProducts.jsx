@@ -25,32 +25,34 @@ const BestSellingProducts = () => {
         },
       })
       .then((res) => {
-        const sorted = [...(res.data.products || [])].sort(
-          (a, b) => b.sellingNumber - a.sellingNumber
-        );
+        const fetched = res.data.products || [];
 
-        const formatted = sorted
-          .filter((p) => p.type === 'normal')
+        const sorted = fetched
+  .filter(
+    (p) =>
+      p.type === "normal" &&
+      (p.sellingNumber || 0) > 0
+  )
+
+          .sort((a, b) => b.sellingNumber - a.sellingNumber)
           .map((p) => ({
             id: p.productId,
             name: p.name,
             price: p.price,
             image: Array.isArray(p.image) ? p.image : p.image ? [p.image] : ["/placeholder.jpg"],
+            description: p.description || "No description available.",
+            dimensions: p.dimensions || "Not specified",
+            material: p.material || "Not specified",
             category: p.category?.name || "Uncategorized",
             artist: p.artist?.name || "Unknown",
+            inStock: p.quantity > 0,
             averageRating: parseFloat(p.averageRating) || 0,
             totalReviews: p.totalReviews || 0,
-            inStock: p.quantity > 0,
-            description: p.description || "No description available.",
-            material: p.material || "Not specified",
-            dimensions: p.dimensions || "Not specified",
-            sold: p.sellingNumber || 0,
             quantity: p.quantity,
             type: p.type,
           }));
 
-
-        setProducts(formatted);
+        setProducts(sorted);
       })
       .catch((err) => console.error("Failed to fetch products:", err));
   }, []);
@@ -66,7 +68,6 @@ const BestSellingProducts = () => {
     const exists = wishlist.find((item) => item.id === product.id);
     exists ? removeFromWishlist(product.id) : addToWishlist(product);
   };
-
 
   const updateScrollButtons = () => {
     const container = scrollRef.current;
@@ -111,6 +112,7 @@ const BestSellingProducts = () => {
             Our customers' favorites – handcrafted and high in demand
           </p>
         </motion.div>
+
         {canScrollLeft && (
           <button
             onClick={() => handleScroll("left")}
@@ -127,6 +129,7 @@ const BestSellingProducts = () => {
             <FiChevronRight className="text-[#921A40] text-2xl" />
           </button>
         )}
+
         <motion.div
           ref={scrollRef}
           className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"
@@ -169,7 +172,6 @@ const BestSellingProducts = () => {
                   onDecrement={() => {
                     if (inCart && quantity > 0) decrementQuantity(inCart);
                   }}
-
                 />
               </motion.div>
             );

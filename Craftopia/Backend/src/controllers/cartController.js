@@ -22,7 +22,8 @@ exports.addToCart = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        const maxAvailable = product.quantity - product.sellingNumber;
+        const maxAvailable = product.quantity;
+
 
         const existingCartItem = await Cart.findOne({
             where: {
@@ -180,7 +181,8 @@ exports.incrementCartItem = async (req, res) => {
       return res.status(404).json({ message: 'Cart item not found' });
     }
 
-    const availableQty = cartItem.product.quantity - cartItem.product.sellingNumber;
+    const availableQty = cartItem.product.quantity;
+
 
     if (cartItem.quantity >= availableQty) {
       return res.status(400).json({ message: 'Maximum stock reached' });
