@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import {PoundSterling} from 'lucide-react';
 
 const SearchResults = () => {
   const location = useLocation();
@@ -172,7 +173,11 @@ const SearchResults = () => {
                   <div className="p-4">
                     <h4 className="font-bold text-lg mb-1">{product.name}</h4>
                     <p className="text-sm text-gray-600 mb-1">by {product.artist?.name}</p>
-                    <p className="text-pink-600 font-semibold">${product.price}</p>
+                    <p className="text-black/90 font-semibold inline-flex items-center gap-x-1">
+                      <PoundSterling className="h-4 w-4 inline-block" />
+                      {product.price}
+                    </p>
+
                     <p className={`text-sm font-medium ${product.type === 'auction' ? 'text-amber-600' : 'text-gray-500'}`}>
                       {product.type === 'auction' ? 'Auction' : 'Product'}
                     </p>
@@ -190,7 +195,7 @@ const SearchResults = () => {
             <button
               key={i}
               onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 border rounded-md ${currentPage === i + 1 ? 'bg-pink-500 text-white' : 'bg-white text-gray-700'}`}
+              className={`px-3 py-1 border rounded-md ${currentPage === i + 1 ? 'bg-coral text-white' : 'bg-white text-gray-700'}`}
             >
               {i + 1}
             </button>
