@@ -303,44 +303,65 @@ exports.shipAuctionOrder = async (req, res) => {
     try {
         const userId = req.user.id;
         const { auctionId } = req.params;
+        
         const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
         if (!auctionSnapshot.exists()) {
             return res.status(404).json({ message: 'Auction not found' });
         }
+        
         const auctionData = auctionSnapshot.val();
+        
         const artist = await Artist.findOne({ where: { userId } });
         if (!artist || auctionData.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'This Artist is not authorized for shipping this auction order' });
         }
+
         const currentTime = new Date().toISOString();
         if (!auctionData.endDate || auctionData.endDate > currentTime) {
             return res.status(400).json({ message: 'Auction has not ended yet' });
         }
+        
 
-        const bidsSnapshot = await firebase_db.ref(`auctions/${auctionId}/bids`).once('value');
-        if (!bidsSnapshot.exists()) {
+        if (!auctionData.bids) {
             return res.status(400).json({ message: 'No bids found for this auction' });
         }
-        const bidsData = bidsSnapshot.val();
-        const bidsArray = Object.values(bidsData);
 
+        const bidsArray = Object.values(auctionData.bids);
         if (bidsArray.length === 0) {
             return res.status(400).json({ message: 'No bids found for this auction' });
         }
+        
         const highestBid = bidsArray[bidsArray.length - 1];
-        const customer = await Customer.findByPk(highestBid.customerId);
-        if (!customer) {
-            return res.status(404).json({ message: 'Winner customer not found' });
+        
+        const order = await Order.findOne({
+            where: { customerId: highestBid.customerId },
+            include: [{
+                model: Product_Order,
+                where: { productId: auctionData.productId }
+            }],
+            order: [['createdAt', 'DESC']]
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found for this auction. The order should have been created automatically when the auction ended.' });
         }
 
-        const order = await Order.create({
-            createdAt: new Date(),
-            totalAmount: highestBid.bidAmount,
-            status: 'Shipped',
-            customerId: customer.customerId
-        });
+        if (order.status === 'Shipped') {
+            return res.status(400).json({ message: 'Order is already shipped' });
+        }
+
+        if (order.status !== 'Completed') {
+            return res.status(400).json({ message: 'Customer should pay first, before shipping the order' });
+        }
+
+        order.status = 'Shipped';
+        order.shippedAt = new Date();
+        await order.save();
+
         try {
+            const customer = await Customer.findByPk(highestBid.customerId);
             const customerUser = await User.findByPk(customer.userId);
+            
             if (customerUser && customerUser.email) {
                 const orderDetails = {
                     orderId: order.orderId,
@@ -368,10 +389,7 @@ exports.shipAuctionOrder = async (req, res) => {
 
         await firebase_db.ref(`auctions/${auctionId}`).update({
             status: 'shipped',
-            shippedAt: new Date().toISOString(),
-            orderId: order.orderId,
-            winnerId: highestBid.customerId,
-            winningAmount: highestBid.bidAmount
+            shippedAt: new Date().toISOString()
         });
 
         return res.status(200).json({
@@ -381,6 +399,7 @@ exports.shipAuctionOrder = async (req, res) => {
                 totalAmount: order.totalAmount,
                 status: order.status,
                 createdAt: order.createdAt,
+                shippedAt: order.shippedAt,
                 auctionId: auctionId
             }
         });

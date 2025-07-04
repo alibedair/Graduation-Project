@@ -150,8 +150,14 @@ exports.updateProduct = async (req, res) => {
             return res.status(403).json({message: 'Forbidden'});
         }
         const {name, description, price,  quantity,dimensions,material} = req.body;
-
-
+        if(product.type !== 'normal') {
+            return res.status(400).json({
+                message: `Cannot update ${product.type} products. Only normal products can be updated.`
+            });
+        }
+        if(quantity && (isNaN(quantity) || quantity < 0)) {
+            return res.status(400).json({message: 'Stock must be a non-negative integer'});
+        }
         product.name = name || product.name;
         product.description = description || product.description;
         product.price = price || product.price;
