@@ -48,7 +48,7 @@ exports.createReview = async (req, res) => {
         const hasPurchased = await Order.findOne({
             where: { 
                 customerId: customer.customerId,
-                status: 'Completed'
+                status: ['Completed', 'Shipped'] 
             },
             include: [{
                 model: Product,
