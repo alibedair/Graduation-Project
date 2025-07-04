@@ -490,7 +490,7 @@ const ArtistProfileCustomer = () => {
                 )}
 
               </div>
-              {!isOwnProfile && (
+              {!isOwnProfile && !isArtist && (
                 <Button
                   variant="outline"
                   className="text-burgundy border border-burgundy hover:bg-burgundy hover:text-white bg-cream"
@@ -499,7 +499,6 @@ const ArtistProfileCustomer = () => {
                   Report Artist
                 </Button>
               )}
-
 
             </div>
           </Card>
