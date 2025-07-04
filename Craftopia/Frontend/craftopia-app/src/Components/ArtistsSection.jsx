@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Award, Star, Palette, Users,ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Award, Star, Palette, Users, ArrowRight } from 'lucide-react';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { useNavigate, Link } from 'react-router-dom';
 
 const ArtistsSection = () => {
   const [artists, setArtists] = useState([]);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const scrollRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,12 +17,10 @@ const ArtistsSection = () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:3000/artist/all', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        const formatted = response.data.artists.map((artist) => ({
+        const formatted = (response.data.artists || []).slice(0, 10).map((artist) => ({
           id: artist.artistId,
           name: artist.name,
           specialty: artist.categories?.join(', ') || 'N/A',
@@ -27,6 +28,7 @@ const ArtistsSection = () => {
           rating: parseFloat(artist.averageRating || 0).toFixed(1),
           products: artist.numberOfProducts || 0,
           followers: artist.numberOfFollowers || 0,
+          verified: artist.verified,
         }));
 
         setArtists(formatted);
@@ -38,9 +40,35 @@ const ArtistsSection = () => {
     fetchArtists();
   }, []);
 
+  const updateScrollButtons = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+  };
+
+  const handleScroll = (direction) => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const cardWidth = container.firstChild?.offsetWidth || 270;
+    container.scrollBy({
+      left: direction === 'right' ? cardWidth + 24 : -cardWidth - 24,
+      behavior: 'smooth',
+    });
+    setTimeout(updateScrollButtons, 300);
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    const container = scrollRef.current;
+    container?.addEventListener('scroll', updateScrollButtons);
+    return () => container?.removeEventListener('scroll', updateScrollButtons);
+  }, [artists]);
+
   return (
-    <section className="py-20 bg-cream">
-      <div className="container mx-auto px-4">
+    <section className="py-20 bg-cream overflow-hidden">
+      <div className="container mx-auto px-4 relative">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,18 +84,43 @@ const ArtistsSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {canScrollLeft && (
+          <button
+            onClick={() => handleScroll('left')}
+            className="absolute -left-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
+          >
+            <FiChevronLeft className="text-[#921A40] text-2xl" />
+          </button>
+        )}
+        {canScrollRight && (
+          <button
+            onClick={() => handleScroll('right')}
+            className="absolute -right-6 top-1/2 -translate-y-1/2 z-20 bg-white border border-gray-200 shadow-md rounded-lg p-2 hover:bg-[#fbe9ed] transition"
+          >
+            <FiChevronRight className="text-[#921A40] text-2xl" />
+          </button>
+        )}
+
+        <motion.div
+          ref={scrollRef}
+          className="flex gap-8 overflow-x-auto px-5 py-5 scrollbar-hide snap-x snap-mandatory"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
           {artists.map((artist, index) => (
             <motion.div
               key={artist.id}
               initial={{ opacity: 0, y: 50, rotateY: -10 }}
               whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ scale: 1.05, rotateY: 5, z: 50 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
               viewport={{ once: true }}
-              className="group cursor-pointer"
+              className="group cursor-pointer snap-center w-[300px] flex-shrink-0"
             >
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-coral/10 text-center">
+              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-coral/10 text-center">
                 <div className="relative mb-6">
                   <motion.div
                     whileHover={{ scale: 1.1 }}
@@ -92,15 +145,10 @@ const ArtistsSection = () => {
                   </motion.div>
                 </div>
 
-                <motion.h3
-                  whileHover={{ color: '#E94B3C' }}
-                  className="text-lg font-semibold text-burgundy mb-1"
-                >
+                <h3 className="text-lg font-semibold text-burgundy mb-1">
                   {artist.name}
-                </motion.h3>
+                </h3>
                 <p className="text-coral font-medium mb-2">{artist.specialty}</p>
-                <p className="text-burgundy/60 text-sm mb-4">{artist.location}</p>
-
                 <div className="flex items-center justify-between text-sm text-burgundy/70 mb-4">
                   <div className="flex items-center">
                     <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
@@ -127,7 +175,7 @@ const ArtistsSection = () => {
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -136,8 +184,7 @@ const ArtistsSection = () => {
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-
-        <Link to="/artists">
+          <Link to="/artists">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -147,7 +194,6 @@ const ArtistsSection = () => {
               <ArrowRight className="h-5 w-5" />
             </motion.button>
           </Link>
-
         </motion.div>
       </div>
     </section>

@@ -10,6 +10,9 @@ const AuctionRequest = () => {
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const [showAuctionRequestForm, setShowAuctionRequestForm] = useState(false);
   const navigate = useNavigate();
+  const [visibleCount, setVisibleCount] = useState(5);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
 
 
   const [auctionFormData, setAuctionFormData] = useState({
@@ -282,6 +285,23 @@ const getStatusClasses = (status) => {
 };
  
 
+const filteredRequests = auctionRequests
+  .filter(request => {
+    const matchesStatus =
+      statusFilter === 'all' ||
+      request.status === statusFilter ||
+      request.auction?.status === statusFilter;
+    return matchesStatus;
+  })
+  .sort((a, b) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return dateFilter === 'oldest' ? dateA - dateB : dateB - dateA;
+  });
+
+const visibleRequests = filteredRequests.slice(0, visibleCount);
+
+
 
     return (
         <>
@@ -509,9 +529,43 @@ const getStatusClasses = (status) => {
                       {/* Auction Requests List */}
                         {!showAuctionRequestForm && (
                           <div className="bg-white border border-coral/20 rounded-lg shadow-sm">
-                            <div className="p-6 border-b border-coral/20">
-                              <h3 className="text-lg font-semibold text-black">Your Auction Requests</h3>
-                            </div>
+<div className="p-6 border-b border-coral/20">
+  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <h3 className="text-lg font-semibold text-black">Your Auction Requests</h3>
+    
+    <div className="flex gap-4 flex-wrap">
+      {/* Filter by Status */}
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">Filter by Status</label>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-coral"
+        >
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="active">Active</option>
+          <option value="ended">Ended</option>
+        </select>
+      </div>
+
+      {/* Sort by Date */}
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">Sort by Date</label>
+        <select
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-coral"
+        >
+          <option value="newest">Newest to Oldest</option>
+          <option value="oldest">Oldest to Newest</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
                             {loading && (
                                 <div className="p-6 text-center text-burgundy">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
@@ -523,9 +577,16 @@ const getStatusClasses = (status) => {
                                     No auction requests found.
                                 </div>
                             )}
+
+
+
+
+
+
                             {!loading && auctionRequests.length > 0 && (
+                              
                                 <div className="divide-y divide-coral/20">
-                                  {auctionRequests.map((request) => {
+                                  {visibleRequests.map((request) => {
                                     const hasBids = request.auction?.bids && Object.keys(request.auction.bids).length > 0;
                                     return(
                                     <div
@@ -626,10 +687,21 @@ const getStatusClasses = (status) => {
                                       </div>
 
 
+
                                    </div>
                                     );
+                                    
 })}
-
+{visibleCount < filteredRequests.length && (
+  <div className="p-6 text-center">
+    <button
+      onClick={() => setVisibleCount(prev => prev + 5)}
+      className="px-6 py-2 bg-coral text-white font-semibold rounded-lg shadow hover:bg-coral/90 transition"
+    >
+      Load More
+    </button>
+  </div>
+)}
 
                                 </div>
                             )}
