@@ -158,3 +158,84 @@ exports.clearCart = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+exports.incrementCartItem = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.params;
+
+    const customer = await Customer.findOne({ where: { userId } });
+    if (!customer) {
+      return res.status(403).json({ message: 'Customer not found' });
+    }
+
+    const cartItem = await Cart.findOne({
+      where: {
+        customerId: customer.customerId,
+        productId: productId,
+      },
+      include: [{ model: Product }],
+    });
+
+    if (!cartItem) {
+      return res.status(404).json({ message: 'Cart item not found' });
+    }
+
+    const availableQty = cartItem.product.quantity - cartItem.product.sellingNumber;
+
+    if (cartItem.quantity >= availableQty) {
+      return res.status(400).json({ message: 'Maximum stock reached' });
+    }
+
+    cartItem.quantity += 1;
+    await cartItem.save();
+
+    return res.status(200).json({
+      message: 'Quantity incremented successfully',
+      cartItem,
+    });
+
+  } catch (error) {
+    console.error('Error incrementing cart quantity:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+exports.decrementCartItem = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.params;
+
+    const customer = await Customer.findOne({ where: { userId } });
+    if (!customer) {
+      return res.status(403).json({ message: 'Customer not found' });
+    }
+
+    const cartItem = await Cart.findOne({
+      where: {
+        customerId: customer.customerId,
+        productId: productId,
+      }
+    });
+
+    if (!cartItem) {
+      return res.status(404).json({ message: 'Cart item not found' });
+    }
+
+    cartItem.quantity -= 1;
+
+    if (cartItem.quantity <= 0) {
+      await cartItem.destroy();
+      return res.status(200).json({ message: 'Cart item removed completely' });
+    }
+
+    await cartItem.save();
+
+    return res.status(200).json({
+      message: 'Quantity decremented successfully',
+      cartItem,
+    });
+
+  } catch (error) {
+    console.error('Error decrementing cart quantity:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
