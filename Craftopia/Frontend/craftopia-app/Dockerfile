@@ -1,30 +1,19 @@
-FROM node:20-alpine AS builder
+FROM node:18 
 
-WORKDIR /app
 
-COPY package*.json ./
+WORKDIR /usr/local/app
 
-RUN npm ci
+
+COPY package.json package-lock.json ./
+
+
+RUN npm install 
+
 
 COPY . .
 
-RUN npm cache clean --force && \
-    NODE_OPTIONS="--max_old_space_size=1536" npm run build
+RUN chmod -R 777 /usr/local/app
 
-FROM nginx:alpine
+EXPOSE 5173
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-RUN echo 'server {' > /etc/nginx/conf.d/default.conf && \
-    echo '    listen 80;' >> /etc/nginx/conf.d/default.conf && \
-    echo '    server_name localhost;' >> /etc/nginx/conf.d/default.conf && \
-    echo '    root /usr/share/nginx/html;' >> /etc/nginx/conf.d/default.conf && \
-    echo '    index index.html;' >> /etc/nginx/conf.d/default.conf && \
-    echo '    location / {' >> /etc/nginx/conf.d/default.conf && \
-    echo '        try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf && \
-    echo '    }' >> /etc/nginx/conf.d/default.conf && \
-    echo '}' >> /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
