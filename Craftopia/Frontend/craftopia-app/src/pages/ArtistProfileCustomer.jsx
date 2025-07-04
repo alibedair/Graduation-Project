@@ -132,6 +132,8 @@ const ArtistProfileCustomer = () => {
   const [reviews, setReviews] = useState([]);
   const [galleryProducts, setGalleryProducts] = useState([]);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [isArtist, setIsArtist] = useState(false);
+
 
 
 
@@ -173,10 +175,15 @@ const ArtistProfileCustomer = () => {
           try {
             const decoded = jwtDecode(token);
             setIsOwnProfile(decoded.id === a.userId);
+
+            if (decoded.role === 'artist') {
+              setIsArtist(true);
+            }
           } catch (err) {
             console.error("Failed to decode token:", err);
           }
         }
+
 
         const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
           headers
@@ -473,12 +480,15 @@ const ArtistProfileCustomer = () => {
               </div>
 
               <div className="flex flex-col space-y-3">
-                <Button
-                  className="bg-coral hover:bg-coral/90 text-white"
-                  onClick={handleToggleFollow}
-                >
-                  {isFollowing ? "following" : "Follow"}
-                </Button>
+                {!isArtist && !isOwnProfile && (
+                  <Button
+                    className="bg-coral hover:bg-coral/90 text-white"
+                    onClick={handleToggleFollow}
+                  >
+                    {isFollowing ? "following" : "Follow"}
+                  </Button>
+                )}
+
               </div>
               {!isOwnProfile && (
                 <Button
