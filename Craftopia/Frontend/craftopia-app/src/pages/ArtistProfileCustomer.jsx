@@ -356,12 +356,21 @@ const ArtistProfileCustomer = () => {
     navigate(`/product/${id}`);
   };
   const handleOpenReport = () => {
-    if (isOwnProfile) {
-      toast.error("You cannot report your own profile.");
-      return;
-    }
-    setShowReportModal(true);
-  };
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    toast.error("Please login to report an artist.");
+    return;
+  }
+
+  if (isOwnProfile) {
+    toast.error("You cannot report your own profile.");
+    return;
+  }
+
+  setShowReportModal(true);
+};
+
 
 
   const handleToggleFollow = async () => {
