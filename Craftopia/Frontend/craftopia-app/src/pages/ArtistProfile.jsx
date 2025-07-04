@@ -12,13 +12,19 @@ import AuctionRequest from "../Components/AuctionRequest";
 import RequestCategory from "../Components/RequestCategory";
 import Messages from "../Components/Messages";
 import SalesHistory from "../Components/SalesHistory";
+import { useEffect } from "react";
 
 const ArtistProfile = ({ setIsLoggedIn }) => {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeTab") || "profile";
+  });
   const [selectedMessageId, setSelectedMessageId] = useState(null); // 💬 New
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+  localStorage.setItem("activeTab", activeTab);
+}, [activeTab]);
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
