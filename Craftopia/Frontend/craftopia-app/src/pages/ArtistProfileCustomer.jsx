@@ -8,7 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '../Components/Footer';
 import { toast } from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
-import AbstractAuctionCard from '../Components/AbstractAuctionCard'; 
+import AbstractAuctionCard from '../Components/AbstractAuctionCard';
+import { jwtDecode } from "jwt-decode";
+
+
 
 
 
@@ -128,61 +131,68 @@ const ArtistProfileCustomer = () => {
   const [auctionProducts, setAuctionProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [galleryProducts, setGalleryProducts] = useState([]);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-  
+
+
 
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
   const mapProduct = (p, artistName = '') => ({
-  id: p.productId,
-  name: p.name,
-  price: p.price,
-  originalPrice: null,
-  image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
-  quantity: p.quantity || 0,
-  inStock: p.quantity > 0,
-  description: p.description || '',
-  dimensions: p?.dimensions || '',
-  material: p.material || '',
-  rating: p.averageRating || 0,
-  reviews: p.totalReviews || 0,
-  isOnSale: false,
-  type:p.type ,
-  category: p.category?.name || 'Handmade',
-  artist: artistName,
-});
+    id: p.productId,
+    name: p.name,
+    price: p.price,
+    originalPrice: null,
+    image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
+    quantity: p.quantity || 0,
+    inStock: p.quantity > 0,
+    description: p.description || '',
+    dimensions: p?.dimensions || '',
+    material: p.material || '',
+    rating: p.averageRating || 0,
+    reviews: p.totalReviews || 0,
+    isOnSale: false,
+    type: p.type,
+    category: p.category?.name || 'Handmade',
+    artist: artistName,
+  });
 
 
   useEffect(() => {
     const fetchArtistData = async () => {
       try {
-
-
-        const token = localStorage.getItem('token'); 
+        const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        console.log("Fetching profile");
         const profileRes = await fetch(`http://localhost:3000/artist/getprofile/${id}`, {
           headers
         });
 
         const profileData = await profileRes.json();
         const a = profileData.artist;
+        if (token) {
+          try {
+            const decoded = jwtDecode(token);
+            setIsOwnProfile(decoded.id === a.userId);
+          } catch (err) {
+            console.error("Failed to decode token:", err);
+          }
+        }
 
-      const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
-        headers
-      });
-      const productData = await productRes.json();
+        const productRes = await fetch(`http://localhost:3000/product/get/${id}`, {
+          headers
+        });
+        const productData = await productRes.json();
 
-      // Combine and map all types of products
-      const mappedNormal = productData.products.map(p => mapProduct(p, 'normal', a.name));
-      const mappedAuction = productData.auctionProducts.map(p => mapProduct(p, 'auction', a.name));
-      const mappedCustomizable = productData.customizableProducts.map(p => mapProduct(p, 'customizable', a.name));
+        // Combine and map all types of products
+        const mappedNormal = productData.products.map(p => mapProduct(p, 'normal', a.name));
+        const mappedAuction = productData.auctionProducts.map(p => mapProduct(p, 'auction', a.name));
+        const mappedCustomizable = productData.customizableProducts.map(p => mapProduct(p, 'customizable', a.name));
 
 
-      setGalleryProducts([...mappedNormal, ...mappedAuction, ...mappedCustomizable]);
+        setGalleryProducts([...mappedNormal, ...mappedAuction, ...mappedCustomizable]);
 
-      // For "Products" tab only show normal ones
-      setProducts(mappedNormal);
+        // For "Products" tab only show normal ones
+        setProducts(mappedNormal);
 
 
         setArtist({
@@ -218,7 +228,7 @@ const ArtistProfileCustomer = () => {
 
   useEffect(() => {
     const checkFollowStatus = async () => {
-      
+
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -243,7 +253,7 @@ const ArtistProfileCustomer = () => {
         const res = await fetch(`http://localhost:3000/auction/artist-product/${id}`);
         const data = await res.json();
 
-        const activeAuctions = data.auctions.filter(a => a.auction.status === 'active'||a.auction.status === 'scheduled');
+        const activeAuctions = data.auctions.filter(a => a.auction.status === 'active' || a.auction.status === 'scheduled');
 
         const formattedAuctionProducts = activeAuctions.map(a => ({
           id: a.auction.id,
@@ -257,7 +267,7 @@ const ArtistProfileCustomer = () => {
           material: a.product.material || "",
           currentPrice: a.auction.currentPrice,
           endDate: a.auction.endDate,
-          category:a.product.category.name,
+          category: a.product.category.name,
           status: a.auction.status,
         }));
 
@@ -268,44 +278,44 @@ const ArtistProfileCustomer = () => {
     };
 
 
-fetchAuctionProducts();
+    fetchAuctionProducts();
 
   }, [id]);
 
   useEffect(() => {
-  const fetchReviews = async () => {
-    try {
-      const res = await fetch(`http://localhost:3000/review/artist-reviews/${id}`);
-      const data = await res.json();
-      
-      const allReviews = [];
-      data.productReviews.forEach(product => {
-        product.reviews.forEach(r => {
-          allReviews.push({
-            id: r.reviewId,
-            rating: r.rating,
-            comment: r.review,
-            user: r.customerName || r.customerUsername,
-            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`, 
-            product: product.productName,
-            date: new Date(r.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            }),
-            verified: true,
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/review/artist-reviews/${id}`);
+        const data = await res.json();
+
+        const allReviews = [];
+        data.productReviews.forEach(product => {
+          product.reviews.forEach(r => {
+            allReviews.push({
+              id: r.reviewId,
+              rating: r.rating,
+              comment: r.review,
+              user: r.customerName || r.customerUsername,
+              avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`,
+              product: product.productName,
+              date: new Date(r.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              }),
+              verified: true,
+            });
           });
         });
-      });
 
-      setReviews(allReviews);
-    } catch (err) {
-      console.error("Failed to fetch reviews", err);
-    }
-  };
+        setReviews(allReviews);
+      } catch (err) {
+        console.error("Failed to fetch reviews", err);
+      }
+    };
 
-  fetchReviews();
-}, [id]);
+    fetchReviews();
+  }, [id]);
 
   if (loading || !artist) return <div className="text-center py-10 text-burgundy font-medium">Loading artist profile...</div>;
 
@@ -322,22 +332,29 @@ fetchAuctionProducts();
   };
 
   const formatTimeLeft = (endDate) => {
-  const end = new Date(endDate);
-  const now = new Date();
-  const diff = end - now;
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end - now;
 
-  if (diff <= 0) return 'Ended';
+    if (diff <= 0) return 'Ended';
 
-  const mins = Math.floor((diff / 1000 / 60) % 60);
-  const hours = Math.floor((diff / 1000 / 60 / 60) % 24);
-  const days = Math.floor(diff / 1000 / 60 / 60 / 24);
+    const mins = Math.floor((diff / 1000 / 60) % 60);
+    const hours = Math.floor((diff / 1000 / 60 / 60) % 24);
+    const days = Math.floor(diff / 1000 / 60 / 60 / 24);
 
-  return `${days ? `${days}d ` : ''}${hours}h ${mins}m`;
-};
+    return `${days ? `${days}d ` : ''}${hours}h ${mins}m`;
+  };
 
   const goToProduct = (id) => {
-  navigate(`/product/${id}`);
-};
+    navigate(`/product/${id}`);
+  };
+  const handleOpenReport = () => {
+    if (isOwnProfile) {
+      toast.error("You cannot report your own profile.");
+      return;
+    }
+    setShowReportModal(true);
+  };
 
 
   const handleToggleFollow = async () => {
@@ -376,6 +393,11 @@ fetchAuctionProducts();
       setReportError("Please enter a message.");
       return;
     }
+    if (isOwnProfile) {
+      setReportError("You cannot report your own account.");
+      return;
+    }
+
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -458,13 +480,17 @@ fetchAuctionProducts();
                   {isFollowing ? "following" : "Follow"}
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                className="text-burgundy border border-burgundy hover:bg-burgundy hover:text-white bg-cream"
-                onClick={() => setShowReportModal(true)}
-              >
-                Report Artist
-              </Button>
+              {!isOwnProfile && (
+                <Button
+                  variant="outline"
+                  className="text-burgundy border border-burgundy hover:bg-burgundy hover:text-white bg-cream"
+                  onClick={handleOpenReport}
+                >
+                  Report Artist
+                </Button>
+              )}
+
+
             </div>
           </Card>
         </motion.div>
@@ -479,7 +505,7 @@ fetchAuctionProducts();
 
         {/* TABS */}
         <Tabs defaultValue="products" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 bg-card">
+          <TabsList className="grid w-full grid-cols-4 bg-card">
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="auctionProducts">Auction Products</TabsTrigger>
@@ -508,7 +534,7 @@ fetchAuctionProducts();
             </div>
           </TabsContent>
 
-        
+
           <TabsContent value="products" className="space-y-6">
             <h2 className="text-2xl font-bold text-burgundy">Products ({artist.stats.products})</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -544,52 +570,52 @@ fetchAuctionProducts();
           </TabsContent>
 
 
-<TabsContent value="gallery" className="space-y-6">
-  <h2 className="text-2xl font-bold text-burgundy">Gallery</h2>
+          <TabsContent value="gallery" className="space-y-6">
+            <h2 className="text-2xl font-bold text-burgundy">Gallery</h2>
 
-  <div className="mt-4">
-    <div className="flex justify-start gap-6 mb-8">
+            <div className="mt-4">
+              <div className="flex justify-start gap-6 mb-8">
 
-      <div>
-        {loadingProducts && <p className="text-center py-8">Loading products...</p>}
-        {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
+                <div>
+                  {loadingProducts && <p className="text-center py-8">Loading products...</p>}
+                  {productsError && <p className="text-red-500 text-center py-4">{productsError}</p>}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {galleryProducts.length === 0 && !loadingProducts && (
-            <p className="col-span-full text-gray-500 py-8">No products found in your gallery.</p>
-          )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {galleryProducts.length === 0 && !loadingProducts && (
+                      <p className="col-span-full text-gray-500 py-8">No products found in your gallery.</p>
+                    )}
 
-          {galleryProducts.map((product, index) => (
-            <div
-              key={product.productId || product._id || index}
-              className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="aspect-square relative overflow-hidden">
-                <img
-                  src={Array.isArray(product.image) ? product.image[0] : product.image || "https://via.placeholder.com/300"}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
+                    {galleryProducts.map((product, index) => (
+                      <div
+                        key={product.productId || product._id || index}
+                        className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                      >
+                        <div className="aspect-square relative overflow-hidden">
+                          <img
+                            src={Array.isArray(product.image) ? product.image[0] : product.image || "https://via.placeholder.com/300"}
+                            alt={product.name}
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                          />
 
-                {product.type === "customizable" && (
-                  <div className="absolute top-3 left-3 bg-yellow-500/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                    CUSTOMIZABLE
+                          {product.type === "customizable" && (
+                            <div className="absolute top-3 left-3 bg-yellow-500/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                              CUSTOMIZABLE
+                            </div>
+                          )}
+
+                          {product.type === "auction" && (
+                            <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                              AUCTION
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-
-                {product.type === "auction" && (
-                  <div className="absolute top-3 right-3 bg-[#E07385]/90 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                    AUCTION
-                  </div>
-                )}
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-</TabsContent>
+          </TabsContent>
 
           <TabsContent value="auctionProducts" className="space-y-6">
             <h2 className="text-2xl font-bold text-burgundy">Auction Products</h2>
@@ -631,7 +657,7 @@ fetchAuctionProducts();
             </div>
           </TabsContent>
 
-           <TabsContent value="reviews" className="space-y-6">
+          <TabsContent value="reviews" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-burgundy">
                 Customer Reviews ({artist.stats.reviews})
@@ -650,8 +676,8 @@ fetchAuctionProducts();
               {reviews.map((review) => (
                 <Card key={review.id} className="p-6">
                   <div className="flex items-start space-x-4">
-                    <img 
-                      src={review.avatar} 
+                    <img
+                      src={review.avatar}
                       alt={review.user}
                       className="w-12 h-12 rounded-full object-cover"
                     />
@@ -667,19 +693,19 @@ fetchAuctionProducts();
                         </div>
                         <span className="text-sm text-burgundy/60">{review.date}</span>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                             />
                           ))}
                         </div>
                         <span className="text-sm text-burgundy/70">for {review.product}</span>
                       </div>
-                      
+
                       <p className="text-burgundy/80">{review.comment}</p>
                     </div>
                   </div>
