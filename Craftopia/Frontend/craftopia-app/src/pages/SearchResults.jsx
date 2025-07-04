@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import {PoundSterling} from 'lucide-react';
+import { PoundSterling } from 'lucide-react';
 
 const SearchResults = () => {
   const location = useLocation();
@@ -91,7 +91,12 @@ const SearchResults = () => {
   if (loading) return <p className="p-8 text-center">Loading search results...</p>;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <motion.div
+      className="p-8 max-w-6xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <h2 className="text-2xl font-semibold mb-4">Search Results for "{query}"</h2>
 
       {categories.length > 1 && (
@@ -113,10 +118,11 @@ const SearchResults = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {filteredArtists.map((artist) => (
               <motion.div
+                key={artist.artistId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                key={artist.artistId}
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
               >
                 <Link
                   to={`/artist-profile-customer/${artist.artistId}`}
@@ -145,10 +151,11 @@ const SearchResults = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedProducts.map((product) => (
               <motion.div
+                key={product.productId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                key={product.productId}
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
               >
                 <div
                   onClick={() => {
@@ -177,7 +184,6 @@ const SearchResults = () => {
                       <PoundSterling className="h-4 w-4 inline-block" />
                       {product.price}
                     </p>
-
                     <p className={`text-sm font-medium ${product.type === 'auction' ? 'text-amber-600' : 'text-gray-500'}`}>
                       {product.type === 'auction' ? 'Auction' : 'Product'}
                     </p>
@@ -189,6 +195,7 @@ const SearchResults = () => {
         </>
       )}
 
+      {/* Pagination */}
       {filteredProducts.length > itemsPerPage && (
         <div className="flex justify-center mt-6 space-x-2">
           {Array.from({ length: Math.ceil(filteredProducts.length / itemsPerPage) }, (_, i) => (
@@ -203,10 +210,11 @@ const SearchResults = () => {
         </div>
       )}
 
+      {/* No Results */}
       {filteredArtists.length === 0 && filteredProducts.length === 0 && (
         <p className="mt-6 text-gray-500 text-center">No results found.</p>
       )}
-    </div>
+    </motion.div>
   );
 };
 

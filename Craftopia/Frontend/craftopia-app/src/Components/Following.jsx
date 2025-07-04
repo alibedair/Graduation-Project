@@ -23,7 +23,7 @@ const Following = () => {
   useEffect(() => {
     const fetchFollowedData = async () => {
       try {
-        const token = localStorage.getItem('token'); // or wherever you're storing it
+        const token = localStorage.getItem('token'); 
 
         const res = await axios.get('http://localhost:3000/customer/followed-artists', {
           headers: {
@@ -58,7 +58,7 @@ const allProducts = productResponses.flatMap((res, index) => {
     artist: { username: artists[index]?.name || 'Unknown' }, // ✅ ensure artist.username exists
     rating: product.averageRating || 0,
     reviews: product.totalReviews || 0,
-    inStock: product.quantity > 0, // optional: if needed
+    inStock: product.quantity > 0,
   }));
 });
 
@@ -186,7 +186,7 @@ const allProducts = productResponses.flatMap((res, index) => {
             transition={{ delay: index * 0.1 }}
           >
           <ArtistCard
-            artistId={artist.artistId} // ✅ add this
+            artistId={artist.artistId} 
             name={artist.name}
             avatar={artist.profilePicture}
             location="Unknown"
@@ -214,58 +214,58 @@ const allProducts = productResponses.flatMap((res, index) => {
       <span className="text-burgundy/60">{filteredProducts.length} products</span>
     </div>
 
-{filteredProducts.length === 0 ? (
-  <div className="flex flex-col items-center justify-center text-center bg-[#F6EEEE] text-[#921A40] p-12 rounded-3xl shadow-2xl border border-pink-100">
-    <div className="text-7xl mb-4 animate-bounce">🖼️</div>
-    <h3 className="text-3xl font-extrabold mb-3 tracking-tight">
-      No Products Yet
-    </h3>
-    <p className="text-gray-600 max-w-md mb-8 leading-relaxed">
-      The artists you follow haven’t added any products yet. Check back soon for their latest creations!
-    </p>
-    <Button
-      onClick={() => setViewMode('artists')}
-      className="bg-[#E07385] hover:bg-[#d85c6f] text-white font-semibold py-3 px-8 rounded-full transition duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
-    >
-      View Followed Artists
-    </Button>
-  </div>
-) : (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {filteredProducts.map((product, index) => {
-      const isFavorite = wishlist.some((item) => item.id === product.id);
-      const inCart = cartItems.find((item) => item.id === product.id);
-      const quantity = inCart?.quantity || 0;
-
-      return (
-        <motion.div
-          key={product.productId || index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
+    {filteredProducts.length === 0 ? (
+      <div className="flex flex-col items-center justify-center text-center bg-[#F6EEEE] text-[#921A40] p-12 rounded-3xl shadow-2xl border border-pink-100">
+        <div className="text-7xl mb-4 animate-bounce">🖼️</div>
+        <h3 className="text-3xl font-extrabold mb-3 tracking-tight">
+          No Products Yet
+        </h3>
+        <p className="text-gray-600 max-w-md mb-8 leading-relaxed">
+          The artists you follow haven’t added any products yet. Check back soon for their latest creations!
+        </p>
+        <Button
+          onClick={() => setViewMode('artists')}
+          className="bg-[#E07385] hover:bg-[#d85c6f] text-white font-semibold py-3 px-8 rounded-full transition duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
         >
-          <ProductCard
-            product={product}
-            isFavorite={isFavorite}
-            isInCart={!!inCart}
-            quantity={quantity}
-            onToggleFavorite={() =>
-              isFavorite
-                ? removeFromWishlist(product.id)
-                : addToWishlist(product)
-            }
-            onAddToCart={() => addToCart(product)}
-            onIncrement={() => incrementQuantity(product.id)}
-            onDecrement={() => decrementQuantity(product.id)}
-          />
-        </motion.div>
-      );
-    })}
-  </div>
-)}
+          View Followed Artists
+        </Button>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredProducts.map((product, index) => {
+          const isFavorite = wishlist.some((item) => item.id === product.id);
+          const inCart = cartItems.find((item) => item.id === product.id);
+          const quantity = inCart?.quantity || 0;
 
-  </>
-)}
+          return (
+            <motion.div
+              key={product.productId || index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <ProductCard
+                product={product}
+                isFavorite={isFavorite}
+                isInCart={!!inCart}
+                quantity={quantity}
+                onToggleFavorite={() =>
+                  isFavorite
+                    ? removeFromWishlist(product.id)
+                    : addToWishlist(product)
+                }
+                onAddToCart={() => addToCart(product)}
+                onIncrement={() => incrementQuantity(product.id)}
+                onDecrement={() => decrementQuantity(product.id)}
+              />
+            </motion.div>
+          );
+        })}
+      </div>
+    )}
+
+      </>
+    )}
 
       </div>
 
