@@ -205,26 +205,6 @@ const ArtistProfileCustomer = () => {
           }
         });
 
-        // setProducts(normalProducts.map(p => ({
-        //   id: p.productId,
-        //   name: p.name,
-        //   price: p.price,
-        //   originalPrice: null,
-        //   image: Array.isArray(p.image) && p.image.length > 0 ? p.image : ['https://placehold.co/300x300?text=No+Image'],
-        //   quantity: p.quantity || 0,
-        //   inStock: p.quantity > 0,
-        //   description: p.description || '',
-        //   dimensions: p?.dimensions || '',
-        //   material: p.material || '',
-        //   rating: p.averageRating || 0,
-        //   reviews: p.totalReviews || 0,
-        //   isOnSale: false,
-        //   type: p.type || "normal",
-        //   category: p.category.name || 'Handmade',
-        //   artist: { username: a.name }
-        // })));
-
-
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch artist or product data:', error);
@@ -306,7 +286,7 @@ fetchAuctionProducts();
             rating: r.rating,
             comment: r.review,
             user: r.customerName || r.customerUsername,
-            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`, // Placeholder avatar
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${r.customerName}`, 
             product: product.productName,
             date: new Date(r.createdAt).toLocaleDateString('en-US', {
               year: 'numeric',
