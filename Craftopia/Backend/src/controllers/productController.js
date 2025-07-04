@@ -124,7 +124,10 @@ exports.getProducts = async (req, res) => {
             })
         );
 
-        res.status(200).json({ products: productsWithStats });
+        res.status(200).json({ 
+            products: productsWithStats,
+            totalProducts: productsWithStats.length
+         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
