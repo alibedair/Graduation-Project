@@ -27,7 +27,10 @@ exports.getAllCategories = async (req, res) => {
             include: [{
                 model: Product,
                 attributes: [],
-                required: false 
+                required: false,
+                where: {
+                    type: 'normal'
+                }
             }],
             attributes: [
                 'categoryId',
