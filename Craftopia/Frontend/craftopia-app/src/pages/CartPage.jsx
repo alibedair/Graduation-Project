@@ -1,11 +1,30 @@
+import { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import CartItem from '../Components/CartItem';
 import CartOverview from '../Components/CartOverview';
 import Footer from '../Components/Footer';
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, clearCart, incrementQuantity, decrementQuantity } = useCart();
+  const {
+    cartItems,
+    removeFromCart,
+    clearCart,
+    incrementQuantity,
+    decrementQuantity,
+    fetchCart,
+    isLoading,
+  } = useCart();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) fetchCart(token);
+  }, []);
+
   const isCartEmpty = cartItems.length === 0;
+
+  if (isLoading) {
+    return <div className="text-center py-20 text-lg text-gray-600">Loading cart...</div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAF9F6]">
