@@ -19,9 +19,9 @@ const Register = () => {
     setSuccessMessage('');
     setLoading(true);
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid Gmail address.');
+      setError('Please enter a valid email address.');
       setLoading(false);
       return;
     }
@@ -69,7 +69,6 @@ const Register = () => {
       setError(friendlyMessage);
       setLoading(false);
     }
-
   };
 
 
