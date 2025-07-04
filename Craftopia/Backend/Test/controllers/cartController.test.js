@@ -82,13 +82,13 @@ describe('Cart Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        message: 'Only 5 item(s) available. You already have 0 in cart.'
+        message: 'Only 10 item(s) available. You already have 0 in cart.'
       });
     });
 
     it('should return 400 when adding to existing cart item exceeds available stock', async () => {
       req.params = { productId: '1' };
-      req.body = { quantity: 3 };
+      req.body = { quantity: 9 };
 
       const mockCustomer = { customerId: 1 };
       const mockProduct = {
@@ -110,7 +110,7 @@ describe('Cart Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        message: 'Only 3 item(s) available. You already have 2 in cart.'
+        message: 'Only 10 item(s) available. You already have 2 in cart.'
       });
     });
 
@@ -449,7 +449,7 @@ describe('Cart Controller', () => {
       req.params = { productId: '1' };
       const mockCustomer = { customerId: 1 };
       const mockCartItem = {
-        quantity: 5,
+        quantity: 10,
         product: {
           quantity: 10,
           sellingNumber: 5

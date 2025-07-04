@@ -184,12 +184,13 @@ describe('Order Controller', () => {
             const mockCustomer = { customerId: 1, userId: 1 };
             const mockOrders = [{
                 orderId: 1,
+                status: 'Completed',
                 products: [{
                     productId: 1,
                     name: 'Product 1',
                     price: 100,
-                    description: 'Test product',
                     image: 'image.jpg',
+                    type: 'regular',
                     dataValues: {}
                 }]
             }];
@@ -205,7 +206,7 @@ describe('Order Controller', () => {
                 where: { customerId: 1 },
                 include: [{
                     model: Product,
-                    attributes: ['productId', 'name', 'price', 'description', 'image'],
+                    attributes: ['productId', 'name', 'price', 'image', 'type'],
                     through: {
                         attributes: ['quantity']
                     }
@@ -223,12 +224,13 @@ describe('Order Controller', () => {
             const mockCustomer = { customerId: 1, userId: 1 };
             const mockOrders = [{
                 orderId: 1,
+                status: 'Completed',
                 products: [{
                     productId: 1,
                     name: 'Product 1',
                     price: 100,
-                    description: 'Test product',
                     image: 'image.jpg',
+                    type: 'regular',
                     dataValues: {}
                 }]
             }];
