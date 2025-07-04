@@ -1,24 +1,20 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "./AuthContext"; // ✅ Import useAuth
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const { user } = useAuth(); // ✅ Get user from AuthContext
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Optional: track loading state
-
-  // ✅ Sync token from localStorage when user is available
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (user && storedToken) {
       setToken(storedToken);
     }
   }, [user]);
-
-  // ✅ Fetch cart when token is set
   useEffect(() => {
     if (token) {
       fetchCart(token);
@@ -89,7 +85,7 @@ export const CartProvider = ({ children }) => {
         authHeader
       );
 
-      await fetchCart(); // Refresh cart
+      await fetchCart();
       console.log("✅ Product added to cart successfully");
     } catch (err) {
       console.error("❌ Add to cart failed:", err);

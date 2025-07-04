@@ -1,13 +1,13 @@
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { Heart, Star, Minus, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // ✅ Add this
 import { useState } from "react";
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
-  const { cartItems, addToCart, incrementItem, decrementItem } = useCart();
-  const navigate = useNavigate();
+  const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
+  const navigate = useNavigate(); // ✅ Initialize navigate
 
   const getCartItem = (id) => cartItems.find((item) => item.id === id);
 
@@ -24,12 +24,12 @@ const Wishlist = () => {
           <p className="text-gray-600 max-w-md mb-8 leading-relaxed">
             You haven’t added any items yet. Start exploring our beautiful collection and add what you love.
           </p>
-          <button
-            onClick={() => navigate("/shop")}
+          <a
+            href="/shop"
             className="bg-[#E07385] hover:bg-[#d85c6f] text-white font-semibold py-3 px-8 rounded-full transition duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
           >
             Browse Products
-          </button>
+          </a>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -39,17 +39,15 @@ const Wishlist = () => {
               : product.image || "/placeholder.jpg";
 
             const cartItem = getCartItem(product.id);
-            const quantity = cartItem?.quantity || 0;
+            const quantity = cartItem?.cartQuantity || 0;
             const isInCart = !!cartItem;
-
-            const handleCardClick = () => {
-              navigate(`/product/${product.id}`, { state: { product } });
-            };
 
             return (
               <div
                 key={product.id}
-                onClick={handleCardClick}
+                onClick={() =>
+                  navigate(`/product/${product.id}`, { state: { product } }) // ✅ React-router navigation with state
+                }
                 className="group relative bg-white shadow-md hover:shadow-lg transition-all duration-500 hover:-translate-y-1 rounded-2xl cursor-pointer"
               >
                 <div className="relative overflow-hidden rounded-t-2xl bg-white">
@@ -133,7 +131,7 @@ const Wishlist = () => {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
-                            onClick={() => decrementItem(product)}
+                            onClick={() => decrementQuantity(product)}
                             className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
                           >
                             <Minus className="w-4 h-4 text-gray-600" />
@@ -142,7 +140,7 @@ const Wishlist = () => {
                             {quantity}
                           </span>
                           <button
-                            onClick={() => incrementItem(product)}
+                            onClick={() => incrementQuantity(product)}
                             className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition"
                           >
                             <Plus className="w-4 h-4 text-gray-600" />
