@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import {toast} from "react-hot-toast";
 import {
   Star,
   CheckCircle,
@@ -93,7 +94,7 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
   const handleSubmitReview = async () => {
     const token = localStorage.getItem("token");
     setError("");
-    if (!token) return alert("Please login to submit a review.");
+    if (!token) return toast.error("Please login to submit a review.");
     if (!newRating) return setError("Please select a rating.");
     if (!newReview.trim()) return setError("Please write a review.");
     if (newReview.length < 10 || newReview.length > 500)
@@ -131,7 +132,7 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
   };
 
   const handleReportSubmit = async () => {
-    if (!reportContent.trim()) return alert("Please enter a reason for the report.");
+    if (!reportContent.trim()) return toast.error("Please enter a reason for the report.");
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -157,10 +158,10 @@ const ProductReview = ({ productId, onStatsUpdate }) => {
         }, 3000);
       } else {
         const data = await res.json();
-        alert(data.message || "Report submission failed.");
+        toast.error(data.message || "Report submission failed.");
       }
     } catch (err) {
-      alert("An error occurred while submitting the report.");
+      toast.error("An error occurred while submitting the report.");
     }
   };
 

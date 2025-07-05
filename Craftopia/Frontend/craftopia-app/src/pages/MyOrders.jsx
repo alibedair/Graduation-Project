@@ -8,6 +8,7 @@ import {
     FiClock,
     FiStar,
 } from 'react-icons/fi';
+import {toast} from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import ReviewModal from '../Components/ReviewModal';
 const MyOrders = () => {
@@ -79,7 +80,7 @@ const MyOrders = () => {
             );
         } catch (error) {
             console.error('Error cancelling order:', error);
-            alert("Failed to cancel the order.");
+            toast.error("Failed to cancel the order.");
         }
     };
 
@@ -105,12 +106,12 @@ const MyOrders = () => {
 
     const submitReview = async () => {
         if (rating === 0) {
-            alert('Please select a rating');
+            toast.error('Please select a rating');
             return;
         }
 
         if (!review || review.trim().length < 20) {
-            alert('Please write a review with at least 20 characters');
+            toast.error('Please write a review with at least 20 characters');
             return;
         }
 
@@ -137,7 +138,7 @@ const MyOrders = () => {
             );
 
             if (response.status === 201) {
-                alert('Thank you for your review!');
+                toast.success('Thank you for your review!');
                 setOrders(prevOrders =>
                     prevOrders.map(order => {
                         return {
@@ -159,11 +160,11 @@ const MyOrders = () => {
 
                 closeReviewModal();
             } else {
-                alert('Something went wrong. Please try again.');
+                toast.success('Something went wrong. Please try again.');
             }
         } catch (error) {
             console.error('Error submitting review:', error);
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 error.message ||
                 'Failed to submit review. Please try again.'

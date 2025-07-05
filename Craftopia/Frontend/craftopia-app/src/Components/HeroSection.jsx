@@ -32,7 +32,7 @@ const HeroSection = () => {
               </p>
             </div>
 
-            {/* Buttons with Motion */}
+            
             <div className="flex flex-col sm:flex-row gap-4">
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: '0 4px 15px rgba(233,75,60,0.4)' }}
@@ -54,7 +54,7 @@ const HeroSection = () => {
             </div>
           </motion.div>
 
-          {/* Right Column (Images) */}
+          {/* Right Column  */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}

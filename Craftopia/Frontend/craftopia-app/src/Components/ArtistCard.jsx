@@ -19,7 +19,7 @@ const ArtistCard = ({
   const navigate = useNavigate();
   const [following, setFollowing] = useState(isFollowing);
 
-  // Optional: sync local state if prop changes from parent
+
   useEffect(() => {
     setFollowing(isFollowing);
   }, [isFollowing]);
@@ -49,7 +49,7 @@ const ArtistCard = ({
         },
       });
 
-      setFollowing(!following); // ✅ toggle locally
+      setFollowing(!following); 
 
       if (onFollowToggle) {
         onFollowToggle(artistId);

@@ -99,12 +99,6 @@ const AdminSidebar = ({ selected, setSelected }) => {
           selected={selected === "Product Management"}
           onClick={() => setSelected("Product Management")}
         />
-        {/* <SidebarButton
-          icon={<FaExclamation />}
-          text="Auction Requests"
-          selected={selected === "Auction Requests"}
-          onClick={() => setSelected("Auction Requests")}
-        /> */}
       </div>
       <div className="mt-auto pl-3">
         <SidebarButton
@@ -112,8 +106,8 @@ const AdminSidebar = ({ selected, setSelected }) => {
           text="Logout"
           selected={false}
           onClick={() => {
-            logout();              // clear context + localStorage
-            navigate('/login');    // client‑side redirect
+            logout();              
+            navigate('/login');    
           }}
         />
       </div>

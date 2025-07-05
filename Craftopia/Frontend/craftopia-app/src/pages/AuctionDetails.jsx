@@ -60,8 +60,6 @@ const BidHistory = ({ bids, currentUser, auctionHasEnded }) => {
         {bids.map((bid, index) => {
           const isUser = bid.userId === currentUser?.id && currentUser?.role === 'customer';
 
-
-
           return (
             <motion.div
               key={index}
@@ -87,10 +85,10 @@ const BidHistory = ({ bids, currentUser, auctionHasEnded }) => {
                 </div>
               </div>
               <div className="text-right">
-<div className="font-bold text-lg flex items-center gap-x-1">
-  <PoundSterling className="h-4 w-4 inline-block" />
-  {bid.bidAmount.toLocaleString()}
-</div>
+                  <div className="font-bold text-lg flex items-center gap-x-1">
+                    <PoundSterling className="h-4 w-4 inline-block" />
+                    {bid.bidAmount.toLocaleString()}
+                  </div>
 
                   {index === 0 && (
                     <div className="text-xs font-medium text-green-600">
@@ -331,8 +329,8 @@ const auctionHasEnded = auction.endDate && new Date(auction.endDate) <= new Date
 
 const handleFollowClick = async () => {
   if (!isLoggedIn) {
-    alert("⚠️ Please login first to follow the artist.");
-    navigate("/login");
+    toast.error("⚠️ Please login first to follow the artist.");
+    // navigate("/login");
     return;
   }
 

@@ -4,14 +4,12 @@ const Button = React.forwardRef(
   ({ className = "", variant = "default", size = "default", asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
 
-    // Basic variant styles
     const variantClasses = {
       default: "bg-coral text-cream hover:bg-coral/90",
       outline: "border border-burgundy text-burgundy hover:bg-burgundy hover:text-cream",
       ghost: "hover:bg-coral/10 text-burgundy",
     };
 
-    // Basic size styles
     const sizeClasses = {
       default: "h-10 px-4 py-2 text-sm",
       sm: "h-9 px-3 text-sm",

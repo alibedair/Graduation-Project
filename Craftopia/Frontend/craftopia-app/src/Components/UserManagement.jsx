@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaUser, FaUserSlash } from "react-icons/fa";
 import axios from "axios";
 import { motion } from "framer-motion";
+import {toast} from "react-hot-toast";
 
 const UserManagement = () => {
     const [tab, setTab] = useState("customers");
@@ -88,7 +89,7 @@ const UserManagement = () => {
 
         } catch (err) {
             console.error("Failed to update ban status:", err);
-            alert("Failed to update ban status.");
+            toast.error("Failed to update ban status.");
         }
     };
 

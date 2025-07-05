@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import {toast} from 'react-hot-toast';
 const ESCROW_FEE = 0;
 
 
@@ -33,7 +34,7 @@ const CartOverview = ({ cartItems }) => {
     navigate('/orders');
   } catch (error) {
     console.error('❌ Error placing order:', error.response?.data || error.message);
-    alert('Failed to place order. Please try again.');
+    toast.error('Failed to place order. Please try again.');
   } finally {
     setLoading(false);
   }

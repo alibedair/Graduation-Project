@@ -3,6 +3,7 @@ import { ChatBubbleOvalLeftIcon, XMarkIcon, ChevronDownIcon, ChevronUpIcon } fro
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import ArtistResponses from "./ ArtistResponses";
 import { motion } from "framer-motion";
+import {toast} from "react-hot-toast";
 const ReviewRequests = () => {
     const [requests, setRequests] = useState([]);
     const [error, setError] = useState(null);
@@ -65,7 +66,7 @@ const ReviewRequests = () => {
         const replyData = replyForms[requestId];
 
         if (!replyData || !replyData.price || !replyData.note || !replyData.estimationCompletionDate) {
-            alert("Please fill in all required fields before submitting.");
+            toast.error("Please fill in all required fields before submitting.");
             return;
         }
 
@@ -92,13 +93,13 @@ const ReviewRequests = () => {
                 throw new Error(errorData.message || "Failed to submit response.");
             }
 
-            alert("Response sent successfully!");
+            toast.success("Response sent successfully!");
             setReplyForms(prev => ({
                 ...prev,
                 [requestId]: { ...prev[requestId], showForm: false }
             }));
         } catch (err) {
-            alert("Error: " + err.message);
+            toast.error("Error: " + err.message);
         }
     };
     <div className="flex justify-end mb-6">
@@ -253,46 +254,46 @@ const ReviewRequests = () => {
                                                 </div>
                                             </div>
 
-                         {showDetails[request.requestId] && (
-  <div className="mt-4 p-4 bg-[#F6EEEE] border border-gray-300 rounded-lg shadow-sm space-y-3">
-    <p className="text-gray-800">
-      <span className="font-semibold text-[#E07385]">Description:</span>{" "}
-      {request.requestDescription}
-    </p>
+                                            {showDetails[request.requestId] && (
+                                                <div className="mt-4 p-4 bg-[#F6EEEE] border border-gray-300 rounded-lg shadow-sm space-y-3">
+                                                    <p className="text-gray-800">
+                                                    <span className="font-semibold text-[#E07385]">Description:</span>{" "}
+                                                    {request.requestDescription}
+                                                    </p>
 
-    <p className="text-gray-800">
-      <span className="font-semibold text-[#E07385]">Created At:</span>{" "}
-      {new Date(request.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      })}
-    </p>
+                                                    <p className="text-gray-800">
+                                                    <span className="font-semibold text-[#E07385]">Created At:</span>{" "}
+                                                    {new Date(request.createdAt).toLocaleDateString("en-US", {
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric"
+                                                    })}
+                                                    </p>
 
-    <div className="text-gray-800">
-      <span className="font-semibold text-[#E07385]">Deadline:</span>{" "}
-      {request.deadline ? (
-        <span
-          className={`inline-block px-3 py-1 rounded-full text-sm font-semibold 
-            ${new Date(request.deadline) < new Date()
-              ? "bg-red-200 text-red-800"
-              : new Date(request.deadline) - new Date() < 2 * 24 * 60 * 60 * 1000
-              ? "bg-yellow-200 text-yellow-800"
-              : "bg-green-200 text-green-800"
-            }`}
-        >
-          {new Date(request.deadline).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-          })}
-        </span>
-      ) : (
-        "N/A"
-      )}
-    </div>
-  </div>
-)}
+                                                    <div className="text-gray-800">
+                                                    <span className="font-semibold text-[#E07385]">Deadline:</span>{" "}
+                                                    {request.deadline ? (
+                                                        <span
+                                                        className={`inline-block px-3 py-1 rounded-full text-sm font-semibold 
+                                                            ${new Date(request.deadline) < new Date()
+                                                            ? "bg-red-200 text-red-800"
+                                                            : new Date(request.deadline) - new Date() < 2 * 24 * 60 * 60 * 1000
+                                                            ? "bg-yellow-200 text-yellow-800"
+                                                            : "bg-green-200 text-green-800"
+                                                            }`}
+                                                        >
+                                                        {new Date(request.deadline).toLocaleDateString("en-US", {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric"
+                                                        })}
+                                                        </span>
+                                                    ) : (
+                                                        "N/A"
+                                                    )}
+                                                    </div>
+                                                </div>
+                                            )}
 
 
 

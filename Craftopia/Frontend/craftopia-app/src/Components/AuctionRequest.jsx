@@ -691,17 +691,17 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
                                    </div>
                                     );
                                     
-})}
-{visibleCount < filteredRequests.length && (
-  <div className="p-6 text-center">
-    <button
-      onClick={() => setVisibleCount(prev => prev + 5)}
-      className="px-6 py-2 bg-coral text-white font-semibold rounded-lg shadow hover:bg-coral/90 transition"
-    >
-      Load More
-    </button>
-  </div>
-)}
+                                  })}
+                                  {visibleCount < filteredRequests.length && (
+                                    <div className="p-6 text-center">
+                                      <button
+                                        onClick={() => setVisibleCount(prev => prev + 5)}
+                                        className="px-6 py-2 bg-coral text-white font-semibold rounded-lg shadow hover:bg-coral/90 transition"
+                                      >
+                                        Load More
+                                      </button>
+                                    </div>
+                                  )}
 
                                 </div>
                             )}

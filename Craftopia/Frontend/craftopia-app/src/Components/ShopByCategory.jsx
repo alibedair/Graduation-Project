@@ -65,7 +65,7 @@ const ShopByCategory = () => {
           </p>
         </motion.div>
 
-        {/* ✅ Horizontal scrolling on all screen sizes */}
+        {/*Horizontal scrolling */}
         <motion.div
           className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-5 py-5 scrollbar-hide "
           style={{ WebkitOverflowScrolling: 'touch' }}
@@ -94,14 +94,14 @@ const ShopByCategory = () => {
                   {category.name}
                 </h3>
                 <p className="text-burgundy/60 mb-4">{category.productCount} items</p>
-<motion.div
-  whileHover={{ x: 5 }}
-  className="flex items-center text-coral font-medium cursor-pointer"
-  onClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
->
-  Browse Collection
-  <ArrowRight className="h-4 w-4 ml-2" />
-</motion.div>
+                  <motion.div
+                    whileHover={{ x: 5 }}
+                    className="flex items-center text-coral font-medium cursor-pointer"
+                    onClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
+                  >
+                    Browse Collection
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </motion.div>
 
               </div>
             </motion.div>

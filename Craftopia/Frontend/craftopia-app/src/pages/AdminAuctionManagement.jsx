@@ -83,7 +83,6 @@ const fetchAuctionRequests = async () => {
 
     const data = await response.json();
 
-    // 🟡 Split based on status
     const pending = data.filter(req => req.status === 'pending');
     const active = data.filter(req =>
       req.status === 'scheduled' || req.status === 'active'
@@ -134,7 +133,7 @@ const fetchTodayBids = async () => {
     setTodayBidCount(data.totalBids || 0);
   } catch (err) {
     console.error("Failed to fetch today's bids:", err);
-    setTodayBidCount(0); // fallback
+    setTodayBidCount(0); 
   }
 };
 
@@ -453,28 +452,28 @@ const AuctionCard = ({ auction }) => (
                               className="w-full h-60 object-cover rounded-lg shadow-sm mb-4 cursor-pointer hover:scale-105 transition-transform duration-300"
                             />
 
-                    <div className="text-sm text-gray-700 space-y-1">
-                      <p>
-                        <span className="font-medium">Materials:</span>{" "}
-                        {request.product?.material || 'N/A'}
-                      </p>
-                      <p>
-                        <span className="font-medium">Dimensions:</span>{" "}
-                        {request.product?.dimensions || 'N/A'}
-                      </p>
-                      <p>
-                        <span className="font-medium">Previous Sales:</span>{" "}
-                        {request.product?.totalSales || 0}
-                      </p>
-                      <p>
-                        <span className="font-medium">Artist Rating:</span>{" "}
-                        {request.artist?.averageRating || 'N/A'}/5
-                      </p>
-                      <p>
-                        <span className="font-medium">Description:</span>{" "}
-                        {request.product?.description || 'No description provided'}
-                      </p>
-                    </div>
+                              <div className="text-sm text-gray-700 space-y-1">
+                                <p>
+                                  <span className="font-medium">Materials:</span>{" "}
+                                  {request.product?.material || 'N/A'}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Dimensions:</span>{" "}
+                                  {request.product?.dimensions || 'N/A'}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Previous Sales:</span>{" "}
+                                  {request.product?.totalSales || 0}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Artist Rating:</span>{" "}
+                                  {request.artist?.averageRating || 'N/A'}/5
+                                </p>
+                                <p>
+                                  <span className="font-medium">Description:</span>{" "}
+                                  {request.product?.description || 'No description provided'}
+                                </p>
+                              </div>
 
                             </div>
 

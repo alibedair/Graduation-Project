@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
+import {toast} from "react-hot-toast";
 
 const AdminReports = () => {
   const [reports, setReports] = useState([]);
@@ -55,7 +56,7 @@ const AdminReports = () => {
       if (result.success) {
         fetchReports();
       } else {
-        alert(result.message);
+        toast.error(result.message);
       }
     } catch (error) {
       console.error("Error marking as reviewed:", error);

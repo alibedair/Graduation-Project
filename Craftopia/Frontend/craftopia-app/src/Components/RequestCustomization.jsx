@@ -4,6 +4,7 @@ import { Palette, Brush, Smile, Plus, Sparkle, Upload } from "lucide-react";
 import { EnvelopeIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import Messages from "./Messages";
+import {toast} from "react-hot-toast";
 
 const RequestCustomization = () => {
     const [formData, setFormData] = useState({
@@ -185,13 +186,13 @@ const RequestCustomization = () => {
 
             if (action === 'accept') {
                 setOpenChatId(replyId);
-                alert("Offer accepted successfully!");
+                toast.success("Offer accepted successfully!");
             } else {
-                alert("Offer declined successfully!");
+                toast.success("Offer declined successfully!");
             }
         } catch (error) {
             console.error(error);
-            alert(`Error ${action}ing offer: ${error.message}`);
+            toast.error(`Error ${action}ing offer: ${error.message}`);
         }
     };
 

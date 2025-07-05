@@ -1,13 +1,13 @@
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { Heart, Star, Minus, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // ✅ Add this
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
   const { cartItems, addToCart, incrementQuantity, decrementQuantity } = useCart();
-  const navigate = useNavigate(); // ✅ Initialize navigate
+  const navigate = useNavigate(); 
 
   const getCartItem = (id) => cartItems.find((item) => item.id === id);
 
@@ -46,7 +46,7 @@ const Wishlist = () => {
               <div
                 key={product.id}
                 onClick={() =>
-                  navigate(`/product/${product.id}`, { state: { product } }) // ✅ React-router navigation with state
+                  navigate(`/product/${product.id}`, { state: { product } }) 
                 }
                 className="group relative bg-white shadow-md hover:shadow-lg transition-all duration-500 hover:-translate-y-1 rounded-2xl cursor-pointer"
               >
