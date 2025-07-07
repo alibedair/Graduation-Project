@@ -53,7 +53,7 @@ const ArtistProfile = ({ setIsLoggedIn }) => {
                 📋 View Requests
               </li>
               <li onClick={() => setActiveTab("auction")} className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "auction" ? "bg-gray-200 font-semibold" : ""}`}>
-                <Gavel className="h-4 w-4" /> Auction Request
+                <Gavel className="h-4 w-4" /> Request Auction
               </li>
               <li onClick={() => setActiveTab("requestcategory")} className={`hover:bg-gray-100 p-2 rounded cursor-pointer flex items-center gap-2 ${activeTab === "requestcategory" ? "bg-gray-200 font-semibold" : ""}`}>
                 📩 Request Category

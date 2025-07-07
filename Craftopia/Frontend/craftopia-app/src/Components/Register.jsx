@@ -152,7 +152,6 @@ const Register = () => {
                 >
                   <option value="customer">Customer</option>
                   <option value="artist">Artist</option>
-                  <option value="admin">Admin</option>
                 </select>
                 <svg
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-coral w-5 h-5"
