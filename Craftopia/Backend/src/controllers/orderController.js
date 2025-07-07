@@ -285,12 +285,7 @@ exports.shipOrder = async (req, res) => {
         }
         return res.status(200).json({
             message: 'Order shipped successfully',
-            order: {
-                orderId: order.orderId,
-                totalAmount: order.totalAmount,
-                status: order.status,
-                createdAt: order.createdAt
-            }
+           order
         });
 
     } catch (error) {
@@ -315,97 +310,25 @@ exports.shipAuctionOrder = async (req, res) => {
         if (!artist || auctionData.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'This Artist is not authorized for shipping this auction order' });
         }
-
-        const currentTime = new Date().toISOString();
-        if (!auctionData.endDate || auctionData.endDate > currentTime) {
-            return res.status(400).json({ message: 'Auction has not ended yet' });
+        let order = await Order.findByPk(auctionData.orderId);
+        if(!order){
+            return res.status(404).json({ message: 'Order not found' });   
         }
-        
-
-        if (!auctionData.bids) {
-            return res.status(400).json({ message: 'No bids found for this auction' });
-        }
-
-        const bidsArray = Object.values(auctionData.bids);
-        if (bidsArray.length === 0) {
-            return res.status(400).json({ message: 'No bids found for this auction' });
-        }
-        
-        const highestBid = bidsArray[bidsArray.length - 1];
-        
-        const order = await Order.findOne({
-            where: { customerId: highestBid.customerId },
-            include: [{
-                model: Product_Order,
-                where: { productId: auctionData.productId }
-            }],
-            order: [['createdAt', 'DESC']]
-        });
-
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found for this auction. The order should have been created automatically when the auction ended.' });
-        }
-
-        if (order.status === 'Shipped') {
+         if (order.status === 'Shipped') {
             return res.status(400).json({ message: 'Order is already shipped' });
         }
-
         if (order.status !== 'Completed') {
-            return res.status(400).json({ message: 'Customer should pay first, before shipping the order' });
+            return res.status(400).json({ message: 'Customer should pay first,before shipping the order' });
         }
-
         order.status = 'Shipped';
         order.shippedAt = new Date();
         await order.save();
-
-        try {
-            const customer = await Customer.findByPk(highestBid.customerId);
-            const customerUser = await User.findByPk(customer.userId);
-            
-            if (customerUser && customerUser.email) {
-                const orderDetails = {
-                    orderId: order.orderId,
-                    totalAmount: parseFloat(highestBid.bidAmount || 0).toFixed(2),
-                    orderDate: order.createdAt,
-                    trackingNumber: `TR${order.orderId}${Date.now()}`,
-                    estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                    isAuction: true,
-                    auctionDetails: {
-                        auctionId: auctionId,
-                        productName: auctionData.productDetails?.name || auctionData.productName || 'Auction Item',
-                        finalPrice: parseFloat(highestBid.bidAmount || 0).toFixed(2),
-                        winningBid: {
-                            bidId: highestBid.bidId || 'N/A',
-                            timestamp: highestBid.timestamp
-                        }
-                    }
-                };
-
-                await sendShipAuctionEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
-            }
-        } catch (emailError) {
-            console.error('Error sending auction ship email:', emailError);
-        }
-
-        await firebase_db.ref(`auctions/${auctionId}`).update({
-            status: 'shipped',
-            shippedAt: new Date().toISOString()
+         return res.status(200).json({
+            message: 'Order shipped successfully',
+           order
         });
-
-        return res.status(200).json({
-            message: 'Auction order shipped successfully',
-            order: {
-                orderId: order.orderId,
-                totalAmount: order.totalAmount,
-                status: order.status,
-                createdAt: order.createdAt,
-                shippedAt: order.shippedAt,
-                auctionId: auctionId
-            }
-        });
-
-    } catch (error) {
-        console.error('Error shipping auction order:', error);
-        return res.status(500).json({ message: 'Internal server error' });
     }
+    catch (error) {
+            console.error('Error sending order ship email:', error);
+        }
 }
