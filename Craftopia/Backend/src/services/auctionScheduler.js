@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const { firebase_db } = require('../config/firebase');
+const sequelize = require('../config/db');
 const ArtistFollow = require('../models/artistFollow');
 const Artist = require('../models/artist');
 const Product = require('../models/product');
@@ -56,6 +57,15 @@ const updateAuctionStatuses = async () => {
                     ...auction
                 });
                 console.log(`🏁 Auction ${auctionId} ended!`);
+            }
+            
+            // Also check already ended auctions that need order creation
+            if (auction.status === 'ended' && auction.bids && !auction.orderCreated) {
+                endedAuctions.push({
+                    auctionId,
+                    ...auction
+                });
+                console.log(`� Found ended auction ${auctionId} that needs order creation`);
             }
         });
         
@@ -157,81 +167,6 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
             const { auctionId, productId } = auction;
             console.log(`🔍 Processing auction ${auctionId} for product ${productId}`);
             
-            const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
-            const auctionSnapshot = await auctionRef.once('value');
-            const auctionData = auctionSnapshot.val();
-            
-            if (!auctionData || !auctionData.bids) {
-                console.log(`No bids found for auction ${auctionId}`);
-                continue;
-            }
-            
-            const bids = auctionData.bids;
-            
-            const bidsArray = Object.values(bids);
-            const highestBid = bidsArray[bidsArray.length - 1];
-            
-            if (!highestBid) {
-                console.log(`No valid highest bid found for auction ${auctionId}`);
-                continue;
-            }
-            
-            const existingOrder = await Order.findOne({
-                where: { customerId: highestBid.customerId },
-                include: [{
-                    model: Product,
-                    where: { productId: productId },
-                    through: { attributes: [] }
-                }],
-                order: [['createdAt', 'DESC']]
-            });
-            
-            if (existingOrder) {
-                console.log(`Order already exists for auction ${auctionId}, customer ${highestBid.customerId}`);
-                continue;
-            }
-            
-            // Get customer information
-            const customer = await Customer.findByPk(highestBid.customerId);
-            if (!customer) {
-                console.error(`Customer not found for auction ${auctionId}, customerId: ${highestBid.customerId}`);
-                continue;
-            }
-            
-            // Get product information
-            const product = await Product.findByPk(productId);
-            if (!product) {
-                console.error(`Product not found for auction ${auctionId}, productId: ${productId}`);
-                continue;
-            }
-            
-            // Create order
-            const order = await Order.create({
-                totalAmount: highestBid.bidAmount,
-                status: 'Pending',
-                customerId: customer.customerId,
-                createdAt: new Date()
-            });
-            
-            await Product_Order.create({
-                orderId: order.orderId,
-                productId: productId,
-                quantity: 1 
-            });
-            
-            await product.update({ quantity: 0 });
-            
-            await auctionRef.update({
-                orderId: order.orderId,
-                winnerId: highestBid.customerId,
-                winningAmount: highestBid.bidAmount,
-                orderCreated: true,
-                orderCreatedAt: new Date().toISOString()
-            });
-            
-            console.log(`Successfully created order ${order.orderId} for auction ${auctionId}`);
-            
-           
             try {
                 // Get bids for this auction from Firebase
                 const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
@@ -262,25 +197,10 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                 
                 console.log(`🏆 Highest bid for auction ${auctionId}: $${highestBid.bidAmount} by customer ${highestBid.customerId}`);
                 
-                // Check if order already exists for this auction - using a simpler approach
-                const existingOrder = await Order.findOne({
-                    where: { customerId: highestBid.customerId },
-                    order: [['createdAt', 'DESC']]
-                });
-                
-                // If there's a recent order, check if it's for this product via Product_Order
-                if (existingOrder) {
-                    const productOrder = await Product_Order.findOne({
-                        where: {
-                            orderId: existingOrder.orderId,
-                            productId: productId
-                        }
-                    });
-                    
-                    if (productOrder) {
-                        console.log(`⚠️ Order already exists for auction ${auctionId}, customer ${highestBid.customerId}`);
-                        continue;
-                    }
+                // Check if order already exists for this auction by checking Firebase first
+                if (auctionData.orderCreated) {
+                    console.log(`⚠️ Order already exists for auction ${auctionId} (orderCreated: true)`);
+                    continue;
                 }
                 
                 // Get customer information
@@ -309,12 +229,16 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                 
                 console.log(`🎉 Created order ${order.orderId} for auction ${auctionId} with amount $${highestBid.bidAmount}`);
                 
-                // Create product-order relationship
-                await Product_Order.create({
-                    orderId: order.orderId,
-                    productId: productId,
-                    quantity: 1 // Auction products always have quantity 1
+                // Create product-order relationship using raw SQL with correct column names
+                await sequelize.query(`
+                    INSERT INTO productorders ("orderId", "productId", quantity, "createdAt", "updatedAt")
+                    VALUES (?, ?, ?, NOW(), NOW())
+                `, {
+                    replacements: [order.orderId, productId, 1],
+                    type: sequelize.QueryTypes.INSERT
                 });
+                
+                console.log(`🔗 Created product-order relationship for order ${order.orderId} and product ${productId}`);
                 
                 // Update product quantity to 0 since it's been sold
                 await product.update({ quantity: 0 });

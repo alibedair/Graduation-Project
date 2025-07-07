@@ -11,27 +11,27 @@ const seedCreditCards = async () => {
             {
                 number: '4532015112830366',
                 expiryDate: '12/25',
-                amount: 5000.00
+                amount: 5000000.00
             },
             {
                 number: '4916738394857643',
                 expiryDate: '10/26',
-                amount: 10000.00
+                amount: 1000000.00
             },
             {
                 number: '5425233430109903',
                 expiryDate: '08/27',
-                amount: 7500.00
+                amount: 750000.00
             },
             {
                 number: '5555555555554444',
                 expiryDate: '06/28',
-                amount: 15000.00
+                amount: 1500000.00
             },
             {
                 number: '4111111111111111',
                 expiryDate: '04/29',
-                amount: 12000.00
+                amount: 12000000.00
             }
         ];
 
