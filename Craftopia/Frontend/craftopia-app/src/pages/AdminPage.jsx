@@ -41,7 +41,8 @@ const AdminPage = () => {
       case "Reports":
         return <AdminReports />;
       case "Categories":
-        return <AdminCategory />;
+        return <AdminCategory setSelected={handleSetSelected} />;
+
       case "Add Category":
         return <AddCategory />;
       case "Auctions":
@@ -50,8 +51,8 @@ const AdminPage = () => {
         return <ReleasePayment />;
       case "User Management":
         return <UserManagement />;
-        case "Product Management":
-      return <ProductsManagement />;
+      case "Product Management":
+        return <ProductsManagement />;
       default:
         return <AdminDashboard />;
     }

@@ -1,32 +1,40 @@
 import { useEffect, useState } from "react";
 import { FaChartBar, FaRegSmileBeam } from "react-icons/fa";
+import { Plus } from "lucide-react";
 
-const AdminCategory = () => {
+const AdminCategory = ({ setSelected }) => {
   const [requests, setRequests] = useState([]);
+  const [, setCategories] = useState([]);
 
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-
-        const response = await fetch("http://localhost:3000/category/getrequest", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const requestRes = await fetch("http://localhost:3000/category/getrequest", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch category requests");
-        }
+        const requestData = await requestRes.json();
+        const catRes = await fetch("http://localhost:3000/category/all");
+        const catData = await catRes.json();
 
-        const data = await response.json();
-        setRequests(data.requestedCategories);
+        const allRequests = requestData.requestedCategories || [];
+        const allCategories = catData.categories || [];
+
+        const filtered = allRequests.filter(
+          (req) => !allCategories.some(
+            (cat) => cat.name.toLowerCase() === req.name.toLowerCase()
+          )
+        );
+
+        setRequests(filtered);
+        setCategories(allCategories);
       } catch (error) {
         console.error("Error fetching category requests:", error.message);
       }
     };
 
-    fetchRequests();
+    fetchData();
   }, []);
 
   return (
@@ -44,16 +52,24 @@ const AdminCategory = () => {
             {requests.map((req, index) => (
               <div
                 key={index}
-                className="bg-white border rounded-xl shadow-md p-5 transition-transform hover:scale-[1.02] hover:shadow-lg"
+                className="relative bg-white border rounded-xl shadow-md p-5 transition-transform hover:scale-[1.02] hover:shadow-lg"
               >
+                <button
+                  onClick={() => {
+                    localStorage.setItem("requestedCategoryName", req.name);
+                    setSelected("Add Category");
+                  }}
+                  className="absolute top-3 right-3 p-1 rounded-md hover:bg-[#f4ccd2] transition"
+                  title="Add this category"
+                >
+                  <Plus className="text-[#E07385]" size={22} />
+                </button>
+
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[#E07385] text-xl font-bold">#</span>
-                  <button
-                    className="bg-[#E07385] text-white font-semibold px-4 py-2 rounded-full text-sm"
-                    disabled
-                  >
+                  <span className="bg-[#E07385] text-white font-semibold px-4 py-2 rounded-full text-sm">
                     {req.name}
-                  </button>
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-700 mt-2">

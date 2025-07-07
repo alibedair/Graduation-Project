@@ -7,6 +7,16 @@ const AddCategory = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
 
+
+  useEffect(() => {
+  const storedName = localStorage.getItem("requestedCategoryName");
+  if (storedName) {
+    setName(storedName);
+    localStorage.removeItem("requestedCategoryName");
+  }
+}, []);
+
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -63,8 +73,6 @@ const AddCategory = () => {
       setLoading(false);
     }
   };
-
-
   return (
     <div className="max-h-screen bg-[#FAF9F6] p-20 pl-0 flex items-center justify-center mr-33">
       <div className="w-full max-w-4xl bg-white border border-[#e4cfcf] rounded-3xl shadow-xl p-10 flex flex-col md:flex-row gap-8">
