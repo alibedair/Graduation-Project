@@ -134,7 +134,6 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
         for (const auction of endedAuctions) {
             const { auctionId, productId } = auction;
             
-            // Get bids for this auction from Firebase
             const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
             const auctionSnapshot = await auctionRef.once('value');
             const auctionData = auctionSnapshot.val();
@@ -146,7 +145,6 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
             
             const bids = auctionData.bids;
             
-            // Find the highest bid (get the latest bid which should be the highest)
             const bidsArray = Object.values(bids);
             const highestBid = bidsArray[bidsArray.length - 1];
             
@@ -155,7 +153,6 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                 continue;
             }
             
-            // Check if order already exists for this auction and customer
             const existingOrder = await Order.findOne({
                 where: { customerId: highestBid.customerId },
                 include: [{
@@ -193,17 +190,14 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                 createdAt: new Date()
             });
             
-            // Create product-order relationship
             await Product_Order.create({
                 orderId: order.orderId,
                 productId: productId,
-                quantity: 1 // Auction products always have quantity 1
+                quantity: 1 
             });
             
-            // Update product quantity to 0 since it's been sold
             await product.update({ quantity: 0 });
             
-            // Update Firebase auction with order information
             await auctionRef.update({
                 orderId: order.orderId,
                 winnerId: highestBid.customerId,
@@ -214,7 +208,7 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
             
             console.log(`Successfully created order ${order.orderId} for auction ${auctionId}`);
             
-            // Send order confirmation email to winner
+           
             try {
                 const customerUser = await User.findByPk(customer.userId);
                 if (customerUser && customerUser.email) {

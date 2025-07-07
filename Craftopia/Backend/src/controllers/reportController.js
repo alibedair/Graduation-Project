@@ -464,6 +464,20 @@ exports.BanUser = async (req, res) => {
             });
         }
 
+        if(user.userId === req.user.id) {
+            return res.status(400).json({
+                success: false,
+                message: 'You cannot ban yourself'
+            });
+        }
+
+        if(user.role === 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'You cannot ban an admin user'
+            });
+        }
+
         user.isBanned = true;
         await user.save();
 

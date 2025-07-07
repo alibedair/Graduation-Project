@@ -661,10 +661,11 @@ describe('Order Controller', () => {
             const mockAuctionData = {
                 artistId: 1,
                 endDate: new Date(Date.now() - 1000).toISOString(),
-                productDetails: { name: 'Auction Product' }
-            };
-            const mockBidsData = {
-                bid1: { bidId: 'bid1', customerId: 1, bidAmount: 500, timestamp: new Date() }
+                productDetails: { name: 'Auction Product' },
+                productId: 1,
+                bids: {
+                    bid1: { bidId: 'bid1', customerId: 1, bidAmount: 500, timestamp: new Date() }
+                }
             };
             const mockArtist = { artistId: 1, userId: 1 };
             const mockCustomer = { customerId: 1, userId: 2 };
@@ -672,8 +673,9 @@ describe('Order Controller', () => {
             const mockOrder = {
                 orderId: 1,
                 totalAmount: 500,
-                status: 'Shipped',
-                createdAt: new Date()
+                status: 'Completed',
+                createdAt: new Date(),
+                save: jest.fn().mockResolvedValue()
             };
 
             req.params = { auctionId: 'auction123' };
@@ -682,37 +684,31 @@ describe('Order Controller', () => {
                 exists: () => true,
                 val: () => mockAuctionData
             };
-            const mockBidsSnapshot = {
-                exists: () => true,
-                val: () => mockBidsData
-            };
 
             firebase_db.ref.mockImplementation((path) => ({
-                once: jest.fn().mockImplementation((event) => {
-                    if (path.includes('bids')) {
-                        return Promise.resolve(mockBidsSnapshot);
-                    }
-                    return Promise.resolve(mockAuctionSnapshot);
-                }),
+                once: jest.fn().mockResolvedValue(mockAuctionSnapshot),
                 update: jest.fn().mockResolvedValue()
             }));
 
             Artist.findOne.mockResolvedValue(mockArtist);
+            Order.findOne.mockResolvedValue(mockOrder);
             Customer.findByPk.mockResolvedValue(mockCustomer);
-            Order.create.mockResolvedValue(mockOrder);
             User.findByPk.mockResolvedValue(mockUser);
             sendShipAuctionEmail.mockResolvedValue();
 
             await orderController.shipAuctionOrder(req, res);
 
             expect(Artist.findOne).toHaveBeenCalledWith({ where: { userId: 1 } });
-            expect(Customer.findByPk).toHaveBeenCalledWith(1);
-            expect(Order.create).toHaveBeenCalledWith({
-                createdAt: expect.any(Date),
-                totalAmount: 500,
-                status: 'Shipped',
-                customerId: 1
+            expect(Order.findOne).toHaveBeenCalledWith({
+                where: { customerId: 1 },
+                include: [{
+                    model: Product_Order,
+                    where: { productId: 1 }
+                }],
+                order: [['createdAt', 'DESC']]
             });
+            expect(Customer.findByPk).toHaveBeenCalledWith(1);
+            expect(mockOrder.save).toHaveBeenCalled();
             expect(sendShipAuctionEmail).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
@@ -722,6 +718,7 @@ describe('Order Controller', () => {
                     totalAmount: 500,
                     status: 'Shipped',
                     createdAt: mockOrder.createdAt,
+                    shippedAt: expect.any(Date),
                     auctionId: 'auction123'
                 }
             });
@@ -797,6 +794,7 @@ describe('Order Controller', () => {
             const mockAuctionData = {
                 artistId: 1,
                 endDate: new Date(Date.now() - 1000).toISOString()
+                // no bids property
             };
             const mockArtist = { artistId: 1, userId: 1 };
 
@@ -806,18 +804,10 @@ describe('Order Controller', () => {
                 exists: () => true,
                 val: () => mockAuctionData
             };
-            const mockBidsSnapshot = {
-                exists: () => false
-            };
 
-            firebase_db.ref.mockImplementation((path) => ({
-                once: jest.fn().mockImplementation((event) => {
-                    if (path.includes('bids')) {
-                        return Promise.resolve(mockBidsSnapshot);
-                    }
-                    return Promise.resolve(mockAuctionSnapshot);
-                })
-            }));
+            firebase_db.ref.mockReturnValue({
+                once: jest.fn().mockResolvedValue(mockAuctionSnapshot)
+            });
 
             Artist.findOne.mockResolvedValue(mockArtist);
 
@@ -827,13 +817,14 @@ describe('Order Controller', () => {
             expect(res.json).toHaveBeenCalledWith({ message: 'No bids found for this auction' });
         });
 
-        it('should return 404 if winner customer not found', async () => {
+        it('should return 404 if order not found for auction', async () => {
             const mockAuctionData = {
                 artistId: 1,
-                endDate: new Date(Date.now() - 1000).toISOString()
-            };
-            const mockBidsData = {
-                bid1: { bidId: 'bid1', customerId: 1, bidAmount: 500, timestamp: new Date() }
+                endDate: new Date(Date.now() - 1000).toISOString(),
+                productId: 1,
+                bids: {
+                    bid1: { bidId: 'bid1', customerId: 1, bidAmount: 500, timestamp: new Date() }
+                }
             };
             const mockArtist = { artistId: 1, userId: 1 };
 
@@ -843,37 +834,29 @@ describe('Order Controller', () => {
                 exists: () => true,
                 val: () => mockAuctionData
             };
-            const mockBidsSnapshot = {
-                exists: () => true,
-                val: () => mockBidsData
-            };
 
-            firebase_db.ref.mockImplementation((path) => ({
-                once: jest.fn().mockImplementation((event) => {
-                    if (path.includes('bids')) {
-                        return Promise.resolve(mockBidsSnapshot);
-                    }
-                    return Promise.resolve(mockAuctionSnapshot);
-                })
-            }));
+            firebase_db.ref.mockReturnValue({
+                once: jest.fn().mockResolvedValue(mockAuctionSnapshot)
+            });
 
             Artist.findOne.mockResolvedValue(mockArtist);
-            Customer.findByPk.mockResolvedValue(null);
+            Order.findOne.mockResolvedValue(null);
 
             await orderController.shipAuctionOrder(req, res);
 
             expect(res.status).toHaveBeenCalledWith(404);
-            expect(res.json).toHaveBeenCalledWith({ message: 'Winner customer not found' });
+            expect(res.json).toHaveBeenCalledWith({ message: 'Order not found for this auction. The order should have been created automatically when the auction ended.' });
         });
 
         it('should handle email service errors gracefully', async () => {
             const mockAuctionData = {
                 artistId: 1,
                 endDate: new Date(Date.now() - 1000).toISOString(),
-                productDetails: { name: 'Auction Product' }
-            };
-            const mockBidsData = {
-                bid1: { bidId: 'bid1', customerId: 1, bidAmount: 500, timestamp: new Date() }
+                productDetails: { name: 'Auction Product' },
+                productId: 1,
+                bids: {
+                    bid1: { bidId: 'bid1', customerId: 1, bidAmount: 500, timestamp: new Date() }
+                }
             };
             const mockArtist = { artistId: 1, userId: 1 };
             const mockCustomer = { customerId: 1, userId: 2 };
@@ -881,8 +864,9 @@ describe('Order Controller', () => {
             const mockOrder = {
                 orderId: 1,
                 totalAmount: 500,
-                status: 'Shipped',
-                createdAt: new Date()
+                status: 'Completed',
+                createdAt: new Date(),
+                save: jest.fn().mockResolvedValue()
             };
 
             req.params = { auctionId: 'auction123' };
@@ -891,24 +875,15 @@ describe('Order Controller', () => {
                 exists: () => true,
                 val: () => mockAuctionData
             };
-            const mockBidsSnapshot = {
-                exists: () => true,
-                val: () => mockBidsData
-            };
 
             firebase_db.ref.mockImplementation((path) => ({
-                once: jest.fn().mockImplementation((event) => {
-                    if (path.includes('bids')) {
-                        return Promise.resolve(mockBidsSnapshot);
-                    }
-                    return Promise.resolve(mockAuctionSnapshot);
-                }),
+                once: jest.fn().mockResolvedValue(mockAuctionSnapshot),
                 update: jest.fn().mockResolvedValue()
             }));
 
             Artist.findOne.mockResolvedValue(mockArtist);
+            Order.findOne.mockResolvedValue(mockOrder);
             Customer.findByPk.mockResolvedValue(mockCustomer);
-            Order.create.mockResolvedValue(mockOrder);
             User.findByPk.mockResolvedValue(mockUser);
             sendShipAuctionEmail.mockRejectedValue(new Error('Email service error'));
 

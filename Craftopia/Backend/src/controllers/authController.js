@@ -25,7 +25,7 @@ exports.register = async (req, res) => {
             role,
             isEmailVerified: false
         });
-        const userName = role === 'artist' ? 'Artist' : role === 'customer' ? 'Customer' : 'Admin';
+        const userName = role === 'artist' ? 'Artist' :'Customer';
         const otpResult = await createAndSendOTP(user.userId, email, userName);
         
         if (!otpResult.success) {

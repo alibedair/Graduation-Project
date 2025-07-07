@@ -374,6 +374,7 @@ describe('Product Controller', () => {
                 quantity: 10,
                 dimensions: '10x10',
                 material: 'Old Material',
+                type: 'normal',
                 save: jest.fn().mockResolvedValue()
             };
 
@@ -401,6 +402,12 @@ describe('Product Controller', () => {
                 productId: 1,
                 artistId: 1,
                 name: 'Old Product',
+                description: 'Old Description',
+                price: 100,
+                quantity: 10,
+                dimensions: '10x10',
+                material: 'Old Material',
+                type: 'normal',
                 image: 'old-image.jpg',
                 save: jest.fn().mockResolvedValue()
             };
