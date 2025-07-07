@@ -12,9 +12,7 @@ const { sendAuctionStartedToFollowersEmail } = require('../utils/emailService');
 
 const updateAuctionStatuses = async () => {
     try {
-        const now = new Date();
-        console.log(`🔄 Auction scheduler running at: ${now.toISOString()}`);
-        
+        const now = new Date(); 
         const auctionsRef = firebase_db.ref('auctions');
         
         const snapshot = await auctionsRef.once('value');
@@ -25,7 +23,6 @@ const updateAuctionStatuses = async () => {
             return;
         }
         
-        console.log(`🔍 Found ${Object.keys(auctions).length} auctions to check`);
         
         const updates = {};
         let updatedCount = 0;
@@ -46,7 +43,7 @@ const updateAuctionStatuses = async () => {
                     auctionId,
                     ...auction
                 });
-                console.log(`🚀 Auction ${auctionId} started!`);
+   
             }
             
             if (auction.status === 'active' && now >= endDate) {
@@ -56,7 +53,7 @@ const updateAuctionStatuses = async () => {
                     auctionId,
                     ...auction
                 });
-                console.log(`🏁 Auction ${auctionId} ended!`);
+                
             }
             
             // Also check already ended auctions that need order creation
@@ -71,21 +68,15 @@ const updateAuctionStatuses = async () => {
         
         if (Object.keys(updates).length > 0) {
             await auctionsRef.update(updates);
-            console.log(`✅ Updated ${Object.keys(updates).length} auction statuses`);
         }
         
         if (startedAuctions.length > 0) {
-            console.log(`📧 Notifying followers for ${startedAuctions.length} started auctions`);
             await notifyFollowersForStartedAuctions(startedAuctions);
         }
         
         if (endedAuctions.length > 0) {
             console.log(`📦 Creating orders for ${endedAuctions.length} ended auctions`);
-            await createOrdersForEndedAuctions(endedAuctions); // ✅ Correct function name
-        }
-        
-        if (updatedCount === 0) {
-            console.log('✨ No auction status updates needed');
+            await createOrdersForEndedAuctions(endedAuctions);
         }
         
     } catch (error) {
@@ -161,11 +152,8 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
 
 const createOrdersForEndedAuctions = async (endedAuctions) => {
     try {
-      
-        
         for (const auction of endedAuctions) {
             const { auctionId, productId } = auction;
-      
             
             try {
                 // Get bids for this auction from Firebase
@@ -174,50 +162,39 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                 const auctionData = auctionSnapshot.val();
                 
                 if (!auctionData) {
-                    console.log(`❌ Auction data not found for ${auctionId}`);
                     continue;
                 }
                 
                 if (!auctionData.bids) {
-                    console.log(`📭 No bids found for auction ${auctionId}`);
                     continue;
                 }
                 
                 const bids = auctionData.bids;
-                
                 
                 // Find the highest bid (get the latest bid which should be the highest)
                 const bidsArray = Object.values(bids);
                 const highestBid = bidsArray[bidsArray.length - 1];
                 
                 if (!highestBid) {
-                    console.log(`❌ No valid highest bid found for auction ${auctionId}`);
                     continue;
                 }
                 
-                console.log(`🏆 Highest bid for auction ${auctionId}: $${highestBid.bidAmount} by customer ${highestBid.customerId}`);
-                
                 // Check if order already exists for this auction by checking Firebase first
                 if (auctionData.orderCreated) {
-                    console.log(`⚠️ Order already exists for auction ${auctionId} (orderCreated: true)`);
                     continue;
                 }
                 
                 // Get customer information
                 const customer = await Customer.findByPk(highestBid.customerId);
                 if (!customer) {
-                    console.error(`❌ Customer not found for auction ${auctionId}, customerId: ${highestBid.customerId}`);
                     continue;
                 }
                 
                 // Get product information
                 const product = await Product.findByPk(productId);
                 if (!product) {
-                    console.error(`❌ Product not found for auction ${auctionId}, productId: ${productId}`);
                     continue;
                 }
-                
-           
                 
                 // Create order
                 const order = await Order.create({
@@ -226,23 +203,19 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     customerId: customer.customerId,
                     createdAt: new Date()
                 });
-                
-               
-                
-                // Create product-order relationship using raw SQL with correct column names
-                await sequelize.query(`
-                    INSERT INTO productorders ("orderId", "productId", quantity, "createdAt", "updatedAt")
-                    VALUES (?, ?, ?, NOW(), NOW())
-                `, {
-                    replacements: [order.orderId, productId, 1],
-                    type: sequelize.QueryTypes.INSERT
+                console.log(`Order created for auction ${auctionId} with ID ${order.orderId}`);
+               await Product_Order.create({
+                    orderId: order.orderId,
+                    productId: product.productId,
+                    quantity: 1,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
                 });
                 
-
-                
                 // Update product quantity to 0 since it's been sold
-                await product.update({ quantity: 0 });
-               
+                await product.update({ quantity: 0
+                    ,sellingNumber : product.sellingNumber + 1, updatedAt: new Date()
+                 });
                 
                 // Update Firebase auction with order information
                 await auctionRef.update({
@@ -252,8 +225,6 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     orderCreated: true,
                     orderCreatedAt: new Date().toISOString()
                 });
-                
-           
                 
                 // Send order confirmation email to winner
                 try {
@@ -278,30 +249,24 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                         };
 
                         await sendOrderConfirmationEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
-                        console.log(`📧 Order confirmation email sent to auction winner: ${customerUser.email}`);
-                    } else {
-                        console.log(`⚠️ No email found for customer ${customer.customerId}`);
                     }
                 } catch (emailError) {
-                    console.error(`❌ Error sending order confirmation email for auction ${auctionId}:`, emailError);
+                    console.error(`Error sending order confirmation email for auction ${auctionId}:`, emailError);
                 }
                 
-               
-                
             } catch (auctionError) {
+                console.error(`Error processing auction ${auctionId}:`, auctionError);
                 continue; // Continue with next auction
             }
         }
         
-       
-        
     } catch (error) {
-        console.error('❌ Error creating orders for ended auctions:', error);
+        console.error('Error creating orders for ended auctions:', error);
     }
 };
 
 const startAuctionScheduler = () => {
-    console.log('🚀 Starting Auction Scheduler...');
+   
     
 
     updateAuctionStatuses();
