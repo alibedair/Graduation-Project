@@ -550,7 +550,7 @@ describe('Report Controller', () => {
 
   describe('BanUser', () => {
     beforeEach(() => {
-      req.params = { id: '1' };
+      req.params = { id: '2' };
       req.user = { id: 1, role: 'admin' };
     });
 
@@ -592,7 +592,8 @@ describe('Report Controller', () => {
 
     it('should ban user successfully', async () => {
       const mockUser = {
-        userId: 1,
+        userId: 2,
+        role: 'customer',
         isBanned: false,
         save: jest.fn().mockResolvedValue()
       };
@@ -608,6 +609,44 @@ describe('Report Controller', () => {
         success: true,
         message: 'User banned successfully',
         data: mockUser
+      });
+    });
+
+    it('should return 400 when trying to ban yourself', async () => {
+      req.params = { id: '1' };  // Same as req.user.id
+
+      const mockUser = {
+        userId: 1,
+        role: 'admin',
+        isBanned: false
+      };
+
+      User.findOne.mockResolvedValue(mockUser);
+
+      await reportController.BanUser(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'You cannot ban yourself'
+      });
+    });
+
+    it('should return 403 when trying to ban an admin user', async () => {
+      const mockUser = {
+        userId: 2,
+        role: 'admin',
+        isBanned: false
+      };
+
+      User.findOne.mockResolvedValue(mockUser);
+
+      await reportController.BanUser(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'You cannot ban an admin user'
       });
     });
   });

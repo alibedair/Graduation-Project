@@ -199,7 +199,7 @@ describe('Auth Controller', () => {
       });
     });
 
-    it('should register user successfully for admin', async () => {
+    it('should prevent admin registration', async () => {
       const mockErrors = {
         isEmpty: jest.fn().mockReturnValue(true)
       };
@@ -211,23 +211,14 @@ describe('Auth Controller', () => {
         role: 'admin'
       };
 
-      User.findOne.mockResolvedValue(null);
-      bcrypt.genSalt.mockResolvedValue('salt123');
-      bcrypt.hash.mockResolvedValue('hashedPassword123');
-
-      const mockUser = {
-        userId: 3,
-        email: 'admin@example.com',
-        role: 'admin'
-      };
-      User.create.mockResolvedValue(mockUser);
-
-      createAndSendOTP.mockResolvedValue({ success: true });
-
       await authController.register(req, res);
 
-      expect(createAndSendOTP).toHaveBeenCalledWith(3, 'admin@example.com', 'Admin');
-      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Admin registration is not allowed through public signup'
+      });
+      expect(User.findOne).not.toHaveBeenCalled();
+      expect(User.create).not.toHaveBeenCalled();
     });
 
     it('should handle internal server error', async () => {
@@ -677,31 +668,6 @@ describe('Auth Controller', () => {
       await authController.resendOTP(req, res);
 
       expect(createAndSendOTP).toHaveBeenCalledWith(2, 'artist@example.com', 'Artist');
-      expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it('should resend OTP successfully for admin', async () => {
-      const mockErrors = {
-        isEmpty: jest.fn().mockReturnValue(true)
-      };
-      validationResult.mockReturnValue(mockErrors);
-
-      req.body = {
-        userId: 3
-      };
-
-      const mockUser = {
-        userId: 3,
-        email: 'admin@example.com',
-        role: 'admin',
-        isEmailVerified: false
-      };
-      User.findByPk.mockResolvedValue(mockUser);
-      createAndSendOTP.mockResolvedValue({ success: true });
-
-      await authController.resendOTP(req, res);
-
-      expect(createAndSendOTP).toHaveBeenCalledWith(3, 'admin@example.com', 'Admin');
       expect(res.status).toHaveBeenCalledWith(200);
     });
 

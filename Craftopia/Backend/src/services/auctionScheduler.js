@@ -12,14 +12,19 @@ const { sendAuctionStartedToFollowersEmail } = require('../utils/emailService');
 const updateAuctionStatuses = async () => {
     try {
         const now = new Date();
+        console.log(`🔄 Auction scheduler running at: ${now.toISOString()}`);
+        
         const auctionsRef = firebase_db.ref('auctions');
         
         const snapshot = await auctionsRef.once('value');
         const auctions = snapshot.val();
         
         if (!auctions) {
+            console.log('📭 No auctions found in Firebase');
             return;
         }
+        
+        console.log(`🔍 Found ${Object.keys(auctions).length} auctions to check`);
         
         const updates = {};
         let updatedCount = 0;
@@ -31,6 +36,8 @@ const updateAuctionStatuses = async () => {
             const startDate = new Date(auction.startDate);
             const endDate = new Date(auction.endDate);
             
+            console.log(`⏰ Auction ${auctionId}: Status=${auction.status}, Start=${startDate.toISOString()}, End=${endDate.toISOString()}, Now=${now.toISOString()}`);
+            
             if (auction.status === 'scheduled' && now >= startDate) {
                 updates[`${auctionId}/status`] = 'active';
                 updatedCount++;
@@ -38,7 +45,9 @@ const updateAuctionStatuses = async () => {
                     auctionId,
                     ...auction
                 });
+                console.log(`🚀 Auction ${auctionId} started!`);
             }
+            
             if (auction.status === 'active' && now >= endDate) {
                 updates[`${auctionId}/status`] = 'ended';
                 updatedCount++;
@@ -46,20 +55,31 @@ const updateAuctionStatuses = async () => {
                     auctionId,
                     ...auction
                 });
+                console.log(`🏁 Auction ${auctionId} ended!`);
             }
         });
         
         if (Object.keys(updates).length > 0) {
             await auctionsRef.update(updates);
+            console.log(`✅ Updated ${Object.keys(updates).length} auction statuses`);
         }
+        
         if (startedAuctions.length > 0) {
+            console.log(`📧 Notifying followers for ${startedAuctions.length} started auctions`);
             await notifyFollowersForStartedAuctions(startedAuctions);
         }
+        
         if (endedAuctions.length > 0) {
-            await createOrdersForEndedAuctions(endedAuctions);
+            console.log(`📦 Creating orders for ${endedAuctions.length} ended auctions`);
+            await createOrdersForEndedAuctions(endedAuctions); // ✅ Correct function name
         }
+        
+        if (updatedCount === 0) {
+            console.log('✨ No auction status updates needed');
+        }
+        
     } catch (error) {
-        console.error('Error updating auction statuses:', error);
+        console.error('❌ Error updating auction statuses:', error);
     }
 };
 
@@ -131,8 +151,11 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
 
 const createOrdersForEndedAuctions = async (endedAuctions) => {
     try {
+        console.log(`📦 Processing ${endedAuctions.length} ended auctions for order creation`);
+        
         for (const auction of endedAuctions) {
             const { auctionId, productId } = auction;
+            console.log(`🔍 Processing auction ${auctionId} for product ${productId}`);
             
             const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
             const auctionSnapshot = await auctionRef.once('value');
@@ -210,43 +233,164 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
             
            
             try {
-                const customerUser = await User.findByPk(customer.userId);
-                if (customerUser && customerUser.email) {
-                    const { sendOrderConfirmationEmail } = require('../utils/emailService');
-                    const orderDetails = {
-                        orderId: order.orderId,
-                        totalAmount: parseFloat(highestBid.bidAmount || 0).toFixed(2),
-                        orderDate: order.createdAt,
-                        isAuction: true,
-                        products: [{
-                            name: product.name,
-                            price: parseFloat(highestBid.bidAmount || 0).toFixed(2),
-                            quantity: 1,
-                            isAuctionWin: true
-                        }],
-                        auctionDetails: {
-                            auctionId: auctionId,
-                            finalPrice: parseFloat(highestBid.bidAmount || 0).toFixed(2)
-                        }
-                    };
-
-                    await sendOrderConfirmationEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
-                    console.log(`Order confirmation email sent to auction winner: ${customerUser.email}`);
+                // Get bids for this auction from Firebase
+                const auctionRef = firebase_db.ref(`auctions/${auctionId}`);
+                const auctionSnapshot = await auctionRef.once('value');
+                const auctionData = auctionSnapshot.val();
+                
+                if (!auctionData) {
+                    console.log(`❌ Auction data not found for ${auctionId}`);
+                    continue;
                 }
-            } catch (emailError) {
-                console.error('Error sending order confirmation email for auction:', emailError);
+                
+                if (!auctionData.bids) {
+                    console.log(`📭 No bids found for auction ${auctionId}`);
+                    continue;
+                }
+                
+                const bids = auctionData.bids;
+                console.log(`💰 Found ${Object.keys(bids).length} bids for auction ${auctionId}`);
+                
+                // Find the highest bid (get the latest bid which should be the highest)
+                const bidsArray = Object.values(bids);
+                const highestBid = bidsArray[bidsArray.length - 1];
+                
+                if (!highestBid) {
+                    console.log(`❌ No valid highest bid found for auction ${auctionId}`);
+                    continue;
+                }
+                
+                console.log(`🏆 Highest bid for auction ${auctionId}: $${highestBid.bidAmount} by customer ${highestBid.customerId}`);
+                
+                // Check if order already exists for this auction - using a simpler approach
+                const existingOrder = await Order.findOne({
+                    where: { customerId: highestBid.customerId },
+                    order: [['createdAt', 'DESC']]
+                });
+                
+                // If there's a recent order, check if it's for this product via Product_Order
+                if (existingOrder) {
+                    const productOrder = await Product_Order.findOne({
+                        where: {
+                            orderId: existingOrder.orderId,
+                            productId: productId
+                        }
+                    });
+                    
+                    if (productOrder) {
+                        console.log(`⚠️ Order already exists for auction ${auctionId}, customer ${highestBid.customerId}`);
+                        continue;
+                    }
+                }
+                
+                // Get customer information
+                const customer = await Customer.findByPk(highestBid.customerId);
+                if (!customer) {
+                    console.error(`❌ Customer not found for auction ${auctionId}, customerId: ${highestBid.customerId}`);
+                    continue;
+                }
+                
+                // Get product information
+                const product = await Product.findByPk(productId);
+                if (!product) {
+                    console.error(`❌ Product not found for auction ${auctionId}, productId: ${productId}`);
+                    continue;
+                }
+                
+                console.log(`✅ Creating order for customer ${customer.customerId} for product "${product.name}"`);
+                
+                // Create order
+                const order = await Order.create({
+                    totalAmount: highestBid.bidAmount,
+                    status: 'Pending',
+                    customerId: customer.customerId,
+                    createdAt: new Date()
+                });
+                
+                console.log(`🎉 Created order ${order.orderId} for auction ${auctionId} with amount $${highestBid.bidAmount}`);
+                
+                // Create product-order relationship
+                await Product_Order.create({
+                    orderId: order.orderId,
+                    productId: productId,
+                    quantity: 1 // Auction products always have quantity 1
+                });
+                
+                // Update product quantity to 0 since it's been sold
+                await product.update({ quantity: 0 });
+                console.log(`📦 Updated product ${productId} quantity to 0`);
+                
+                // Update Firebase auction with order information
+                await auctionRef.update({
+                    orderId: order.orderId,
+                    winnerId: highestBid.customerId,
+                    winningAmount: highestBid.bidAmount,
+                    orderCreated: true,
+                    orderCreatedAt: new Date().toISOString()
+                });
+                
+                console.log(`🔄 Updated Firebase auction ${auctionId} with order info`);
+                
+                // Send order confirmation email to winner
+                try {
+                    const customerUser = await User.findByPk(customer.userId);
+                    if (customerUser && customerUser.email) {
+                        const { sendOrderConfirmationEmail } = require('../utils/emailService');
+                        const orderDetails = {
+                            orderId: order.orderId,
+                            totalAmount: parseFloat(highestBid.bidAmount || 0).toFixed(2),
+                            orderDate: order.createdAt,
+                            isAuction: true,
+                            products: [{
+                                name: product.name,
+                                price: parseFloat(highestBid.bidAmount || 0).toFixed(2),
+                                quantity: 1,
+                                isAuctionWin: true
+                            }],
+                            auctionDetails: {
+                                auctionId: auctionId,
+                                finalPrice: parseFloat(highestBid.bidAmount || 0).toFixed(2)
+                            }
+                        };
+
+                        await sendOrderConfirmationEmail(customerUser.email, customerUser.name || 'Valued Customer', orderDetails);
+                        console.log(`📧 Order confirmation email sent to auction winner: ${customerUser.email}`);
+                    } else {
+                        console.log(`⚠️ No email found for customer ${customer.customerId}`);
+                    }
+                } catch (emailError) {
+                    console.error(`❌ Error sending order confirmation email for auction ${auctionId}:`, emailError);
+                }
+                
+                console.log(`✅ Successfully processed auction ${auctionId}`);
+                
+            } catch (auctionError) {
+                console.error(`❌ Error processing individual auction ${auctionId}:`, auctionError);
+                continue; // Continue with next auction
             }
         }
+        
+        console.log(`🎯 Finished processing all ended auctions`);
+        
     } catch (error) {
-        console.error('Error creating orders for ended auctions:', error);
+        console.error('❌ Error creating orders for ended auctions:', error);
     }
 };
 
 const startAuctionScheduler = () => {
+    console.log('🚀 Starting Auction Scheduler...');
+    
+    // Run immediately on startup
+    console.log('⚡ Running initial auction status check...');
     updateAuctionStatuses();
+    
+    // Schedule to run every minute
+    console.log('⏰ Scheduling auction status checks every minute...');
     cron.schedule('* * * * *', () => {
         updateAuctionStatuses();
     });
+    
+    console.log('✅ Auction Scheduler started successfully!');
 };
 
 module.exports = { startAuctionScheduler, updateAuctionStatuses, createOrdersForEndedAuctions };
