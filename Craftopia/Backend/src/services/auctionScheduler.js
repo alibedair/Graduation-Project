@@ -161,11 +161,11 @@ const notifyFollowersForStartedAuctions = async (startedAuctions) => {
 
 const createOrdersForEndedAuctions = async (endedAuctions) => {
     try {
-        console.log(`📦 Processing ${endedAuctions.length} ended auctions for order creation`);
+      
         
         for (const auction of endedAuctions) {
             const { auctionId, productId } = auction;
-            console.log(`🔍 Processing auction ${auctionId} for product ${productId}`);
+      
             
             try {
                 // Get bids for this auction from Firebase
@@ -184,7 +184,7 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                 }
                 
                 const bids = auctionData.bids;
-                console.log(`💰 Found ${Object.keys(bids).length} bids for auction ${auctionId}`);
+                
                 
                 // Find the highest bid (get the latest bid which should be the highest)
                 const bidsArray = Object.values(bids);
@@ -217,7 +217,7 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     continue;
                 }
                 
-                console.log(`✅ Creating order for customer ${customer.customerId} for product "${product.name}"`);
+           
                 
                 // Create order
                 const order = await Order.create({
@@ -227,7 +227,7 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     createdAt: new Date()
                 });
                 
-                console.log(`🎉 Created order ${order.orderId} for auction ${auctionId} with amount $${highestBid.bidAmount}`);
+               
                 
                 // Create product-order relationship using raw SQL with correct column names
                 await sequelize.query(`
@@ -238,11 +238,11 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     type: sequelize.QueryTypes.INSERT
                 });
                 
-                console.log(`🔗 Created product-order relationship for order ${order.orderId} and product ${productId}`);
+
                 
                 // Update product quantity to 0 since it's been sold
                 await product.update({ quantity: 0 });
-                console.log(`📦 Updated product ${productId} quantity to 0`);
+               
                 
                 // Update Firebase auction with order information
                 await auctionRef.update({
@@ -253,7 +253,7 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     orderCreatedAt: new Date().toISOString()
                 });
                 
-                console.log(`🔄 Updated Firebase auction ${auctionId} with order info`);
+           
                 
                 // Send order confirmation email to winner
                 try {
@@ -286,15 +286,14 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     console.error(`❌ Error sending order confirmation email for auction ${auctionId}:`, emailError);
                 }
                 
-                console.log(`✅ Successfully processed auction ${auctionId}`);
+               
                 
             } catch (auctionError) {
-                console.error(`❌ Error processing individual auction ${auctionId}:`, auctionError);
                 continue; // Continue with next auction
             }
         }
         
-        console.log(`🎯 Finished processing all ended auctions`);
+       
         
     } catch (error) {
         console.error('❌ Error creating orders for ended auctions:', error);
@@ -304,17 +303,15 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
 const startAuctionScheduler = () => {
     console.log('🚀 Starting Auction Scheduler...');
     
-    // Run immediately on startup
-    console.log('⚡ Running initial auction status check...');
+
     updateAuctionStatuses();
     
-    // Schedule to run every minute
-    console.log('⏰ Scheduling auction status checks every minute...');
+
     cron.schedule('* * * * *', () => {
         updateAuctionStatuses();
     });
     
-    console.log('✅ Auction Scheduler started successfully!');
+    
 };
 
 module.exports = { startAuctionScheduler, updateAuctionStatuses, createOrdersForEndedAuctions };
