@@ -351,7 +351,8 @@ exports.addAdmin = async (req, res) => {
             const newUser = await User.create({
                 email,
                 password: hashedPassword,
-                role: 'admin'
+                role: 'admin',
+                isEmailVerified: true,
             }, { transaction });
             
             const newAdmin = await Admin.create({
