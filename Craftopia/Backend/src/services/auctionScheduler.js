@@ -210,13 +210,7 @@ const createOrdersForEndedAuctions = async (endedAuctions) => {
                     quantity: 1,
                     createdAt: new Date(),
                     updatedAt: new Date()
-                });
-                
-                // Update product quantity to 0 since it's been sold
-                await product.update({ quantity: 0
-                    ,sellingNumber : product.sellingNumber + 1, updatedAt: new Date()
-                 });
-                
+                });  
                 // Update Firebase auction with order information
                 await auctionRef.update({
                     orderId: order.orderId,

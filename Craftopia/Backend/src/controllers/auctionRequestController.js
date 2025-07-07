@@ -23,10 +23,10 @@ exports.createAuctionRequest = async (req, res) => {
         if (!artist) {
             return res.status(403).json({message: 'Only artists can request auctions'});
         }
-
+         
         const { productId, startingPrice, Duration, notes } = req.body;
 
-        const product = await Product.findByPk(productId);
+        let product = await Product.findByPk(productId);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -37,6 +37,10 @@ exports.createAuctionRequest = async (req, res) => {
         if (product.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'You can only request auctions for your own products' });
         }
+        product.quantity = 1;
+        await product.update({
+            quantity: 1
+        });
         const auctionRequest = await AuctionRequest.create({
             artistId: artist.artistId,
             productId,
