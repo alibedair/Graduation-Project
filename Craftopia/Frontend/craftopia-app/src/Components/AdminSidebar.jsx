@@ -13,6 +13,7 @@ import {
 import { FaUsers } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
+import { FaUser } from "react-icons/fa";
 
 const AdminSidebar = ({ selected, setSelected }) => {
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -99,6 +100,12 @@ const AdminSidebar = ({ selected, setSelected }) => {
           selected={selected === "Product Management"}
           onClick={() => setSelected("Product Management")}
         />
+        <SidebarButton
+          icon={<FaUser />}
+          text="Profile"
+          selected={selected === "Profile"}
+          onClick={() => setSelected("Profile")}
+        />
       </div>
       <div className="mt-auto pl-3">
         <SidebarButton
@@ -106,8 +113,8 @@ const AdminSidebar = ({ selected, setSelected }) => {
           text="Logout"
           selected={false}
           onClick={() => {
-            logout();              
-            navigate('/login');    
+            logout();
+            navigate('/login');
           }}
         />
       </div>

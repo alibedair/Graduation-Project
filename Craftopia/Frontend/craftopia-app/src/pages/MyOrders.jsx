@@ -8,7 +8,7 @@ import {
     FiClock,
     FiStar,
 } from 'react-icons/fi';
-import {toast} from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import ReviewModal from '../Components/ReviewModal';
 const MyOrders = () => {
@@ -171,8 +171,6 @@ const MyOrders = () => {
             );
         }
     };
-
-
     return (
         <div className="px-4 sm:px-6 lg:px-8 py-12 bg-[var(--color-cream)] min-h-screen">
 
@@ -298,8 +296,11 @@ const MyOrders = () => {
                                                     </p>
                                                 </div>
                                                 {!item.reviewed && (
-                                                    ((item.type !== 'customizable' && order.status === 'Completed') ||
-                                                        (item.type === 'customizable' && order.status === 'Shipped')) && (
+                                                    (
+                                                        (item.type !== 'customizable' && item.type !== 'auction' && order.status === 'Completed') ||
+                                                        (item.type === 'customizable' && order.status === 'Shipped') ||
+                                                        (item.type === 'auction' && order.status === 'Shipped')
+                                                    ) && (
                                                         <div
                                                             onClick={(e) => e.stopPropagation()}
                                                             className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-md rounded-xl p-2 flex flex-col items-center shadow-md border border-[var(--color-burgundy)/30] animate-fadeIn"

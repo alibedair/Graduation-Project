@@ -15,7 +15,6 @@ const UserManagement = () => {
     email: "",
     password: "",
     phone: "",
-    address: "",
   });
 
   useEffect(() => {
@@ -124,7 +123,6 @@ const UserManagement = () => {
         email: "",
         password: "",
         phone: "",
-        address: "",
       });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add admin");
@@ -264,18 +262,6 @@ const UserManagement = () => {
         />
       </div>
 
-      <div>
-        <label className="block text-gray-700 font-medium mb-1">Address</label>
-        <input
-          type="text"
-          placeholder="City, Country"
-          value={adminData.address}
-          onChange={(e) =>
-            setAdminData({ ...adminData, address: e.target.value })
-          }
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E07385]"
-        />
-      </div>
     </div>
 
     <div className="mt-8">

@@ -116,9 +116,12 @@ exports.getmyOrders = async (req, res) => {
         for (const order of orders) {
             for (const prod of order.products) {
                 let canBeReviewed = false;
-                if (prod.type === 'customizable' && order.status === 'Shipped') {
-                    canBeReviewed = true;
-                } else if (prod.type !== 'customizable' && order.status === 'Completed') {
+
+                if (
+                    (prod.type === 'customizable' && order.status === 'Shipped') ||
+                    (prod.type === 'auction' && order.status === 'Shipped') ||
+                    (prod.type !== 'customizable' && prod.type !== 'auction' && order.status === 'Completed')
+                ) {
                     canBeReviewed = true;
                 }
 
@@ -135,6 +138,7 @@ exports.getmyOrders = async (req, res) => {
                 prod.dataValues.reviewed = !!existingReview;
             }
         }
+
 
 
         return res.status(200).json({
@@ -285,7 +289,7 @@ exports.shipOrder = async (req, res) => {
         }
         return res.status(200).json({
             message: 'Order shipped successfully',
-           order
+            order
         });
 
     } catch (error) {
@@ -298,23 +302,23 @@ exports.shipAuctionOrder = async (req, res) => {
     try {
         const userId = req.user.id;
         const { auctionId } = req.params;
-        
+
         const auctionSnapshot = await firebase_db.ref(`auctions/${auctionId}`).once('value');
         if (!auctionSnapshot.exists()) {
             return res.status(404).json({ message: 'Auction not found' });
         }
-        
+
         const auctionData = auctionSnapshot.val();
-        
+
         const artist = await Artist.findOne({ where: { userId } });
         if (!artist || auctionData.artistId !== artist.artistId) {
             return res.status(403).json({ message: 'This Artist is not authorized for shipping this auction order' });
         }
         let order = await Order.findByPk(auctionData.orderId);
-        if(!order){
-            return res.status(404).json({ message: 'Order not found' });   
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
         }
-         if (order.status === 'Shipped') {
+        if (order.status === 'Shipped') {
             return res.status(400).json({ message: 'Order is already shipped' });
         }
         if (order.status !== 'Completed') {
@@ -323,12 +327,12 @@ exports.shipAuctionOrder = async (req, res) => {
         order.status = 'Shipped';
         order.shippedAt = new Date();
         await order.save();
-         return res.status(200).json({
+        return res.status(200).json({
             message: 'Order shipped successfully',
-           order
+            order
         });
     }
     catch (error) {
-            console.error('Error sending order ship email:', error);
-        }
+        console.error('Error sending order ship email:', error);
+    }
 }
