@@ -443,6 +443,65 @@ const sendAuctionWonEmail = async (email, userName, auctionDetails) => {
     }
 };
 
+const sendAuctionWonWithOrderEmail = async (email, userName, auctionDetails) => {
+    try {
+        const { productName, winningBid, artistName, auctionId, orderId, orderDate } = auctionDetails;
+
+        const content = `
+            <p>Hello <strong>${userName}</strong>,</p>
+            <p>🎉 <strong>Congratulations! You've won the auction!</strong></p>
+            
+            <div style="background-color: #e8f5e8; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h3 style="color: #155724; margin-top: 0;">🏆 Auction Winner!</h3>
+                <p style="color: #155724; margin: 0;">Your order has been automatically created</p>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <h3 style="color: #333; margin-top: 0;">Winning Details</h3>
+                <p><strong>Product:</strong> ${productName}</p>
+                <p><strong>Winning Bid:</strong> $${winningBid}</p>
+                <p><strong>Artist:</strong> ${artistName}</p>
+                <p><strong>Auction ID:</strong> ${auctionId}</p>
+            </div>
+            
+            <div style="background-color: #d1ecf1; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                <h3 style="color: #0c5460; margin-top: 0;">📦 Your Order Information</h3>
+                <p style="color: #0c5460;"><strong>Order ID:</strong> #${orderId}</p>
+                <p style="color: #0c5460;"><strong>Order Date:</strong> ${new Date(orderDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p style="color: #0c5460; margin-bottom: 0;"><strong>Total Amount:</strong> $${winningBid}</p>
+            </div>
+            
+            <p><strong>What happens next:</strong></p>
+            <ul>
+                <li>✅ Your order (#${orderId}) has been automatically created</li>
+                <li>💳 Proceed to payment to complete your purchase</li>
+                <li>🎨 The artist will prepare your item once payment is confirmed</li>
+                <li>📦 You'll receive tracking information once shipped</li>
+                <li>🏠 Your beautiful handcrafted artwork will be delivered to you</li>
+            </ul>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="#" style="background-color: #ff6b35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Complete Payment for Order #${orderId}</a>
+            </div>
+            
+            <p>Thank you for participating in our auction and supporting handcrafted arts! We're thrilled that this beautiful piece has found its new home with you.</p>
+        `;
+
+        const mailOptions = {
+            from: `"Craftopia" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: `🎉 You Won! Order #${orderId} Created - ${productName}`,
+            html: getEmailTemplate('Auction Victory!', content, 'Complete your payment to secure your winning artwork!')
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending auction won with order email:', error);
+        return false;
+    }
+};
+
 const sendShipAuctionEmail = async (email, userName, orderDetails) => {
     try {
         const { orderId, trackingNumber, estimatedDelivery, totalAmount, customizationResponse, isAuction, auctionDetails } = orderDetails;
@@ -694,5 +753,6 @@ module.exports = {
     sendShipAuctionEmail,
     sendCustomizationShipEmail,
     sendPaymentConfirmationEmail,
-    sendAuctionStartedToFollowersEmail
+    sendAuctionStartedToFollowersEmail,
+    sendAuctionWonWithOrderEmail
 };
